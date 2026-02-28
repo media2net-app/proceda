@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0c0c0f;
+  --foreground: #f4f4f5;
+  --card-bg: rgba(24, 24, 31, 0.7);
+  --card-border: rgba(139, 92, 246, 0.15);
+  --accent: #a855f7;
+  --accent-hover: #9333ea;
+  --accent-glow: rgba(168, 85, 247, 0.25);
+  --muted: #71717a;
+  --input-bg: rgba(39, 39, 42, 0.8);
+  --input-border: rgba(63, 63, 70, 0.8);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* Subtle purple glow for background */
+.bg-proceda-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(88, 28, 135, 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(88, 28, 135, 0.12) 0%, transparent 50%),
+    var(--background);
+}
+
+/* Glassmorphism card */
+.card-glass {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(168, 85, 247, 0.05);
+}
+
+.card-glass:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 40px var(--accent-glow);
+}
+
+/* Hero: donker paars met zacht gloei-effect (Proxify-stijl) */
+.hero-purple-glow {
+  background:
+    radial-gradient(ellipse 100% 80% at 50% 0%, rgba(88, 28, 135, 0.5) 0%, rgba(67, 56, 202, 0.2) 40%, transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    linear-gradient(180deg, #1e1b4b 0%, #312e81 40%, #1e1b4b 100%);
+}
+
+/* Lichte blurred overlay in hero (Proxify-stijl) */
+.hero-blur-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 120% 100% at 50% -20%,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(196, 181, 253, 0.08) 30%,
+    transparent 60%
+  );
+  filter: blur(40px);
+  -webkit-filter: blur(40px);
+}
