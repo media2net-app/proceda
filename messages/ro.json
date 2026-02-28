@@ -1,0 +1,91 @@
+{
+  "nav": {
+    "howItWorks": "Cum funcționează",
+    "services": "Servicii",
+    "login": "Autentificare"
+  },
+  "hero": {
+    "tagline": "Aplicații web la comandă & AI pentru afacerea ta",
+    "headline": "Construiți pe termen lung, cu flexibilitate totală",
+    "description": "Multe companii doresc să înceapă cu AI dar nu știu cum. Noi implementăm AI în aplicații web la comandă și automatizăm procesele afacerii — de la idee la producție.",
+    "ctaDashboard": "Mergi la panou",
+    "ctaContact": "Contactați-ne",
+    "bar1": "AI & automatizare procese",
+    "bar2": "Stack modern · React, Next.js, TypeScript",
+    "bar3": "La comandă · Fără șabloane standard"
+  },
+  "usp": {
+    "maatwerk": "La comandă",
+    "maatwerkDesc": "Fără șabloane standard",
+    "modernStack": "Stack modern",
+    "modernStackDesc": "React, Next.js, TypeScript",
+    "aiAutomation": "AI & automatizare",
+    "aiAutomationDesc": "Procese de afaceri mai inteligente",
+    "fastScalable": "Rapid & scalabil",
+    "fastScalableDesc": "De la MVP la enterprise"
+  },
+  "approach": {
+    "title": "Abordarea Proceda",
+    "intro": "Fără proiecte fără sfârșit sau pachete fixe. Aplicații web, AI și automatizare: livrăm ce aveți nevoie, clar și pentru viitor.",
+    "aiTitle": "AI care automatizează procesele tale",
+    "aiDesc": "Multe companii doresc să înceapă cu AI dar nu știu de unde. Noi implementăm AI în sistemele tale și automatizăm munca manuală — concret și aplicabil.",
+    "conceptTitle": "De la concept clar la cod",
+    "conceptDesc": "Transformăm cerințele în design și plan tehnic concret, astfel încât știți exact ce obțineți.",
+    "robustTitle": "Robust și ușor de întreținut",
+    "robustDesc": "Cod curat, documentație clară și un stack pe care echipa îl poate extinde ușor mai târziu.",
+    "fastTitle": "Rapid de pornit",
+    "fastDesc": "Fără proiecte de luni de zile. Lucrăm în sprinturi scurte ca să vedeți rapid valoarea și să puteți ajusta."
+  },
+  "howItWorks": {
+    "title": "Cum funcționează",
+    "subtitle": "În trei pași de la cerere la aplicație funcțională.",
+    "step1Title": "Intake & plan",
+    "step1Desc": "Discutăm obiectivele, publicul țintă și restricțiile și creăm un plan și ofertă concrete.",
+    "step2Title": "Design & dezvoltare",
+    "step2Desc": "Construim în iterații: vedeți rezultate pe parcurs și puteți da feedback. Fără surprize la livrare.",
+    "step3Title": "Livrare & suport",
+    "step3Desc": "După livrare furnizăm documentație și putem face întreținere sau dezvoltare ulterioară.",
+    "cta": "Porniți proiectul"
+  },
+  "contact": {
+    "title": "Pregătiți pentru AI și o aplicație web la comandă?",
+    "description": "Doriți să automatizați procese cu AI sau să construiți o aplicație la comandă? Spuneți-ne ideea — ne place să gândim împreună și să dăm o estimare clară.",
+    "ctaDashboard": "Mergi la panou",
+    "email": "info@proceda.nl"
+  },
+  "footer": {
+    "tagline": "Aplicații web la comandă & AI pentru afacerea ta",
+    "login": "Autentificare"
+  },
+  "login": {
+    "welcome": "Bine ai revenit",
+    "subtitle": "Autentificați-vă pentru a continua",
+    "email": "Adresă email",
+    "emailPlaceholder": "nume@companie.com",
+    "password": "Parolă",
+    "remember": "Ține-mă minte",
+    "forgotPassword": "Ai uitat parola?",
+    "submit": "Autentificare",
+    "noAccount": "Nu ai cont?",
+    "contact": "Contactați-ne",
+    "tagline": "Aplicații web la comandă pentru afacerea ta"
+  },
+  "dashboard": {
+    "title": "Panou",
+    "sidebarOverview": "Prezentare generală",
+    "sidebarProjects": "Proiecte",
+    "sidebarClients": "Clienți",
+    "sidebarTasks": "Taskuri",
+    "sidebarSettings": "Setări",
+    "user": "Utilizator demo",
+    "logout": "Deconectare",
+    "projects": "Proiecte",
+    "projectsDesc": "Proiecte active",
+    "clients": "Clienți",
+    "clientsDesc": "Clienți înregistrați",
+    "tasks": "Taskuri",
+    "tasksDesc": "Taskuri deschise",
+    "welcomeTitle": "Bine ai venit în panou",
+    "welcomeDesc": "Acesta este un panou demonstrativ. Ați ajuns aici după autentificare. Aici puteți adăuga mai târziu overview-uri, proiecte și setări."
+  }
+}

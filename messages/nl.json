@@ -1,0 +1,91 @@
+{
+  "nav": {
+    "howItWorks": "Hoe het werkt",
+    "services": "Diensten",
+    "login": "Inloggen"
+  },
+  "hero": {
+    "tagline": "Maatwerk webapplicaties & AI voor jouw bedrijf",
+    "headline": "Bouw op lange termijn, met volledige flexibiliteit",
+    "description": "Veel bedrijven willen met AI starten maar weten niet hoe. Wij implementeren AI in maatwerk webapps en automatiseren jouw bedrijfsprocessen — van idee tot productie.",
+    "ctaDashboard": "Naar dashboard",
+    "ctaContact": "Neem contact op",
+    "bar1": "AI & automatisering van processen",
+    "bar2": "Modern stack · React, Next.js, TypeScript",
+    "bar3": "Maatwerk · Geen standaard templates"
+  },
+  "usp": {
+    "maatwerk": "Maatwerk",
+    "maatwerkDesc": "Geen standaard templates",
+    "modernStack": "Modern stack",
+    "modernStackDesc": "React, Next.js, TypeScript",
+    "aiAutomation": "AI & automatisering",
+    "aiAutomationDesc": "Bedrijfsprocessen slimmer maken",
+    "fastScalable": "Snel & schaalbaar",
+    "fastScalableDesc": "Van MVP tot enterprise"
+  },
+  "approach": {
+    "title": "De Proceda aanpak",
+    "intro": "Geen eindeloze projecten of vaste pakketten. Webapps, AI en automatisering: we leveren wat je nodig hebt, helder en toekomstbestendig.",
+    "aiTitle": "AI die jouw processen automatiseert",
+    "aiDesc": "Veel bedrijven willen met AI starten maar weten niet waar te beginnen. Wij implementeren AI in je systemen en automatiseren handmatig werk — concreet en toepasbaar.",
+    "conceptTitle": "Van scherp concept tot code",
+    "conceptDesc": "We vertalen jouw vraag naar een concreet ontwerp en technisch plan, zodat je precies weet wat je krijgt.",
+    "robustTitle": "Robuust en onderhoudbaar",
+    "robustDesc": "Schone code, duidelijke documentatie en een stack die jouw team later eenvoudig kan doorontwikkelen.",
+    "fastTitle": "Snel van start",
+    "fastDesc": "Geen maandenlange trajecten. We werken in korte sprints zodat je snel waarde ziet en kunt bijsturen."
+  },
+  "howItWorks": {
+    "title": "Hoe het werkt",
+    "subtitle": "In drie stappen van vraag naar een werkende applicatie.",
+    "step1Title": "Intake & plan",
+    "step1Desc": "We bespreken je doelen, doelgroep en randvoorwaarden en maken een concreet plan en offerte.",
+    "step2Title": "Ontwerp & ontwikkeling",
+    "step2Desc": "We bouwen in iteraties: je ziet tussentijds resultaat en kunt feedback geven. Geen verrassingen bij oplevering.",
+    "step3Title": "Oplevering & nazorg",
+    "step3Desc": "Na oplevering leveren we documentatie en kunnen we onderhoud of doorontwikkeling voor je doen.",
+    "cta": "Start je project"
+  },
+  "contact": {
+    "title": "Klaar voor AI en een webapplicatie op maat?",
+    "description": "Wil je processen automatiseren met AI of een maatwerk app bouwen? Vertel ons over je idee — we denken graag mee en geven een heldere inschatting.",
+    "ctaDashboard": "Naar dashboard",
+    "email": "info@proceda.nl"
+  },
+  "footer": {
+    "tagline": "Maatwerk webapplicaties & AI voor jouw bedrijf",
+    "login": "Inloggen"
+  },
+  "login": {
+    "welcome": "Welkom terug",
+    "subtitle": "Log in op je account om door te gaan",
+    "email": "E-mailadres",
+    "emailPlaceholder": "naam@bedrijf.nl",
+    "password": "Wachtwoord",
+    "remember": "Onthoud mij",
+    "forgotPassword": "Wachtwoord vergeten?",
+    "submit": "Inloggen",
+    "noAccount": "Nog geen account?",
+    "contact": "Neem contact op",
+    "tagline": "Maatwerk webapplicaties voor jouw bedrijf"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "sidebarOverview": "Overzicht",
+    "sidebarProjects": "Projecten",
+    "sidebarClients": "Klanten",
+    "sidebarTasks": "Taken",
+    "sidebarSettings": "Instellingen",
+    "user": "Demo gebruiker",
+    "logout": "Uitloggen",
+    "projects": "Projecten",
+    "projectsDesc": "Actieve projecten",
+    "clients": "Klanten",
+    "clientsDesc": "Geregistreerde klanten",
+    "tasks": "Taken",
+    "tasksDesc": "Openstaande taken",
+    "welcomeTitle": "Welkom op je dashboard",
+    "welcomeDesc": "Dit is een dummy dashboard. Je bent hier gekomen na inloggen op de loginpagina. Hier kun je later overzichten, projecten en instellingen toevoegen."
+  }
+}

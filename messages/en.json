@@ -1,0 +1,91 @@
+{
+  "nav": {
+    "howItWorks": "How it works",
+    "services": "Services",
+    "login": "Log in"
+  },
+  "hero": {
+    "tagline": "Custom web applications & AI for your business",
+    "headline": "Build for the long term, with full flexibility",
+    "description": "Many companies want to start with AI but don't know how. We implement AI in custom web apps and automate your business processes — from idea to production.",
+    "ctaDashboard": "Go to dashboard",
+    "ctaContact": "Contact us",
+    "bar1": "AI & process automation",
+    "bar2": "Modern stack · React, Next.js, TypeScript",
+    "bar3": "Custom · No standard templates"
+  },
+  "usp": {
+    "maatwerk": "Custom",
+    "maatwerkDesc": "No standard templates",
+    "modernStack": "Modern stack",
+    "modernStackDesc": "React, Next.js, TypeScript",
+    "aiAutomation": "AI & automation",
+    "aiAutomationDesc": "Smarter business processes",
+    "fastScalable": "Fast & scalable",
+    "fastScalableDesc": "From MVP to enterprise"
+  },
+  "approach": {
+    "title": "The Proceda approach",
+    "intro": "No endless projects or fixed packages. Web apps, AI and automation: we deliver what you need, clearly and future-proof.",
+    "aiTitle": "AI that automates your processes",
+    "aiDesc": "Many companies want to start with AI but don't know where to begin. We implement AI in your systems and automate manual work — concrete and applicable.",
+    "conceptTitle": "From sharp concept to code",
+    "conceptDesc": "We translate your requirements into a concrete design and technical plan, so you know exactly what you're getting.",
+    "robustTitle": "Robust and maintainable",
+    "robustDesc": "Clean code, clear documentation and a stack your team can easily extend later.",
+    "fastTitle": "Quick to start",
+    "fastDesc": "No months-long projects. We work in short sprints so you see value quickly and can adjust."
+  },
+  "howItWorks": {
+    "title": "How it works",
+    "subtitle": "In three steps from request to a working application.",
+    "step1Title": "Intake & plan",
+    "step1Desc": "We discuss your goals, target audience and constraints and create a concrete plan and quote.",
+    "step2Title": "Design & development",
+    "step2Desc": "We build in iterations: you see results along the way and can give feedback. No surprises at delivery.",
+    "step3Title": "Delivery & support",
+    "step3Desc": "After delivery we provide documentation and can do maintenance or further development for you.",
+    "cta": "Start your project"
+  },
+  "contact": {
+    "title": "Ready for AI and a custom web application?",
+    "description": "Want to automate processes with AI or build a custom app? Tell us your idea — we're happy to think along and give a clear estimate.",
+    "ctaDashboard": "Go to dashboard",
+    "email": "info@proceda.nl"
+  },
+  "footer": {
+    "tagline": "Custom web applications & AI for your business",
+    "login": "Log in"
+  },
+  "login": {
+    "welcome": "Welcome back",
+    "subtitle": "Log in to your account to continue",
+    "email": "Email address",
+    "emailPlaceholder": "name@company.com",
+    "password": "Password",
+    "remember": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "submit": "Log in",
+    "noAccount": "Don't have an account?",
+    "contact": "Contact us",
+    "tagline": "Custom web applications for your business"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "sidebarOverview": "Overview",
+    "sidebarProjects": "Projects",
+    "sidebarClients": "Clients",
+    "sidebarTasks": "Tasks",
+    "sidebarSettings": "Settings",
+    "user": "Demo user",
+    "logout": "Log out",
+    "projects": "Projects",
+    "projectsDesc": "Active projects",
+    "clients": "Clients",
+    "clientsDesc": "Registered clients",
+    "tasks": "Tasks",
+    "tasksDesc": "Open tasks",
+    "welcomeTitle": "Welcome to your dashboard",
+    "welcomeDesc": "This is a dummy dashboard. You got here after logging in. You can add overviews, projects and settings here later."
+  }
+}
