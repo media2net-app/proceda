@@ -267,6 +267,8 @@ model AnalyticsSession {
   referrer      String?
   currentPath   String   @default("/")
   funnelLabel   String?
+  leadName      String?
+  mailToken     String?
   bookingActive Boolean  @default(false)
   firstSeenAt   DateTime @default(now())
   lastSeenAt    DateTime @default(now())

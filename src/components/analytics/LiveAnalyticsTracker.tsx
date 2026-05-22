@@ -9,6 +9,10 @@ import {
   isDemoBookingPath,
   registerBookingFormEngagementListeners,
 } from "@/lib/analytics-booking-engagement";
+import {
+  clearDemoLeadSession,
+  readDemoLeadSession,
+} from "@/lib/analytics-demo-lead-client";
 
 const VISITOR_KEY = "proceda_visitor_id";
 const HEARTBEAT_MS = 25_000;
@@ -48,21 +52,38 @@ const SKIP_PREFIXES = [
 export default function LiveAnalyticsTracker() {
   const pathname = usePathname() ?? "/";
   const [bookingEngaged, setBookingEngaged] = useState(false);
+  const [demoLead, setDemoLead] = useState(
+    () => readDemoLeadSession(),
+  );
   const bookingEngagedRef = useRef(false);
+  const demoLeadRef = useRef(demoLead);
 
   useEffect(() => {
     bookingEngagedRef.current = bookingEngaged;
   }, [bookingEngaged]);
 
   useEffect(() => {
+    demoLeadRef.current = demoLead;
+  }, [demoLead]);
+
+  useEffect(() => {
     if (!isDemoBookingPath(pathname)) {
       clearBookingFormEngaged();
+      clearDemoLeadSession();
       setBookingEngaged(false);
+      setDemoLead(null);
       return;
     }
+    setDemoLead(readDemoLeadSession());
     setBookingEngaged(isBookingFormEngaged());
     return registerBookingFormEngagementListeners(pathname);
   }, [pathname]);
+
+  useEffect(() => {
+    const onLead = () => setDemoLead(readDemoLeadSession());
+    window.addEventListener("proceda-demo-lead", onLead);
+    return () => window.removeEventListener("proceda-demo-lead", onLead);
+  }, []);
 
   useEffect(() => {
     const onEngaged = () => {
@@ -86,6 +107,8 @@ export default function LiveAnalyticsTracker() {
           referrer:
             typeof document !== "undefined" ? document.referrer || null : null,
           bookingActive: bookingEngagedRef.current,
+          leadName: demoLeadRef.current?.businessName ?? null,
+          mailToken: demoLeadRef.current?.token ?? null,
         }),
         keepalive: true,
       });
@@ -102,7 +125,7 @@ export default function LiveAnalyticsTracker() {
     void sendPing();
     const id = window.setInterval(() => void sendPing(), HEARTBEAT_MS);
     return () => window.clearInterval(id);
-  }, [pathname, sendPing, bookingEngaged]);
+  }, [pathname, sendPing, bookingEngaged, demoLead]);
 
   useEffect(() => {
     if (!bookingEngaged) return;

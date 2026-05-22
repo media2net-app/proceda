@@ -12,6 +12,9 @@ export type AnalyticsPingInput = {
   userAgent: string | null;
   geo: RequestGeo;
   bookingActive?: boolean;
+  /** Van demo-bookingpagina na succesvolle token-load */
+  leadName?: string | null;
+  mailToken?: string | null;
 };
 
 export async function recordAnalyticsPing(
@@ -20,6 +23,8 @@ export async function recordAnalyticsPing(
   const now = new Date();
   const funnelLabel = funnelLabelFromPath(input.path);
   const bookingActive = input.bookingActive === true;
+  const leadName = input.leadName?.trim().slice(0, 200) || null;
+  const mailToken = input.mailToken?.trim().slice(0, 80) || null;
 
   const existing = await prisma.analyticsSession.findUnique({
     where: { sessionId: input.sessionId },
@@ -42,6 +47,8 @@ export async function recordAnalyticsPing(
       referrer: input.referrer,
       currentPath: input.path,
       funnelLabel,
+      leadName,
+      mailToken,
       bookingActive,
       firstSeenAt: now,
       lastSeenAt: now,
@@ -57,6 +64,8 @@ export async function recordAnalyticsPing(
       referrer: input.referrer,
       currentPath: input.path,
       funnelLabel,
+      ...(leadName ? { leadName } : {}),
+      ...(mailToken ? { mailToken } : {}),
       bookingActive,
       lastSeenAt: now,
     },

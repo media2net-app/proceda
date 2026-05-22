@@ -142,7 +142,9 @@ export async function getAnalyticsLiveSnapshot(
   const activeVisitors: AnalyticsLiveSnapshot["activeVisitors"] = [];
 
   for (const row of activeRows) {
-    const leadName = resolveLeadNameForPath(row.currentPath, leadByToken);
+    const leadName =
+      row.leadName?.trim() ||
+      resolveLeadNameForPath(row.currentPath, leadByToken);
     activeVisitors.push({
       sessionId: row.sessionId,
       path: row.currentPath,
@@ -170,7 +172,9 @@ export async function getAnalyticsLiveSnapshot(
       countryCode: row.countryCode,
       path: row.currentPath,
       funnelLabel: row.funnelLabel,
-      leadName: resolveLeadNameForPath(row.currentPath, leadByToken),
+      leadName:
+        row.leadName?.trim() ||
+        resolveLeadNameForPath(row.currentPath, leadByToken),
       bookingActive: row.bookingActive,
       lastSeenAt: row.lastSeenAt.toISOString(),
     });

@@ -10,6 +10,8 @@ type PingBody = {
   path?: string;
   referrer?: string | null;
   bookingActive?: boolean;
+  leadName?: string | null;
+  mailToken?: string | null;
 };
 
 const SKIP_PREFIXES = [
@@ -49,6 +51,8 @@ export async function POST(request: Request) {
       userAgent: request.headers.get("user-agent")?.slice(0, 500) || null,
       geo: geoFromRequestHeaders(request.headers),
       bookingActive: body.bookingActive === true,
+      leadName: body.leadName,
+      mailToken: body.mailToken,
     });
     return NextResponse.json({ ok: true });
   } catch (e) {

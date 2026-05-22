@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { storeDemoLeadSession } from "@/lib/analytics-demo-lead-client";
 
 type Schedule = {
   days: { key: string; label: string; date: string }[];
@@ -46,6 +47,10 @@ export function DemoBookingView({ token }: { token: string }) {
       }
       const json = (await res.json()) as DemoData;
       setData(json);
+      storeDemoLeadSession({
+        token: json.token,
+        businessName: json.businessName,
+      });
       setSelectedDay(json.schedule.days[0]?.key ?? null);
     } catch {
       setError(t("loadError"));

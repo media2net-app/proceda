@@ -1,11 +1,15 @@
 import { prisma } from "@/lib/db/prisma";
 
-/** Token uit pad /demo/{token} (zonder locale-prefix). */
+const LOCALE_PREFIX = /^\/(?:nl|en|ro)(?=\/)/i;
+
+/** Token uit pad /demo/{token} of /{locale}/demo/{token}. */
 export function extractDemoTokenFromPath(path: string): string | null {
-  const pathname = path.split("?")[0] ?? path;
+  const pathname = (path.split("?")[0] ?? path).replace(LOCALE_PREFIX, "");
   const match = pathname.match(/\/demo\/([^/]+)/i);
   return match?.[1]?.trim() || null;
 }
+
+const FULL_MAIL_TOKEN_LEN = 32;
 
 export async function loadLeadNamesByDemoTokens(
   tokens: string[],
@@ -13,20 +17,45 @@ export async function loadLeadNamesByDemoTokens(
   const unique = [...new Set(tokens.map((t) => t.trim()).filter(Boolean))];
   if (unique.length === 0) return new Map();
 
-  const rows = await prisma.mailOutreach.findMany({
-    where: { token: { in: unique } },
-    select: {
-      token: true,
-      businessId: true,
-      business: { select: { name: true } },
-    },
-  });
-
   const map = new Map<string, string>();
-  for (const row of rows) {
-    const name = row.business?.name?.trim();
-    map.set(row.token, name || row.businessId);
+
+  const fullTokens = unique.filter((t) => t.length >= FULL_MAIL_TOKEN_LEN);
+  if (fullTokens.length > 0) {
+    const rows = await prisma.mailOutreach.findMany({
+      where: { token: { in: fullTokens } },
+      select: {
+        token: true,
+        businessId: true,
+        business: { select: { name: true } },
+      },
+    });
+    for (const row of rows) {
+      const name = row.business?.name?.trim();
+      map.set(row.token, name || row.businessId);
+    }
   }
+
+  const shortTokens = unique.filter(
+    (t) => t.length >= 8 && t.length < FULL_MAIL_TOKEN_LEN,
+  );
+  for (const short of shortTokens) {
+    if (map.has(short)) continue;
+    const rows = await prisma.mailOutreach.findMany({
+      where: { token: { startsWith: short } },
+      select: {
+        token: true,
+        businessId: true,
+        business: { select: { name: true } },
+      },
+      take: 2,
+    });
+    if (rows.length === 1) {
+      const row = rows[0]!;
+      const name = row.business?.name?.trim();
+      map.set(short, name || row.businessId);
+    }
+  }
+
   return map;
 }
 
