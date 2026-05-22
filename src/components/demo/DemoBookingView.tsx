@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { storeDemoLeadSession } from "@/lib/analytics-demo-lead-client";
 
 type Schedule = {
@@ -19,10 +19,12 @@ type DemoData = {
   city?: string;
   token: string;
   schedule: Schedule;
+  dashboardScreenshotUrl?: string | null;
 };
 
 export function DemoBookingView({ token }: { token: string }) {
   const t = useTranslations("demoBooking");
+  const locale = useLocale();
 
   const [data, setData] = useState<DemoData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,9 @@ export function DemoBookingView({ token }: { token: string }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/demo/${token}`);
+      const res = await fetch(
+        `/api/demo/${encodeURIComponent(token)}?locale=${encodeURIComponent(locale)}`,
+      );
       if (!res.ok) {
         setData(null);
         setError(t("notFound"));
@@ -57,7 +61,7 @@ export function DemoBookingView({ token }: { token: string }) {
     } finally {
       setLoading(false);
     }
-  }, [token, t]);
+  }, [token, locale, t]);
 
   useEffect(() => {
     load();
@@ -157,7 +161,7 @@ export function DemoBookingView({ token }: { token: string }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-10">
+      <main className="mx-auto max-w-3xl px-4 py-10 lg:max-w-4xl">
         <p className="text-sm font-semibold text-[#7F56D9]">{t("eyebrow")}</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#101828]">
           {t("title")}
@@ -169,6 +173,26 @@ export function DemoBookingView({ token }: { token: string }) {
           <p className="text-sm text-[#667085]">{t("subtitleCity", { city: data.city })}</p>
         )}
         <p className="mt-1 text-sm text-[#667085]">{t("hoursHint")}</p>
+
+        {data.dashboardScreenshotUrl ? (
+          <section className="mt-8 rounded-2xl border border-[#EAECF0] bg-white p-4 shadow-xs sm:p-6">
+            <h2 className="text-sm font-semibold text-[#101828]">
+              {t("dashboardPreviewTitle")}
+            </h2>
+            <p className="mt-1 text-sm text-[#667085]">
+              {t("dashboardPreviewHint", { name: data.businessName })}
+            </p>
+            <div className="mt-4 overflow-hidden rounded-xl border border-[#EAECF0] bg-[#F9FAFB]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={data.dashboardScreenshotUrl}
+                alt={t("dashboardPreviewAlt", { name: data.businessName })}
+                className="block h-auto w-full"
+                loading="lazy"
+              />
+            </div>
+          </section>
+        ) : null}
 
         {error && (
           <p
