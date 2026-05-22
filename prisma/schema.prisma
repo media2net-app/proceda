@@ -254,3 +254,39 @@ model GooglePlacesUsage {
   calls      Int    @default(0)
   updatedAt  DateTime @updatedAt
 }
+
+model AnalyticsSession {
+  sessionId     String   @id
+  visitorId     String
+  countryCode   String?
+  city          String?
+  region        String?
+  latitude      Float?
+  longitude     Float?
+  userAgent     String?
+  referrer      String?
+  currentPath   String   @default("/")
+  funnelLabel   String?
+  bookingActive Boolean  @default(false)
+  firstSeenAt   DateTime @default(now())
+  lastSeenAt    DateTime @default(now())
+
+  pageViews AnalyticsPageView[]
+
+  @@index([lastSeenAt])
+  @@index([visitorId])
+}
+
+model AnalyticsPageView {
+  id          String   @id @default(uuid())
+  sessionId   String
+  path        String
+  funnelLabel String?
+  viewedAt    DateTime @default(now())
+
+  session AnalyticsSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@index([viewedAt])
+  @@index([sessionId])
+  @@index([path])
+}

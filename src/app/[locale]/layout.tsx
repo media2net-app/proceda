@@ -3,6 +3,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import SetLocaleLang from "@/components/SetLocaleLang";
+import LiveAnalyticsTrackerLoader from "@/components/analytics/LiveAnalyticsTrackerLoader";
 
 type Props = { children: React.ReactNode; params: Promise<{ locale: string }> };
 
@@ -20,6 +21,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <SetLocaleLang />
+      <LiveAnalyticsTrackerLoader />
       {children}
     </NextIntlClientProvider>
   );

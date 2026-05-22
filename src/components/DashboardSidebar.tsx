@@ -19,7 +19,8 @@ type NavIconName =
   | "calendar"
   | "mail"
   | "cube"
-  | "palette";
+  | "palette"
+  | "globe";
 
 const navItems: {
   href: string;
@@ -29,12 +30,14 @@ const navItems: {
     | "sidebarHuisstijl"
     | "sidebarRapportage"
     | "sidebarMail"
-    | "sidebarAfspraken";
+    | "sidebarAfspraken"
+    | "sidebarLiveView";
   icon: NavIconName;
   exact?: boolean;
   showUnread?: boolean;
 }[] = [
   { href: "/dashboard-admin", key: "sidebarKpi", icon: "chart", exact: true },
+  { href: "/dashboard-admin/live-view", key: "sidebarLiveView", icon: "globe" },
   { href: "/dashboard-admin/bedrijven", key: "sidebarBedrijven", icon: "building" },
   { href: "/dashboard-admin/huisstijl", key: "sidebarHuisstijl", icon: "palette" },
   { href: "/dashboard-admin/rapportage", key: "sidebarRapportage", icon: "chart2" },
@@ -116,7 +119,16 @@ function PaletteIcon() {
   );
 }
 
+function GlobeIcon() {
+  return (
+    <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-8.843 4.582m16.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5a17.92 17.92 0 01-8.716-2.247m0 0A8.966 8.966 0 013 12c0-1.264.26-2.467.732-3.532" />
+    </svg>
+  );
+}
+
 function NavIcon({ name }: { name: NavIconName }) {
+  if (name === "globe") return <GlobeIcon />;
   if (name === "mail") return <MailIcon />;
   if (name === "calendar") return <CalendarIcon />;
   if (name === "chart2") return <GridIcon />;
