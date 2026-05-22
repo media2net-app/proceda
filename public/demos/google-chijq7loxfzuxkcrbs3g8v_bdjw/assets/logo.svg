@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd' [
+	<!ENTITY ns_extend "http://ns.adobe.com/Extensibility/1.0/">
+	<!ENTITY ns_ai "http://ns.adobe.com/AdobeIllustrator/10.0/">
+	<!ENTITY ns_graphs "http://ns.adobe.com/Graphs/1.0/">
+	<!ENTITY ns_vars "http://ns.adobe.com/Variables/1.0/">
+	<!ENTITY ns_imrep "http://ns.adobe.com/ImageReplacement/1.0/">
+	<!ENTITY ns_sfw "http://ns.adobe.com/SaveForWeb/1.0/">
+	<!ENTITY ns_custom "http://ns.adobe.com/GenericCustomNamespace/1.0/">
+	<!ENTITY ns_adobe_xpath "http://ns.adobe.com/XPath/1.0/">
+]>
+<svg enable-background="new 0 0 170 600" version="1.1" viewBox="0 0 170 600" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<style type="text/css">
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,800');
+	.st0{fill:#65665c;}
+	.st1{fill:#65665c;opacity:0.5;}
+	.st2{clip-path:url(#b);fill:url(#a);}
+	.st3{fill:#CB6015;}
+	.st4{fill:none;}
+	.st5{fill:#FFFFFF;}
+	.st6{font-family:'Open Sans', sans-serif; font-weight:800;}
+	.st7{font-size:50px;}
+	.st8{letter-spacing:-2px;}
+	.st9{font-family:'Open Sans', sans-serif; font-weight:400;}
+	.st10{font-size:23px;}
+	.st11{letter-spacing:2px;}
+	.st12{opacity:0.3;}
+	
+	.star{fill:#FFF;}
+	.opster{opacity:0.3;}
+</style>
+	<defs>
+        <linearGradient id="half_grad">
+            <stop offset="50%" stop-color="#FFF" stop-opacity="1"/>
+            <stop offset="50%" stop-color="#FFF" stop-opacity="0.3" />
+        </linearGradient>
+    </defs>
+<switch>
+	<foreignObject width="1" height="1" requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/">
+	</foreignObject>
+	<g>
+				<path class="st0" d="M102.9,439.4h67V0h-35c0,0-32,0-32,32V439.4z"/>
+				<path class="st1" d="M170,373.8C109.7,361.6-6.2,412,0.3,444.7c19,97.1,120.5,158.8,169.7,155.1V373.8z"/>
+				<defs>
+					<path id="c" d="m113.4 361.2c-71.2 28.1-115.4 128.3-85.6 172 19.9 29.2 92.2 38.6 142.2 32.1v-192.1c-11.3-9.8-24-15.8-37.7-15.8-6.1 0-12.4 1.2-18.9 3.8"/>
+				</defs>
+				<clipPath id="b">
+					<use xlink:href="#c"/>
+				</clipPath>
+					<linearGradient id="a" x1="1.0009" x2="2.0009" y1="601.73" y2="601.73" gradientTransform="matrix(129.84 -172.31 -172.31 -129.84 1.0358e5 78841)" gradientUnits="userSpaceOnUse">
+					<stop stop-color="#CB6015" offset="0"/>
+					<stop stop-color="#65665c" offset="1"/>
+				</linearGradient>
+				<polygon class="st2" points="-105 494.1 60.3 274.8 273 435.1 107.7 654.4"/>
+				<path class="st3" d="m170 414c-19.8-22.6-44.7-38.2-62.9-27.6-75.7 43.7-69.4 125.8-36.9 149.9 38.8 28.6 75 20.7 99.8 1.3v-123.6z"/>
+			<rect class="st4" x="74" y="455.8" width="71.8" height="61.3"/>
+			<text transform="matrix(1 0 0 1.0526 73.951 499.18)"><tspan class="st5 st6 st7 st8" x="0" y="0">9.1</tspan></text>
+			<rect class="st4" x="123.2" y="28.2" width="27.3" height="224.9"/>
+			<text transform="matrix(0 1 -1 0 130.13 28.237)"><tspan class="st5 st9 st10 st11" x="0" y="0">Onze beoordeling</tspan></text>
+			
+			<polygon class="star"  points="133 281 122.3 281 131 287.3 127.6 297.5 136.3 291.2 145 297.5 141.7 287.3 150.4 281 139.6 281 136.3 271"/>
+			<polygon class="star"  points="133 316.9 122.3 316.9 131 323.1 127.6 333.3 136.3 327 145 333.3 141.7 323.1 150.4 316.9 139.6 316.9 136.3 306.8"/>
+			<polygon class="star"  points="133 352.7 122.3 352.7 131 359 127.6 369.1 136.3 362.9 145 369.1 141.7 359 150.4 352.7 139.6 352.7 136.3 342.6"/>
+			<polygon class="star"  points="133 388.5 122.3 388.5 131 394.8 127.6 405 136.3 398.7 145 405 141.7 394.8 150.4 388.5 139.6 388.5 136.3 378.5"/>
+			<polygon class="" fill="url(#half_grad)" points="132.9 423.8 122 423.8 130.8 430.2 127.4 440.6 136.3 434.2 145.2 440.6 141.8 430.2 150.7 423.8 139.7 423.8 136.3 413.5"/>
+	</g>
+</switch>
+</svg>

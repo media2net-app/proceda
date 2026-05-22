@@ -1,0 +1,21 @@
+{
+  "totals": {
+    "nearbySearch": 10,
+    "textSearch": 3,
+    "placeDetails": 85
+  },
+  "byProvince": {
+    "ro-ilfov": {
+      "nearbySearch": 10,
+      "textSearch": 3,
+      "placeDetails": 85
+    }
+  },
+  "estimatedBackfill": {
+    "nearbySearch": 0,
+    "textSearch": 0,
+    "placeDetails": 4838
+  },
+  "updatedAt": "2026-05-22T10:26:08.056Z",
+  "backfillNote": "Geschat: 1× Place Details per verrijkt bedrijf vóór live tracking."
+}

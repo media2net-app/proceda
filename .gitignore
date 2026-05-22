@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# scraped business cache (local, per province)
+/data/bedrijven/
+/data/bedrijven-meta.json
+/data/bedrijven/*-progress.json
+/data/business-reports/
+/public/audits/
+/data/bedrijven.json
+/data/bedrijven-seed.json
+
+/src/generated/prisma

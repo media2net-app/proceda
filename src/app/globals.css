@@ -1,16 +1,43 @@
 @import "tailwindcss";
+@import "../styles/theme.css";
+
+@plugin "tailwindcss-animate";
+@plugin "tailwindcss-react-aria-components";
+
+@custom-variant dark (&:where(.dark-mode, .dark-mode *));
+@custom-variant label (& [data-label]);
+@custom-variant focus-input-within (&:has(input:focus));
+
+@utility scrollbar-hide {
+  &::-webkit-scrollbar {
+    display: none;
+    -webkit-appearance: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility transition-inherit-all {
+  transition-property: inherit;
+  transition-duration: inherit;
+  transition-timing-function: inherit;
+}
 
 :root {
-  --background: #0c0c0f;
-  --foreground: #f4f4f5;
-  --card-bg: rgba(24, 24, 31, 0.7);
-  --card-border: rgba(139, 92, 246, 0.15);
-  --accent: #a855f7;
-  --accent-hover: #9333ea;
-  --accent-glow: rgba(168, 85, 247, 0.25);
-  --muted: #71717a;
-  --input-bg: rgba(39, 39, 42, 0.8);
-  --input-border: rgba(63, 63, 70, 0.8);
+  --background: #ffffff;
+  --foreground: #101828;
+  --card-bg: #ffffff;
+  --card-border: #eaecf0;
+  --accent: #7f56d9;
+  --accent-hover: #6941c6;
+  --accent-light: #f4ebff;
+  --accent-glow: rgba(127, 86, 217, 0.12);
+  --muted: #667085;
+  --input-bg: #ffffff;
+  --input-border: #d0d5dd;
+  --surface-secondary: #f9fafb;
+  --surface-tertiary: #f2f4f7;
 }
 
 @theme inline {
@@ -25,38 +52,55 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-variant-ligatures: contextual;
+  font-variant-ligatures: contextual;
+  -webkit-font-kerning: normal;
+  font-kerning: normal;
 }
 
-/* Subtle purple glow for background */
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
 .bg-proceda-gradient {
   background:
-    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(88, 28, 135, 0.25) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(88, 28, 135, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(127, 86, 217, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(127, 86, 217, 0.04) 0%, transparent 50%),
     var(--background);
 }
 
-/* Glassmorphism card */
 .card-glass {
   background: var(--card-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--card-border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(168, 85, 247, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-glass:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 40px var(--accent-glow);
+  box-shadow: var(--shadow-md);
 }
 
-/* Hero: donker paars met zacht gloei-effect (Proxify-stijl) */
 .hero-purple-glow {
   background:
-    radial-gradient(ellipse 100% 80% at 50% 0%, rgba(88, 28, 135, 0.5) 0%, rgba(67, 56, 202, 0.2) 40%, transparent 70%),
-    radial-gradient(ellipse 80% 50% at 50% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-    linear-gradient(180deg, #1e1b4b 0%, #312e81 40%, #1e1b4b 100%);
+    radial-gradient(ellipse 100% 80% at 50% 0%, rgba(127, 86, 217, 0.08) 0%, transparent 70%),
+    linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
 }
 
-/* Lichte blurred overlay in hero (Proxify-stijl) */
 .hero-blur-glow {
   position: absolute;
   inset: 0;
@@ -64,10 +108,52 @@ body {
   z-index: 0;
   background: radial-gradient(
     ellipse 120% 100% at 50% -20%,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(196, 181, 253, 0.08) 30%,
+    rgba(127, 86, 217, 0.06) 0%,
     transparent 60%
   );
   filter: blur(40px);
   -webkit-filter: blur(40px);
+}
+
+/* Ingesloten marketing-mail in admin inbox */
+.email-body-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.email-body-html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #344054;
+  word-break: break-word;
+}
+
+.email-body-html table {
+  max-width: 100% !important;
+  width: auto !important;
+}
+
+.email-body-html img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+.email-body-html td,
+.email-body-html th {
+  max-width: 100%;
+}
+
+.email-body-html a {
+  color: #7f56d9;
+  text-decoration: underline;
+}
+
+.email-body-html center {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
 }

@@ -1,0 +1,256 @@
+// Proceda platform — Prisma Postgres
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AppointmentSource {
+  cold_call @map("cold-call")
+  auto_mail @map("auto-mail")
+}
+
+enum AppointmentStatus {
+  scheduled
+  completed
+  cancelled
+  no_show @map("no-show")
+}
+
+enum MailLeadStatus {
+  draft
+  sent
+  booked
+}
+
+enum InboxDirection {
+  inbound
+  outbound
+}
+
+model Business {
+  id           String   @id
+  placeId      String   @unique
+  name         String
+  category     String
+  subcategory  String
+  address      String   @default("")
+  city         String   @default("")
+  province     String   @default("")
+  provinceId   String?
+  branchId     String   @default("makelaardij")
+  phone        String?
+  email        String?
+  website      String?
+  openingHours String?
+  source       String   @default("google")
+  lat          Float?
+  lon          Float?
+  scrapedAt    DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  appointments     Appointment[]
+  mailOutreach     MailOutreach?
+  businessReport   BusinessReport?
+  deepScrape       DeepScrape?
+  demoBrand        DemoBrand?
+  brandAuditResult BrandAuditResult?
+
+  @@index([branchId, provinceId])
+  @@index([email])
+  @@index([name])
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  businessId      String?
+  businessName    String
+  contactName     String?
+  email           String?
+  phone           String?
+  source          AppointmentSource
+  scheduledAt     DateTime
+  durationMinutes Int               @default(30)
+  meetLink        String
+  status          AppointmentStatus @default(scheduled)
+  notes           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  business     Business?     @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  mailOutreach MailOutreach?
+
+  @@index([scheduledAt])
+  @@index([status])
+  @@index([businessId])
+}
+
+model MailOutreach {
+  businessId      String         @id
+  token           String         @unique
+  status          MailLeadStatus @default(draft)
+  recipientEmail  String?
+  sentAt          DateTime?
+  bookedAt        DateTime?
+  appointmentId   String?        @unique
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  business    Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([token])
+}
+
+model InboxSyncState {
+  id            String   @id @default("default")
+  syncedAt      DateTime?
+  lastSyncError String?
+  accountOk     Boolean?
+  updatedAt     DateTime @updatedAt
+}
+
+model InboxMessage {
+  id        String         @id @default(uuid())
+  uid       String
+  messageId String?
+  fromAddr  String         @map("from")
+  toAddr    String         @map("to")
+  subject   String
+  date      DateTime
+  preview   String         @default("")
+  bodyText  String?
+  bodyHtml  String?
+  seen      Boolean        @default(false)
+  direction InboxDirection
+  createdAt DateTime       @default(now())
+
+  @@unique([uid])
+  @@index([date])
+  @@index([direction])
+}
+
+model BusinessReport {
+  businessId        String   @id
+  businessName      String
+  website           String   @default("")
+  generatedAt       DateTime
+  screenshotPath    String?
+  pageTitle         String?
+  metaDescription   String?
+  extractedSnippet  String   @default("")
+  usesHttps         Boolean  @default(true)
+  responseTimeMs    Int      @default(0)
+  seoScore          Int      @default(0)
+  modernityScore    Int      @default(0)
+  overallScore      Int      @default(0)
+  leadQuality       String
+  primaryAppType    String
+  detectedServices  String[] @default([])
+  servicesSummary   String   @default("")
+  extractedEmail    String?
+  demoHomepageUrl   String?
+  demoAppUrl        String?
+  deepScrapeSummary Json?
+  ai                Json
+  fetchError        String?
+  updatedAt         DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model DeepScrape {
+  businessId              String   @id
+  businessName            String
+  website                 String
+  scrapedAt               DateTime
+  brand                   Json
+  pages                   Json     @default("[]")
+  listings                Json     @default("[]")
+  contact                 Json
+  tagline                 String?
+  services                String[] @default([])
+  aboutText               String?
+  homepageScreenshotPath  String?
+  errors                  String[] @default([])
+  updatedAt               DateTime @updatedAt
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model BrandAuditRun {
+  id        String   @id @default(uuid())
+  scannedAt DateTime
+  summary   Json
+  createdAt DateTime @default(now())
+
+  results BrandAuditResult[]
+}
+
+model BrandAuditResult {
+  businessId     String  @id
+  runId          String
+  name           String
+  website        String  @default("")
+  demoReady      Boolean @default(false)
+  logoOk         Boolean @default(false)
+  logoUrl        String?
+  colorCount     Int     @default(0)
+  colors         String[] @default([])
+  error          String?
+  row            Json?
+
+  run      BrandAuditRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  business Business?     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([demoReady])
+}
+
+model DemoBrand {
+  demoSlug     String  @id
+  businessId   String? @unique
+  businessName String
+  website      String  @default("")
+  primary      String?
+  secondary    String?
+  accent       String?
+  textColor    String?
+  logoPath     String?
+  logoOk       Boolean @default(false)
+  generatedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  business Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+}
+
+model ScrapeProgress {
+  branchId            String
+  regionId            String
+  discoveryComplete   Boolean  @default(false)
+  discoveryCursor     Json
+  placeQueue          Json     @default("[]")
+  enrichedPlaceIds    String[] @default([])
+  active              Boolean?
+  phase               String?
+  percent             Float?
+  statusMessage       String?
+  log                 String[] @default([])
+  enrichingDone       Int?
+  enrichingTotal      Int?
+  updatedAt           DateTime @updatedAt
+
+  @@id([branchId, regionId])
+}
+
+model GooglePlacesUsage {
+  provinceId String @id
+  calls      Int    @default(0)
+  updatedAt  DateTime @updatedAt
+}

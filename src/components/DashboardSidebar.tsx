@@ -1,79 +1,224 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
+import { useMailSync } from "@/context/MailSyncContext";
+import { MAKELAARDIJ_PRODUCT_DEMO_SLUG } from "@/lib/product/config";
 
 type DashboardSidebarProps = {
   open?: boolean;
   onClose?: () => void;
 };
 
-const navItems = [
-  { href: "/dashboard", key: "sidebarOverview" as const, icon: "grid" },
-  { href: "#", key: "sidebarProjects" as const, icon: "folder" },
-  { href: "#", key: "sidebarClients" as const, icon: "users" },
-  { href: "#", key: "sidebarTasks" as const, icon: "check" },
-  { href: "#", key: "sidebarSettings" as const, icon: "cog" },
+type NavIconName =
+  | "building"
+  | "chart"
+  | "chart2"
+  | "calendar"
+  | "mail"
+  | "cube"
+  | "palette";
+
+const navItems: {
+  href: string;
+  key:
+    | "sidebarKpi"
+    | "sidebarBedrijven"
+    | "sidebarHuisstijl"
+    | "sidebarRapportage"
+    | "sidebarMail"
+    | "sidebarAfspraken";
+  icon: NavIconName;
+  exact?: boolean;
+  showUnread?: boolean;
+}[] = [
+  { href: "/dashboard-admin", key: "sidebarKpi", icon: "chart", exact: true },
+  { href: "/dashboard-admin/bedrijven", key: "sidebarBedrijven", icon: "building" },
+  { href: "/dashboard-admin/huisstijl", key: "sidebarHuisstijl", icon: "palette" },
+  { href: "/dashboard-admin/rapportage", key: "sidebarRapportage", icon: "chart2" },
+  { href: "/dashboard-admin/mail", key: "sidebarMail", icon: "mail", showUnread: true },
+  { href: "/dashboard-admin/afspraken", key: "sidebarAfspraken", icon: "calendar" },
 ];
 
-function Icon({ name }: { name: string }) {
-  const className = "h-5 w-5 shrink-0";
-  if (name === "grid") {
+const productNav = {
+  baseHref: "/dashboard-admin/product",
+  key: "sidebarProduct" as const,
+  children: [
+    { href: "/dashboard-admin/product", key: "sidebarProductOverview" as const, exact: true },
+    { href: "/dashboard-admin/product/marktonderzoek", key: "sidebarMarktonderzoek" as const },
+    {
+      href: `/demos/${MAKELAARDIJ_PRODUCT_DEMO_SLUG}/app`,
+      key: "sidebarBekijkProduct" as const,
+      isDemoApp: true,
+    },
+  ],
+};
+
+function BuildingIcon() {
+  return (
+    <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5M2.25 9h19.5M2.25 3h19.5M4.5 9v12m0 0v-3.75M4.5 12h15m-7.5-3v3.75m0 0V9m0 3.75h7.5M19.5 9v12m0-3.75V9m0 3.75h-7.5" />
+    </svg>
+  );
+}
+
+function ChartIcon() {
+  return (
+    <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+    </svg>
+  );
+}
+
+function GridIcon() {
+  return (
+    <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+    </svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M4.5 8.25h15M4.5 19.5h15a2.25 2.25 0 002.25-2.25V8.25a2.25 2.25 0 00-2.25-2.25h-15a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25z" />
+    </svg>
+  );
+}
+
+function CubeIcon() {
+  return (
+    <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-14.25v9" />
+    </svg>
+  );
+}
+
+function PaletteIcon() {
+  return (
+    <svg className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.098 19.902a3.75 3.75 0 005.803 0M4.098 19.902c0-1.705.842-3.248 2.197-4.196M12 16.5V9.75m0 0a3.75 3.75 0 013.75-3.75M12 9.75a3.75 3.75 0 00-3.75-3.75M12 9.75V6m0 0a3.75 3.75 0 013.75-3.75M12 6a3.75 3.75 0 00-3.75-3.75"
+      />
+    </svg>
+  );
+}
+
+function NavIcon({ name }: { name: NavIconName }) {
+  if (name === "mail") return <MailIcon />;
+  if (name === "calendar") return <CalendarIcon />;
+  if (name === "chart2") return <GridIcon />;
+  if (name === "chart") return <ChartIcon />;
+  if (name === "cube") return <CubeIcon />;
+  if (name === "palette") return <PaletteIcon />;
+  return <BuildingIcon />;
+}
+
+function linkActive(pathname: string, href: string, exact?: boolean) {
+  return exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function MailStatusFooter() {
+  const t = useTranslations("dashboard");
+  const mail = useMailSync();
+
+  if (!mail.configured) {
     return (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-      </svg>
+      <div className="rounded-xl border border-[#FECDCA] bg-[#FEF3F2] p-3 text-xs text-[#B42318]">
+        <p className="font-semibold">{t("mailNotConfigured")}</p>
+      </div>
     );
   }
-  if (name === "folder") {
-    return (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-4.5l-3.72 3.72a.75.75 0 01-1.06 0l-3.72-3.72M12 15v3m0 3v-3m0-3h3m-3 0h-3" />
-      </svg>
-    );
-  }
-  if (name === "users") {
-    return (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-      </svg>
-    );
-  }
-  if (name === "check") {
-    return (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    );
-  }
-  if (name === "cog") {
-    return (
-      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    );
-  }
-  return null;
+
+  const connected = mail.connected && !mail.lastSyncError;
+  const syncLabel = mail.syncing
+    ? t("mailSyncing")
+    : connected
+      ? t("mailConnected")
+      : t("mailDisconnected");
+
+  return (
+    <div
+      className={`rounded-xl border p-3 text-xs ${
+        connected
+          ? "border-[#ABEFC6] bg-[#ECFDF3]"
+          : "border-[#FECDCA] bg-[#FEF3F2]"
+      }`}
+    >
+      <div className="flex items-center gap-2">
+        <span
+          className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+            mail.syncing
+              ? "animate-pulse bg-[#7F56D9]"
+              : connected
+                ? "bg-[#12B76A]"
+                : "bg-[#F04438]"
+          }`}
+          aria-hidden
+        />
+        <p
+          className={`font-semibold ${
+            connected ? "text-[#027A48]" : "text-[#B42318]"
+          }`}
+        >
+          {syncLabel}
+        </p>
+      </div>
+      <p className={`mt-1.5 ${connected ? "text-[#027A48]" : "text-[#B42318]"}`}>
+        {mail.from ?? "info@proceda.nl"}
+      </p>
+      {mail.syncedAt && (
+        <p className={`mt-1 ${connected ? "text-[#027A48]/80" : "text-[#B42318]/80"}`}>
+          {t("mailLastSync")}:{" "}
+          {new Date(mail.syncedAt).toLocaleString("nl-NL", {
+            day: "numeric",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      )}
+      {mail.lastSyncError && !mail.syncing && (
+        <p className="mt-1 text-[#B42318]">{mail.lastSyncError}</p>
+      )}
+      <p className="mt-1.5 text-[#667085]">{t("mailAutoSync")}</p>
+    </div>
+  );
 }
 
 export default function DashboardSidebar({ open = false, onClose }: DashboardSidebarProps) {
   const t = useTranslations("dashboard");
   const pathname = usePathname();
+  const mail = useMailSync();
+  const productActive = pathname.startsWith(productNav.baseHref);
+  const [productOpen, setProductOpen] = useState(productActive);
+  const productExpanded = productOpen || productActive;
 
   const sidebarContent = (
     <>
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-white/10 px-4">
-        <Link href="/" className="text-lg font-bold tracking-tight text-white" onClick={onClose}>
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-[#EAECF0] px-4">
+        <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight text-[#101828]" onClick={onClose}>
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#7F56D9] text-sm font-bold text-white">P</span>
           Proceda
         </Link>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-white/80 hover:bg-white/10 hover:text-white md:hidden"
-            aria-label="Menu sluiten"
+            className="rounded-lg p-2 text-[#667085] hover:bg-[#F2F4F7] hover:text-[#101828] md:hidden"
+            aria-label={t("closeMenu")}
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -81,44 +226,129 @@ export default function DashboardSidebar({ open = false, onClose }: DashboardSid
           </button>
         )}
       </div>
-      <nav className="flex flex-1 flex-col gap-1 p-3">
-        {navItems.map(({ href, key, icon }) => {
-          const isActive = href !== "#" && pathname === href;
+
+      <div className="px-3 pt-4">
+        <div className="flex items-center gap-2 rounded-lg border border-[#D0D5DD] bg-white px-3 py-2 shadow-xs">
+          <svg className="h-4 w-4 text-[#98A2B3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span className="text-sm text-[#98A2B3]">{t("sidebarSearch")}</span>
+          <span className="ml-auto rounded border border-[#EAECF0] px-1.5 py-0.5 text-[10px] text-[#667085]">⌘K</span>
+        </div>
+      </div>
+
+      <nav className="flex flex-1 flex-col gap-0.5 p-3">
+        {navItems.map(({ href, key, icon, exact, showUnread }) => {
+          const isActive = linkActive(pathname, href, exact);
+          const unread = showUnread && key === "sidebarMail" ? mail.unread : 0;
           return (
             <Link
               key={key}
               href={href}
               onClick={onClose}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-white/15 text-white"
-                  : "text-white/80 hover:bg-white/10 hover:text-white"
+                  ? "bg-[#F2F4F7] text-[#101828]"
+                  : "text-[#475467] hover:bg-[#F9FAFB] hover:text-[#101828]"
               }`}
             >
-              <Icon name={icon} />
-              {t(key)}
+              <NavIcon name={icon} />
+              <span className="flex-1">{t(key)}</span>
+              {unread > 0 && (
+                <span className="rounded-full bg-[#7F56D9] px-2 py-0.5 text-[11px] font-bold text-white">
+                  {unread}
+                </span>
+              )}
             </Link>
           );
         })}
+
+        <div className="mt-1">
+          <button
+            type="button"
+            onClick={() => setProductOpen((v) => !v)}
+            className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              productActive
+                ? "bg-[#F2F4F7] text-[#101828]"
+                : "text-[#475467] hover:bg-[#F9FAFB] hover:text-[#101828]"
+            }`}
+          >
+            <NavIcon name="cube" />
+            <span className="flex-1 text-left">{t(productNav.key)}</span>
+            <svg
+              className={`h-4 w-4 shrink-0 text-[#98A2B3] transition-transform ${
+                productExpanded ? "rotate-180" : ""
+              }`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+              aria-hidden
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+          </button>
+          {productExpanded && (
+            <div className="ml-4 mt-0.5 space-y-0.5 border-l border-[#EAECF0] pl-2">
+              {productNav.children.map(({ href, key, exact, isDemoApp }) => {
+                const isActive = isDemoApp
+                  ? pathname.includes("/demos/") && pathname.endsWith("/app")
+                  : linkActive(pathname, href, exact);
+                return (
+                  <Link
+                    key={key}
+                    href={href}
+                    onClick={onClose}
+                    className={`flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-[#F9F5FF] text-[#6941C6]"
+                        : "text-[#475467] hover:bg-[#F9FAFB] hover:text-[#101828]"
+                    }`}
+                  >
+                    <span>{t(key)}</span>
+                    {isDemoApp && (
+                      <svg
+                        className="h-3.5 w-3.5 shrink-0 opacity-60"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        aria-hidden
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5M10.5 13.5 21 3m0 0h-5.25M21 3v5.25"
+                        />
+                      </svg>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </nav>
+
+      <div className="border-t border-[#EAECF0] p-3">
+        <MailStatusFooter />
+      </div>
     </>
   );
 
   return (
     <>
-      {/* Mobiel: backdrop wanneer sidebar open */}
       {onClose && (
         <button
           type="button"
           aria-hidden
           onClick={onClose}
-          className={`fixed inset-0 z-30 bg-black/50 transition-opacity md:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
+          className={`fixed inset-0 z-30 bg-[#101828]/40 transition-opacity md:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
         />
       )}
 
-      {/* Sidebar: op mobiel als drawer, op desktop altijd zichtbaar */}
       <aside
-        className={`fixed left-0 top-0 z-40 flex h-full w-64 flex-col border-r border-white/10 bg-[#1e1b4b] transition-transform duration-300 ease-out md:z-20 md:w-56 md:translate-x-0 ${
+        className={`fixed left-0 top-0 z-40 flex h-full w-64 flex-col border-r border-[#EAECF0] bg-white transition-transform duration-300 ease-out md:z-20 md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         } md:flex`}
       >

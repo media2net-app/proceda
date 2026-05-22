@@ -9,20 +9,36 @@ const locales = [
   { code: "ro" as const, label: "RO" },
 ];
 
-export default function LanguageSwitcher() {
+type LanguageSwitcherProps = {
+  variant?: "default" | "hero";
+};
+
+export default function LanguageSwitcher({ variant = "default" }: LanguageSwitcherProps) {
   const locale = useLocale();
   const pathname = usePathname();
 
+  const isHero = variant === "hero";
+
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-white/20 bg-white/5 px-1 py-0.5">
+    <div
+      className={
+        isHero
+          ? "flex items-center gap-1 rounded-lg border border-white/20 bg-white/10 px-1 py-0.5 backdrop-blur-sm"
+          : "flex items-center gap-1 rounded-lg border border-[#D0D5DD] bg-white px-1 py-0.5 shadow-xs"
+      }
+    >
       {locales.map(({ code, label }) => (
         <a
           key={code}
           href={`/${code}${pathname}`}
           className={`rounded-md px-2 py-1 text-sm font-medium transition-colors ${
             locale === code
-              ? "bg-white/20 text-white"
-              : "text-white/80 hover:text-white hover:bg-white/10"
+              ? isHero
+                ? "bg-white/20 text-white"
+                : "bg-[#F9F5FF] text-[#6941C6]"
+              : isHero
+                ? "text-white/70 hover:bg-white/10 hover:text-white"
+                : "text-[#667085] hover:bg-[#F9FAFB] hover:text-[#101828]"
           }`}
           aria-current={locale === code ? "true" : undefined}
         >
