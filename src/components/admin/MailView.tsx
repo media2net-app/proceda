@@ -149,7 +149,6 @@ export function MailView() {
   const accountOk =
     account?.configured && account.smtpOk && account.imapOk;
 
-  const draftCount = templates.filter((x) => x.status === "draft").length;
   const sentMailCount = mailSync.messages.filter(
     (m) => m.direction === "outbound",
   ).length;
