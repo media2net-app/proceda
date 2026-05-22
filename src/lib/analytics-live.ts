@@ -1,6 +1,13 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import {
+  extractDemoTokenFromPath,
+  formatFunnelLabelWithLead,
+  formatPageLabelWithLead,
+  loadLeadNamesByDemoTokens,
+  resolveLeadNameForPath,
+} from "@/lib/analytics-demo-lead";
 import { resolveVisitorCoords } from "@/lib/analytics-geo";
 import { ANALYTICS_ACTIVE_MS } from "@/lib/analytics-db";
 import type {
@@ -98,7 +105,7 @@ export async function getAnalyticsLiveSnapshot(
     }),
     prisma.analyticsPageView.findMany({
       where: { ...viewPeriod, funnelLabel: { not: null } },
-      select: { funnelLabel: true },
+      select: { funnelLabel: true, path: true },
       take: 5000,
     }),
     prisma.analyticsPageView.findMany({
@@ -116,14 +123,31 @@ export async function getAnalyticsLiveSnapshot(
   const conversionRate =
     sessions > 0 ? Math.round((bookings / sessions) * 1000) / 10 : null;
 
+  const tokensForLookup = new Set<string>();
+  for (const row of activeRows) {
+    const t = extractDemoTokenFromPath(row.currentPath);
+    if (t) tokensForLookup.add(t);
+  }
+  for (const row of pageViewRows) {
+    const t = extractDemoTokenFromPath(row.path);
+    if (t) tokensForLookup.add(t);
+  }
+  for (const row of funnelRows) {
+    const t = extractDemoTokenFromPath(row.path);
+    if (t) tokensForLookup.add(t);
+  }
+  const leadByToken = await loadLeadNamesByDemoTokens([...tokensForLookup]);
+
   const visitors: LiveVisitorMarker[] = [];
   const activeVisitors: AnalyticsLiveSnapshot["activeVisitors"] = [];
 
   for (const row of activeRows) {
+    const leadName = resolveLeadNameForPath(row.currentPath, leadByToken);
     activeVisitors.push({
       sessionId: row.sessionId,
       path: row.currentPath,
       funnelLabel: row.funnelLabel,
+      leadName,
       bookingActive: row.bookingActive,
       city: row.city,
       countryCode: row.countryCode,
@@ -146,6 +170,7 @@ export async function getAnalyticsLiveSnapshot(
       countryCode: row.countryCode,
       path: row.currentPath,
       funnelLabel: row.funnelLabel,
+      leadName: resolveLeadNameForPath(row.currentPath, leadByToken),
       bookingActive: row.bookingActive,
       lastSeenAt: row.lastSeenAt.toISOString(),
     });
@@ -158,18 +183,36 @@ export async function getAnalyticsLiveSnapshot(
   const topPages = [...pathCounts.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 8)
-    .map(([path, views]) => ({ path, views }));
+    .map(([path, views]) => ({
+      path,
+      views,
+      leadName: resolveLeadNameForPath(path, leadByToken),
+      label: formatPageLabelWithLead(path, leadByToken),
+    }));
 
-  const funnelCounts = new Map<string, number>();
+  const funnelCounts = new Map<string, { views: number; leadName: string | null }>();
   for (const row of funnelRows) {
-    const label = row.funnelLabel ?? "";
-    if (!label) continue;
-    funnelCounts.set(label, (funnelCounts.get(label) ?? 0) + 1);
+    const label = formatFunnelLabelWithLead(
+      row.funnelLabel,
+      row.path,
+      leadByToken,
+    );
+    if (!label || label === "—") continue;
+    const leadName = resolveLeadNameForPath(row.path, leadByToken);
+    const prev = funnelCounts.get(label);
+    funnelCounts.set(label, {
+      views: (prev?.views ?? 0) + 1,
+      leadName: prev?.leadName ?? leadName,
+    });
   }
   const topFunnels = [...funnelCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => b[1].views - a[1].views)
     .slice(0, 8)
-    .map(([label, views]) => ({ label, views }));
+    .map(([label, meta]) => ({
+      label,
+      views: meta.views,
+      leadName: meta.leadName,
+    }));
 
   const buckets = new Map<string, number>();
   for (let i = 9; i >= 0; i--) {

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import AdminLiveGlobe from "@/components/admin/analytics/AdminLiveGlobe";
-import { formatTopPageLabel } from "@/lib/analytics-funnel";
 import type { AnalyticsLiveSnapshot, AnalyticsPeriod } from "@/lib/analytics-live-types";
 
 const POLL_MS = 4000;
@@ -193,7 +192,7 @@ export default function AdminAnalyticsLiveView() {
           <BarList
             items={(data?.topPages ?? []).map((r) => ({
               key: r.path,
-              label: formatTopPageLabel(r.path),
+              label: r.label,
               views: r.views,
               max: maxViews(data?.topPages ?? []),
             }))}
@@ -204,6 +203,7 @@ export default function AdminAnalyticsLiveView() {
         <Panel title={t("topFunnels")} subtitle={data?.periodLabel}>
           <BarList
             items={(data?.topFunnels ?? []).map((r) => ({
+              key: r.label,
               label: r.label,
               views: r.views,
               max: maxViews(data?.topFunnels ?? []),
@@ -219,6 +219,7 @@ export default function AdminAnalyticsLiveView() {
             <thead>
               <tr className="border-b border-[#EAECF0] text-[#667085]">
                 <th className="px-3 py-2 font-semibold">{t("colStatus")}</th>
+                <th className="px-3 py-2 font-semibold">{t("colLead")}</th>
                 <th className="px-3 py-2 font-semibold">{t("colFunnel")}</th>
                 <th className="px-3 py-2 font-semibold">{t("colPage")}</th>
                 <th className="px-3 py-2 font-semibold">{t("colLocation")}</th>
@@ -229,7 +230,7 @@ export default function AdminAnalyticsLiveView() {
               {(data?.activeVisitors ?? []).length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-3 py-8 text-center text-[#667085]"
                   >
                     {t("noActiveVisitors")}
@@ -249,10 +250,19 @@ export default function AdminAnalyticsLiveView() {
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-2">{v.funnelLabel ?? "—"}</td>
-                    <td className="max-w-[200px] truncate px-3 py-2 font-mono text-xs text-[#667085]">
-                      {v.path}
-                    </td>
+                      <td className="px-3 py-2 font-medium text-[#101828]">
+                        {v.leadName ?? (
+                          <span className="font-normal text-[#98A2B3]">
+                            {t("leadUnknown")}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-[#667085]">
+                        {v.funnelLabel ?? "—"}
+                      </td>
+                      <td className="max-w-[200px] truncate px-3 py-2 font-mono text-xs text-[#667085]">
+                        {v.path}
+                      </td>
                     <td className="px-3 py-2">
                       {[v.city, v.countryCode].filter(Boolean).join(", ") || "—"}
                     </td>

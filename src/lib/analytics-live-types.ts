@@ -6,6 +6,8 @@ export type LiveVisitorMarker = {
   countryCode: string | null;
   path: string;
   funnelLabel: string | null;
+  /** Makelaar/lead bij /demo/{token} outreach-link */
+  leadName: string | null;
   bookingActive: boolean;
   lastSeenAt: string;
 };
@@ -23,13 +25,14 @@ export type AnalyticsLiveSnapshot = {
   bookings: number;
   conversionRate: number | null;
   visitors: LiveVisitorMarker[];
-  topPages: { path: string; views: number }[];
-  topFunnels: { label: string; views: number }[];
+  topPages: { path: string; views: number; label: string; leadName: string | null }[];
+  topFunnels: { label: string; views: number; leadName: string | null }[];
   pageViewsLast10Min: { minute: string; views: number }[];
   activeVisitors: Array<{
     sessionId: string;
     path: string;
     funnelLabel: string | null;
+    leadName: string | null;
     bookingActive: boolean;
     city: string | null;
     countryCode: string | null;
