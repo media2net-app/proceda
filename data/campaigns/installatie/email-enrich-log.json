@@ -1,0 +1,110 @@
+{
+  "branchId": "installatie",
+  "scannedAt": "2026-05-22T21:05:49.720Z",
+  "total": 100,
+  "withWebsite": 88,
+  "alreadyHadEmail": 74,
+  "attempted": 14,
+  "found": 14,
+  "failed": 0,
+  "results": [
+    {
+      "businessId": "google/ChIJDVHMEnvNxUcRSNRg1zP7RVQ",
+      "name": "AMS Onderhoud en Renovatie",
+      "website": "https://netherbusi.org/details/ams-onderhoud-en-renovatie-ChIJDVH",
+      "email": "info@netherbusi.org",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJywR4I_gyxEcRyDMMySFwcg8",
+      "name": "Elektro- & Klusservicebedrijf J. van den Ende",
+      "website": "http://elektro-vandenende.nl/",
+      "email": "info@elektro-vandenende.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJjeGnqnfMxUcRGVJ1j-MBhwI",
+      "name": "F. Rensen Technische Installaties",
+      "website": "https://www.renseninstallaties.nl/",
+      "email": "info@renseninstallaties.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJXwtk4AgzxEcRO1G7r9PJM7w",
+      "name": "Gefikst",
+      "website": "http://gefikst.nl/contact",
+      "email": "info@gefikst.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJacCQV5c0xEcRX_zfesKAr_o",
+      "name": "Hanab Energy Solutions",
+      "website": "http://hanab.nl/energy-solutions/nl",
+      "email": "info@hanab.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJk6eZcDrNxUcRYzj-rm4B8Xs",
+      "name": "Klusbedrijfrotterdam.nl",
+      "website": "http://www.klusbedrijfrotterdam.nl/",
+      "email": "info@klusbedrijfrotterdam.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJa6FK2Xg0xEcRsvB47SAJzJA",
+      "name": "NMC Elektrotechniek",
+      "website": "https://nmcelektro.nl/",
+      "email": "info@nmcelektro.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJfeqE0ybExUcRp75XxcQbDdg",
+      "name": "Randstad Elektrotechniek B.V.",
+      "website": "https://www.randstad-elektro.nl/",
+      "email": "info@randstad-elektro.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJuQuiFY85xEcRb59oEMrWd_o",
+      "name": "Sanberg Licht",
+      "website": "http://www.sanberglicht.nl/",
+      "email": "info@sanberglicht.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJe52SDFctxEcR2T1st2RurDo",
+      "name": "Saveur Elektrotechniek",
+      "website": "http://www.saveurelektro.nl/",
+      "email": "info@saveurelektro.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJ-5OvJ3RbxEcRhybbt8RUSqY",
+      "name": "Technisch Installatieburo H.C. Doornhein",
+      "website": "http://www.doornhein.nl/",
+      "email": "info@doornhein.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJ31wUox86xEcRKI5fHsnk95I",
+      "name": "van De Zaag BV",
+      "website": "https://www.vandezaag.nl/",
+      "email": "info@vandezaag.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJ6eeLKNDLxUcRILiqQEMBOOI",
+      "name": "Wil Kemp Elektro",
+      "website": "http://www.wilkemp.nl/contactformulier/",
+      "email": "info@wilkemp.nl",
+      "source": "guessed"
+    },
+    {
+      "businessId": "google/ChIJE5hZBB19xkcRtYgAPPgYoR4",
+      "name": "Yuri Elektro en Techniek",
+      "website": "http://www.yeet.nl/%20%20%20http://www.standverlichting.nl",
+      "email": "info@yeet.nl",
+      "source": "guessed"
+    }
+  ]
+}

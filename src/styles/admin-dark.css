@@ -1,0 +1,298 @@
+/**
+ * Admin dashboard dark theme — scoped to .admin-shell.dark-mode
+ * Overrides common Tailwind arbitrary hex classes used across admin UI.
+ */
+
+.admin-shell.dark-mode {
+  color-scheme: dark;
+  --admin-bg-page: #0c0f14;
+  --admin-bg-surface: #161b22;
+  --admin-bg-elevated: #1c2128;
+  --admin-bg-hover: #21262d;
+  --admin-bg-muted: #0d1117;
+  --admin-border: #30363d;
+  --admin-border-strong: #484f58;
+  --admin-text: #f0f3f6;
+  --admin-text-secondary: #c9d1d9;
+  --admin-text-muted: #8b949e;
+  --admin-text-faint: #6e7681;
+  --admin-accent: #9e77ed;
+  --admin-accent-hover: #b692f6;
+  --admin-accent-surface: #2a1f45;
+  --admin-accent-border: #4a3d6b;
+  --admin-purple-tint: #1a1625;
+  --admin-input-bg: #161b22;
+  --admin-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+
+  background-color: var(--admin-bg-page);
+  color: var(--admin-text);
+}
+
+/* ——— Surfaces ——— */
+.admin-shell.dark-mode .bg-white {
+  background-color: var(--admin-bg-surface) !important;
+}
+
+.admin-shell.dark-mode .bg-\[\#FFFFFF\],
+.admin-shell.dark-mode .bg-\[\#ffffff\] {
+  background-color: var(--admin-bg-surface) !important;
+}
+
+.admin-shell.dark-mode .bg-\[\#F9FAFB\] {
+  background-color: var(--admin-bg-page) !important;
+}
+
+.admin-shell.dark-mode .bg-\[\#F2F4F7\] {
+  background-color: var(--admin-bg-hover) !important;
+}
+
+.admin-shell.dark-mode .bg-\[\#F9F5FF\] {
+  background-color: var(--admin-purple-tint) !important;
+}
+
+.admin-shell.dark-mode .bg-\[\#F4EBFF\] {
+  background-color: var(--admin-accent-surface) !important;
+}
+
+.admin-shell.dark-mode .bg-\[\#E9D7FE\] {
+  background-color: #3d2e5c !important;
+}
+
+.admin-shell.dark-mode .hover\:bg-\[\#F9FAFB\]:hover,
+.admin-shell.dark-mode .hover\:bg-\[\#F2F4F7\]:hover,
+.admin-shell.dark-mode .hover\:bg-\[\#EAECF0\]:hover {
+  background-color: var(--admin-bg-hover) !important;
+}
+
+.admin-shell.dark-mode .group-hover\:\[\&_span\]\:text-\[\#6941C6\]\/90:hover span {
+  color: var(--admin-accent-hover) !important;
+}
+
+/* ——— Text ——— */
+.admin-shell.dark-mode .text-\[\#101828\] {
+  color: var(--admin-text) !important;
+}
+
+.admin-shell.dark-mode .text-\[\#344054\] {
+  color: var(--admin-text-secondary) !important;
+}
+
+.admin-shell.dark-mode .text-\[\#475467\] {
+  color: var(--admin-text-secondary) !important;
+}
+
+.admin-shell.dark-mode .text-\[\#667085\] {
+  color: var(--admin-text-muted) !important;
+}
+
+.admin-shell.dark-mode .text-\[\#98A2B3\] {
+  color: var(--admin-text-faint) !important;
+}
+
+.admin-shell.dark-mode .text-\[\#6941C6\] {
+  color: var(--admin-accent-hover) !important;
+}
+
+.admin-shell.dark-mode .text-\[\#7F56D9\] {
+  color: var(--admin-accent) !important;
+}
+
+.admin-shell.dark-mode .text-\[\#E9D7FE\] {
+  color: #c4b5fd !important;
+}
+
+.admin-shell.dark-mode .hover\:text-\[\#101828\]:hover {
+  color: var(--admin-text) !important;
+}
+
+.admin-shell.dark-mode .hover\:text-\[\#6941C6\]:hover {
+  color: var(--admin-accent-hover) !important;
+}
+
+/* ——— Borders ——— */
+.admin-shell.dark-mode .border-\[\#EAECF0\],
+.admin-shell.dark-mode .border-\[\#E4E7EC\] {
+  border-color: var(--admin-border) !important;
+}
+
+.admin-shell.dark-mode .border-\[\#D0D5DD\] {
+  border-color: var(--admin-border-strong) !important;
+}
+
+.admin-shell.dark-mode .border-\[\#D6BBFB\] {
+  border-color: var(--admin-accent-border) !important;
+}
+
+.admin-shell.dark-mode .divide-\[\#EAECF0\] > :not(:last-child) {
+  border-color: var(--admin-border) !important;
+}
+
+/* ——— Header / sidebar chrome ——— */
+.admin-shell.dark-mode .admin-header {
+  border-color: var(--admin-border) !important;
+  background-color: rgba(22, 27, 34, 0.95) !important;
+}
+
+.admin-shell.dark-mode .admin-sidebar {
+  border-color: var(--admin-border) !important;
+  background-color: var(--admin-bg-surface) !important;
+}
+
+.admin-shell.dark-mode .admin-mobile-stats {
+  border-color: var(--admin-border) !important;
+  background-color: rgba(22, 27, 34, 0.9) !important;
+}
+
+.admin-shell.dark-mode .admin-theme-toggle {
+  border-color: var(--admin-border) !important;
+  background-color: var(--admin-bg-elevated);
+  color: var(--admin-text-muted);
+}
+
+.admin-shell.dark-mode .admin-theme-toggle:hover {
+  background-color: var(--admin-bg-hover);
+  color: var(--admin-accent-hover);
+}
+
+/* ——— Nav active states ——— */
+.admin-shell.dark-mode .admin-nav-active {
+  background-color: var(--admin-bg-hover) !important;
+  color: var(--admin-text) !important;
+}
+
+.admin-shell.dark-mode .admin-nav-item:hover {
+  background-color: var(--admin-bg-hover) !important;
+  color: var(--admin-text) !important;
+}
+
+.admin-shell.dark-mode .admin-nav-product-active {
+  background-color: var(--admin-accent-surface) !important;
+  color: var(--admin-accent-hover) !important;
+}
+
+/* ——— Forms ——— */
+.admin-shell.dark-mode input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+.admin-shell.dark-mode select,
+.admin-shell.dark-mode textarea {
+  background-color: var(--admin-input-bg);
+  border-color: var(--admin-border-strong);
+  color: var(--admin-text);
+}
+
+.admin-shell.dark-mode input::placeholder,
+.admin-shell.dark-mode textarea::placeholder {
+  color: var(--admin-text-faint);
+}
+
+.admin-shell.dark-mode input:focus,
+.admin-shell.dark-mode select:focus,
+.admin-shell.dark-mode textarea:focus {
+  border-color: var(--admin-accent);
+  outline-color: var(--admin-accent);
+}
+
+/* ——— Tables ——— */
+.admin-shell.dark-mode thead.bg-\[\#F9FAFB\],
+.admin-shell.dark-mode tr.bg-\[\#F9FAFB\],
+.admin-shell.dark-mode .bg-\[\#F9FAFB\]\/80 {
+  background-color: var(--admin-bg-elevated) !important;
+}
+
+.admin-shell.dark-mode tbody tr:hover,
+.admin-shell.dark-mode tr.hover\:bg-\[\#F9FAFB\]\/80:hover {
+  background-color: var(--admin-bg-hover) !important;
+}
+
+/* ——— Status / semantic (slightly muted for dark) ——— */
+.admin-shell.dark-mode .bg-\[\#ECFDF3\] {
+  background-color: #12261e !important;
+}
+
+.admin-shell.dark-mode .text-\[\#027A48\] {
+  color: #3fb950 !important;
+}
+
+.admin-shell.dark-mode .border-\[\#ABEFC6\] {
+  border-color: #238636 !important;
+}
+
+.admin-shell.dark-mode .bg-\[\#FEF3F2\] {
+  background-color: #2d1517 !important;
+}
+
+.admin-shell.dark-mode .text-\[\#B42318\] {
+  color: #f85149 !important;
+}
+
+.admin-shell.dark-mode .border-\[\#FECDCA\] {
+  border-color: #6e3031 !important;
+}
+
+.admin-shell.dark-mode .bg-\[\#FFFAEB\],
+.admin-shell.dark-mode .bg-\[\#FFF4ED\] {
+  background-color: #2a1f0f !important;
+}
+
+.admin-shell.dark-mode .text-\[\#B54708\],
+.admin-shell.dark-mode .text-\[\#C4320A\] {
+  color: #d29922 !important;
+}
+
+.admin-shell.dark-mode .border-\[\#FEDF89\] {
+  border-color: #6e4e1f !important;
+}
+
+.admin-shell.dark-mode .bg-\[\#EFF8FF\] {
+  background-color: #0d2137 !important;
+}
+
+.admin-shell.dark-mode .text-\[\#175CD3\] {
+  color: #58a6ff !important;
+}
+
+.admin-shell.dark-mode .border-\[\#B2DDFF\] {
+  border-color: #1f3a5f !important;
+}
+
+/* ——— Shadows on cards ——— */
+.admin-shell.dark-mode .shadow-xs,
+.admin-shell.dark-mode .shadow-sm {
+  box-shadow: var(--admin-shadow) !important;
+}
+
+/* ——— Email preview in inbox ——— */
+.admin-shell.dark-mode .email-body-html {
+  color: var(--admin-text-secondary);
+}
+
+.admin-shell.dark-mode .email-body-html a {
+  color: var(--admin-accent);
+}
+
+/* ——— Live view globe panel gradient ——— */
+.admin-shell.dark-mode .from-\[\#F9F5FF\],
+.admin-shell.dark-mode .via-white,
+.admin-shell.dark-mode .to-\[\#F2F4F7\] {
+  --tw-gradient-from: #1a1625 !important;
+  --tw-gradient-via: var(--admin-bg-surface) !important;
+  --tw-gradient-to: var(--admin-bg-page) !important;
+}
+
+/* ——— Skeleton / pulse ——— */
+.admin-shell.dark-mode .animate-pulse.bg-\[\#F2F4F7\] {
+  background-color: var(--admin-bg-hover) !important;
+}
+
+/* ——— Overlay (mobile menu) ——— */
+.admin-shell.dark-mode .bg-\[\#101828\]\/40 {
+  background-color: rgba(0, 0, 0, 0.65) !important;
+}
+
+/* ——— Keep brand buttons readable ——— */
+.admin-shell.dark-mode .bg-\[\#7F56D9\]:not(.admin-theme-toggle) {
+  background-color: #7f56d9 !important;
+}
+
+.admin-shell.dark-mode .hover\:bg-\[\#6941C6\]:hover:not(.admin-theme-toggle) {
+  background-color: #6941c6 !important;
+}

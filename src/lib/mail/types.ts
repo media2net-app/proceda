@@ -32,6 +32,11 @@ export type MailTemplatePreview = {
   token: string;
   status: MailLeadStatus;
   sentAt?: string;
+  followupSentAt?: string;
+  /** Follow-up mail (alleen verstuurd + demo geklikt + nog geen follow-up). */
+  followupSubject?: string;
+  followupPlainBody?: string;
+  followupHtmlBody?: string;
   /** initial | followup — voor preview in admin */
   mailVariant?: "initial" | "followup";
   /** Bezoek aan persoonlijke /demo/{token} pagina (uit analytics). */
@@ -53,6 +58,8 @@ export type MailKpiStats = {
   /** Verstuurd/geboekt met minstens één demo-pagina-bezoek */
   demoClicked: number;
   demoClickRate: number;
+  /** Verstuurd, demo-link geopend, follow-up nog niet verzonden. */
+  followupReady: number;
   draft: number;
   inboxTotal: number;
   inboxInbound: number;

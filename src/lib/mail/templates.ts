@@ -1,5 +1,6 @@
 import type { Bedrijf } from "@/lib/bedrijven/types";
 import type { BusinessReport } from "@/lib/bedrijven/business-report-types";
+import { buildFollowUpMailSubject } from "./demo-outreach-followup-draft";
 
 /** Vaste Proceda-huisstijl voor outreach-CTA (niet klantkleur). */
 export const PROCEDA_MAIL_CTA_COLOR = "#7F56D9";
@@ -13,7 +14,7 @@ export function buildMailSubject(
   variant: MailTemplateVariant = "initial",
 ): string {
   if (variant === "followup") {
-    return `Herinnering — vrijblijvende demo voor ${businessName}`;
+    return buildFollowUpMailSubject(businessName);
   }
   return `Maatwerk webapp + AI-automatisering — ${businessName}`;
 }

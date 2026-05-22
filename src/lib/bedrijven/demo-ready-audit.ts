@@ -1,6 +1,12 @@
 import fs from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/db/prisma";
+import type { ScrapeBranchId } from "./branches";
+import { DEFAULT_BRANCH } from "./branches";
+import {
+  ensureLegacyCampaignMigrated,
+  getDemoReadyAuditPath,
+  LEGACY_DEMO_READY_AUDIT_PATH,
+} from "./campaign-paths";
 
 export type DemoReadyAuditRow = {
   businessId: string;
@@ -35,11 +41,7 @@ export type DemoReadyAuditFile = {
   results: DemoReadyAuditRow[];
 };
 
-const AUDIT_PATH = path.join(process.cwd(), "data", "demo-ready-audit.json");
-
-export function getDemoReadyAuditPath(): string {
-  return AUDIT_PATH;
-}
+export { getDemoReadyAuditPath } from "./campaign-paths";
 
 function rowFromDb(
   r: {
@@ -77,31 +79,55 @@ function rowFromDb(
   };
 }
 
-async function loadDemoReadyAuditFromDb(): Promise<DemoReadyAuditFile | null> {
+async function loadDemoReadyAuditFromDb(
+  branchId: ScrapeBranchId,
+): Promise<DemoReadyAuditFile | null> {
   const run = await prisma.brandAuditRun.findFirst({
     orderBy: { scannedAt: "desc" },
     include: { results: true },
   });
   if (!run) return null;
 
+  const businessIds = run.results.map((r) => r.businessId);
+  const businesses = await prisma.business.findMany({
+    where: { id: { in: businessIds }, branchId },
+    select: { id: true },
+  });
+  const allowed = new Set(businesses.map((b) => b.id));
+
   const summary = run.summary as DemoReadyAuditSummary;
-  const results = run.results.map(rowFromDb);
+  const results = run.results
+    .filter((r) => allowed.has(r.businessId))
+    .map(rowFromDb);
+  if (results.length === 0) return null;
   return { summary, results };
 }
 
-async function loadDemoReadyAuditFromJson(): Promise<DemoReadyAuditFile | null> {
-  try {
-    const raw = await fs.readFile(AUDIT_PATH, "utf-8");
-    return JSON.parse(raw) as DemoReadyAuditFile;
-  } catch {
-    return null;
+async function loadDemoReadyAuditFromJson(
+  branchId: ScrapeBranchId,
+): Promise<DemoReadyAuditFile | null> {
+  await ensureLegacyCampaignMigrated(DEFAULT_BRANCH);
+  const paths = [getDemoReadyAuditPath(branchId)];
+  if (branchId === DEFAULT_BRANCH) {
+    paths.push(LEGACY_DEMO_READY_AUDIT_PATH);
   }
+  for (const filePath of paths) {
+    try {
+      const raw = await fs.readFile(filePath, "utf-8");
+      return JSON.parse(raw) as DemoReadyAuditFile;
+    } catch {
+      /* volgende pad */
+    }
+  }
+  return null;
 }
 
-export async function loadDemoReadyAudit(): Promise<DemoReadyAuditFile | null> {
-  const fromDb = await loadDemoReadyAuditFromDb();
+export async function loadDemoReadyAudit(
+  branchId: ScrapeBranchId = DEFAULT_BRANCH,
+): Promise<DemoReadyAuditFile | null> {
+  const fromDb = await loadDemoReadyAuditFromDb(branchId);
   if (fromDb && fromDb.results.length > 0) return fromDb;
-  return loadDemoReadyAuditFromJson();
+  return loadDemoReadyAuditFromJson(branchId);
 }
 
 export type HuisstijlFilter = "demoReady" | "hasBrand" | "hasLogo" | "failed" | "all";

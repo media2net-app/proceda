@@ -1,6 +1,12 @@
 import fs from "fs";
-import path from "path";
 import { prisma } from "@/lib/db/prisma";
+import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
+import { DEFAULT_BRANCH } from "@/lib/bedrijven/branches";
+import {
+  ensureLegacyCampaignMigrated,
+  getDemoBrandsPath,
+  LEGACY_DEMO_BRANDS_PATH,
+} from "@/lib/bedrijven/campaign-paths";
 import type { BrandOverride } from "./brand-overrides";
 import { BRAND_OVERRIDES } from "./brand-overrides";
 
@@ -24,9 +30,8 @@ export type DemoBrandsFile = {
   brands: Record<string, DemoBrandEntry>;
 };
 
-const BRANDS_PATH = path.join(process.cwd(), "data", "demo-brands.json");
-
 let cached: DemoBrandsFile | null = null;
+let cachedBranchId: ScrapeBranchId | null = null;
 let dbBrandMap: Map<string, DemoBrandEntry> | null = null;
 
 function rowToEntry(row: {
@@ -55,23 +60,37 @@ function rowToEntry(row: {
   };
 }
 
-export async function refreshDemoBrandCache(): Promise<void> {
+export async function refreshDemoBrandCache(
+  branchId: ScrapeBranchId = DEFAULT_BRANCH,
+): Promise<void> {
+  if (cachedBranchId !== branchId) {
+    cached = null;
+    cachedBranchId = branchId;
+  }
   const rows = await prisma.demoBrand.findMany();
   dbBrandMap = new Map(rows.map((r) => [r.demoSlug, rowToEntry(r)]));
 }
 
-function loadBrandsFile(): DemoBrandsFile | null {
-  if (cached) return cached;
-  try {
-    const raw = fs.readFileSync(BRANDS_PATH, "utf-8");
-    cached = JSON.parse(raw) as DemoBrandsFile;
-    return cached;
-  } catch {
-    return null;
+function loadBrandsFile(branchId: ScrapeBranchId): DemoBrandsFile | null {
+  if (cached && cachedBranchId === branchId) return cached;
+  const paths = [getDemoBrandsPath(branchId)];
+  if (branchId === DEFAULT_BRANCH) paths.push(LEGACY_DEMO_BRANDS_PATH);
+  for (const filePath of paths) {
+    try {
+      const raw = fs.readFileSync(filePath, "utf-8");
+      cached = JSON.parse(raw) as DemoBrandsFile;
+      cachedBranchId = branchId;
+      return cached;
+    } catch {
+      /* volgende */
+    }
   }
+  return null;
 }
 
-export function loadDemoBrandsFile(): DemoBrandsFile | null {
+export function loadDemoBrandsFile(
+  branchId: ScrapeBranchId = DEFAULT_BRANCH,
+): DemoBrandsFile | null {
   if (dbBrandMap && dbBrandMap.size > 0) {
     const brands: Record<string, DemoBrandEntry> = {};
     for (const [slug, entry] of dbBrandMap) brands[slug] = entry;
@@ -82,14 +101,14 @@ export function loadDemoBrandsFile(): DemoBrandsFile | null {
       brands,
     };
   }
-  return loadBrandsFile();
+  return loadBrandsFile(branchId);
 }
 
 export function getDemoBrandEntry(demoSlug: string): DemoBrandEntry | null {
   const fromDb = dbBrandMap?.get(demoSlug);
   if (fromDb) return fromDb;
 
-  const file = loadBrandsFile();
+  const file = loadBrandsFile(cachedBranchId ?? DEFAULT_BRANCH);
   const fromRegistry = file?.brands[demoSlug];
   if (fromRegistry) return fromRegistry;
 
@@ -136,12 +155,13 @@ export function listDemoBrandSlugs(): string[] {
   if (dbBrandMap && dbBrandMap.size > 0) {
     return [...dbBrandMap.keys()].sort();
   }
-  const file = loadBrandsFile();
+  const file = loadBrandsFile(cachedBranchId ?? DEFAULT_BRANCH);
   if (file) return Object.keys(file.brands).sort();
   return Object.keys(BRAND_OVERRIDES).sort();
 }
 
 export function clearDemoBrandRegistryCache(): void {
   cached = null;
+  cachedBranchId = null;
   dbBrandMap = null;
 }

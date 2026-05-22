@@ -1,0 +1,108 @@
+/**
+ * Cross-browser & mobile — Safari iOS, Chrome Android, Firefox, Samsung Internet
+ */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  /* Voorkomt layout-shift wanneer sidebar open is (admin zet overflow hidden via JS) */
+}
+
+/* iOS zoomt inputs met font-size < 16px — altijd 16px op touch devices */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Minimaal touch-target (~44px) voor interactieve elementen */
+@media (pointer: coarse) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .admin-shell button:not(.touch-target-auto):not(.filter-pill) {
+    min-height: 44px;
+  }
+
+  .admin-shell button.touch-target-auto,
+  .admin-shell .touch-target-auto {
+    min-height: unset;
+    min-width: unset;
+  }
+
+  .admin-shell .filter-pill {
+    min-height: 36px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+/* Smooth momentum scroll op iOS */
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
+/* Horizontale KPI-/filter-balken */
+.scrollbar-hide-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area (notch / home indicator) */
+.safe-top {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.safe-x {
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+/* Tabelcontainers */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+/* Focus zichtbaar (keyboard + Safari) */
+.admin-shell button:focus-visible,
+.admin-shell a:focus-visible,
+.admin-shell input:focus-visible,
+.admin-shell select:focus-visible {
+  outline: 2px solid #7f56d9;
+  outline-offset: 2px;
+}
+
+/* Demo booking / publieke pagina's zonder admin-shell */
+.public-shell input:not([type="checkbox"]):not([type="radio"]),
+.public-shell select,
+.public-shell textarea {
+  font-size: 16px;
+}
+
+@media (pointer: coarse) {
+  .public-shell button[type="button"],
+  .public-shell button[type="submit"] {
+    min-height: 44px;
+  }
+}

@@ -6,12 +6,23 @@ import fs from "fs/promises";
 import path from "path";
 import { extractBrandFromHtml, pickBrandPalette } from "../src/lib/bedrijven/brand-extraction";
 import { assessBrandFromHtml, canAttemptDemoProbe, isDemoBrandReady } from "../src/lib/bedrijven/demo-ready";
-import { DEFAULT_BRANCH } from "../src/lib/bedrijven/branches";
+import {
+  DEFAULT_BRANCH,
+  resolveBranchId,
+  type ScrapeBranchId,
+} from "../src/lib/bedrijven/branches";
+import {
+  ensureCampaignDir,
+  getDemoReadyAuditPath,
+} from "../src/lib/bedrijven/campaign-paths";
 import { hasAutoMailerContact } from "../src/lib/bedrijven/contact-utils";
 import { loadAllBusinesses } from "../src/lib/bedrijven/load-all-businesses";
 import type { Bedrijf } from "../src/lib/bedrijven/types";
 
-const OUT_PATH = path.join(process.cwd(), "data", "demo-ready-audit.json");
+const BRANCH: ScrapeBranchId = resolveBranchId(
+  process.env.BRANCH?.trim() ?? null,
+);
+const OUT_PATH = getDemoReadyAuditPath(BRANCH);
 
 async function fetchHtml(website: string): Promise<{ html: string; url: string } | null> {
   let url = website.trim();
@@ -106,13 +117,15 @@ async function main() {
   const concArg = process.argv.find((a) => a.startsWith("--concurrency="));
   const concurrency = concArg ? parseInt(concArg.split("=")[1]!, 10) : 25;
 
-  const all = await loadAllBusinesses(DEFAULT_BRANCH);
+  await ensureCampaignDir(BRANCH);
+  const all = await loadAllBusinesses(BRANCH);
   const withEmail = all.filter((b) => hasAutoMailerContact(b));
   const toProbe = withEmail
     .filter((b) => canAttemptDemoProbe(b))
     .slice(0, limit ?? withEmail.length);
 
-  console.log(`Makelaars met e-mail: ${withEmail.length}`);
+  console.log(`Branche: ${BRANCH}`);
+  console.log(`Bedrijven met e-mail: ${withEmail.length}`);
   console.log(`Te analyseren (website + e-mail): ${toProbe.length}`);
 
   const results = await runPool(toProbe, concurrency, probeOne);

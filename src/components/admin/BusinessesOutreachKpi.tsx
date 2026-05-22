@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { hasAutoMailerContact, hasCallListContact } from "@/lib/bedrijven/contact-utils";
+import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
 import type { AdminKpiStats } from "@/lib/bedrijven/kpi-stats";
 import type { Bedrijf } from "@/lib/bedrijven/types";
 
@@ -46,23 +47,35 @@ function pct(part: number, total: number): string {
 
 type Props = {
   businesses: Bedrijf[];
+  branchId: ScrapeBranchId;
   showNational: boolean;
 };
 
-export function BusinessesOutreachKpi({ businesses, showNational }: Props) {
+export function BusinessesOutreachKpi({
+  businesses,
+  branchId,
+  showNational,
+}: Props) {
   const t = useTranslations("adminBusinesses");
   const [national, setNational] = useState<AdminKpiStats | null>(null);
   const [mailConfigured, setMailConfigured] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!showNational) return;
-    fetch("/api/bedrijven/kpi")
+    if (!showNational) {
+      setNational(null);
+      return;
+    }
+    const q = new URLSearchParams({ branch: branchId });
+    fetch(`/api/bedrijven/kpi?${q}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => setNational(data as AdminKpiStats));
+  }, [showNational, branchId]);
+
+  useEffect(() => {
     fetch("/api/mail/status")
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => setMailConfigured(!!data?.configured));
-  }, [showNational]);
+  }, []);
 
   const local = useMemo(() => {
     let withEmail = 0;

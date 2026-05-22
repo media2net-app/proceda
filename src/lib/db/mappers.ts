@@ -145,6 +145,7 @@ export function mailOutreachToRecord(row: MailOutreach): MailOutreachRecord {
     status: row.status as MailOutreachRecord["status"],
     recipientEmail: row.recipientEmail ?? undefined,
     sentAt: row.sentAt?.toISOString(),
+    followupSentAt: row.followupSentAt?.toISOString(),
     bookedAt: row.bookedAt?.toISOString(),
     appointmentId: row.appointmentId ?? undefined,
     createdAt: row.createdAt.toISOString(),

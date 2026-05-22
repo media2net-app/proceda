@@ -1,16 +1,16 @@
-/** Follow-up na eerste outreach-mail (zelfde demo-link / token). */
+/** Follow-up na eerste outreach — warme leads die de demo-link openden. */
 export function buildFollowUpMailSubject(businessName: string): string {
-  return `Herinnering — vrijblijvende demo voor ${businessName}`;
+  return `U opende onze demo-link — 30 min live voor ${businessName}?`;
 }
 
 export function buildFollowUpProposalDraft(businessName: string): string {
   return `Beste ${businessName},
 
-Ik stuur u kort een herinnering naar aanleiding van mijn e-mail van vorige week over maatwerk software en AI-automatisering voor ${businessName}.
+U heeft onze link geopend — dank u. Dat is meestal het moment waarop een kantoor wil zien of het voor hen werkt.
 
-We hebben een concept-dashboard in uw huisstijl klaarstaan. In een gratis gesprek van 30 minuten laten we dat live zien en bespreken we wat dit concreet voor uw kantoor kan betekenen — zonder verplichtingen.
+Voor ${businessName} staat al een maatwerk portal in uw huisstijl klaar: leads, woningaanbod en AI-ondersteuning in één omgeving. In 30 minuten lopen we live door wat dit concreet oplevert: minder handwerk, snellere opvolging, meer overzicht voor uw team.
 
-Staat het u deze of volgende week schikt? Via onderstaande knop kiest u zelf een tijdslot (ma–vr, 08:00–20:00).
+Kies hieronder een moment dat past (ma–vr, 08:00–20:00). Geen verplichtingen — wel een helder beeld of we verder praten.
 
 Met vriendelijke groet,
 Proceda`;

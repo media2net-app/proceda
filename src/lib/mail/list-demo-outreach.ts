@@ -1,7 +1,10 @@
 import { loadDemoReadyAudit } from "@/lib/bedrijven/demo-ready-audit";
 import { normalizeEmail } from "@/lib/bedrijven/contact-utils";
 import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
-import { DEFAULT_BRANCH } from "@/lib/bedrijven/branches";
+import {
+  DEFAULT_BRANCH,
+  type ScrapeBranchId,
+} from "@/lib/bedrijven/branches";
 import { businessIdToSlug } from "@/lib/bedrijven/slug";
 import {
   businessIdToDemoSlug,
@@ -18,17 +21,23 @@ import {
 } from "@/lib/demo-app/dashboard-email-screenshot";
 import type { Bedrijf } from "@/lib/bedrijven/types";
 import type { DemoReadyAuditRow } from "@/lib/bedrijven/demo-ready-audit";
+import { buildMinimalReportForMail } from "./demo-outreach-draft";
+import { buildFollowupMailPreviewForLead } from "./followup-mail-preview";
 import {
-  buildMakelaarDemoProposalDraft,
-  buildMinimalReportForMail,
-} from "./demo-outreach-draft";
+  buildOutreachMailSubject,
+  buildOutreachProposalDraft,
+  defaultOutreachSubcategory,
+} from "./outreach-draft";
 import { buildDemoBookingUrl, buildMailHtml } from "./templates";
 import { loadDemoClickStatsByTokens } from "./demo-click-stats";
 import { ensureMailRecordsBatch, listMailRecords } from "./storage";
 import type { MailTemplatePreview } from "./types";
 import { resolveAppBaseUrl } from "./app-url";
 
-function businessFromAuditRow(row: DemoReadyAuditRow): Bedrijf {
+function businessFromAuditRow(
+  row: DemoReadyAuditRow,
+  branchId: ScrapeBranchId,
+): Bedrijf {
   return {
     id: row.businessId,
     name: row.name,
@@ -37,23 +46,24 @@ function businessFromAuditRow(row: DemoReadyAuditRow): Bedrijf {
     city: "",
     province: "",
     category: "services",
-    subcategory: "real_estate_agency",
+    subcategory: defaultOutreachSubcategory(branchId),
     placeId: row.businessId,
     source: "google",
-    branchId: DEFAULT_BRANCH,
+    branchId,
   };
 }
 
 export async function listDemoOutreachTemplates(
   locale: string,
   request?: Request,
+  branchId: ScrapeBranchId = DEFAULT_BRANCH,
 ): Promise<MailTemplatePreview[]> {
-  const audit = await loadDemoReadyAudit();
+  const audit = await loadDemoReadyAudit(branchId);
   if (!audit) return [];
 
-  await refreshDemoBrandCache();
+  await refreshDemoBrandCache(branchId);
 
-  const businesses = await loadAllBusinesses(DEFAULT_BRANCH);
+  const businesses = await loadAllBusinesses(branchId);
   const byId = new Map(businesses.map((b) => [b.id, b]));
   const records = await listMailRecords();
   const recordByBiz = new Map(records.map((r) => [r.businessId, r]));
@@ -70,7 +80,7 @@ export async function listDemoOutreachTemplates(
     const stored = byId.get(row.businessId);
     const business: Bedrijf = stored
       ? { ...stored, website: stored.website || row.website }
-      : businessFromAuditRow(row);
+      : businessFromAuditRow(row, branchId);
 
     const email = normalizeEmail(stored?.email);
     if (!email) continue;
@@ -98,7 +108,7 @@ export async function listDemoOutreachTemplates(
     const brand = getDemoBrandEntry(demoSlug);
     const demoAppPath = demoAppPublicPath(demoSlug, locale);
     const demoHomePath = demoHomepagePublicPath(demoSlug, locale);
-    const draft = buildMakelaarDemoProposalDraft(business.name);
+    const draft = buildOutreachProposalDraft(branchId, business.name);
 
     const report = buildMinimalReportForMail({
       business,
@@ -114,7 +124,7 @@ export async function listDemoOutreachTemplates(
       ? demoDashboardScreenshotAbsoluteUrl(baseUrl, demoSlug)
       : null;
 
-    const { subject, plainBody, htmlBody } = buildMailHtml({
+    const mailBuilt = buildMailHtml({
       business,
       report,
       demoUrl,
@@ -122,6 +132,8 @@ export async function listDemoOutreachTemplates(
       baseUrl,
       dashboardScreenshotUrl,
     });
+    const subject = buildOutreachMailSubject(branchId, business.name);
+    const { plainBody, htmlBody } = mailBuilt;
 
     out.push({
       businessId: business.id,
@@ -142,6 +154,7 @@ export async function listDemoOutreachTemplates(
       token: record.token,
       status: record.status,
       sentAt: record.sentAt,
+      followupSentAt: record.followupSentAt,
     });
   }
 
@@ -158,6 +171,29 @@ export async function listDemoOutreachTemplates(
     row.demoSessionCount = clicks.sessionCount;
     row.demoFirstClickAt = clicks.firstClickedAt ?? undefined;
     row.demoLastClickAt = clicks.lastClickedAt ?? undefined;
+  }
+
+  for (const row of out) {
+    if (row.status !== "sent" || row.followupSentAt || !row.demoVisited) continue;
+    const prep = prepared.find((p) => p.business.id === row.businessId);
+    if (!prep) continue;
+    const record = recordByBiz.get(row.businessId)!;
+    const demoSlug = businessIdToDemoSlug(row.businessId);
+    const hasScreenshot = await dashboardScreenshotExists(demoSlug);
+    const dashboardScreenshotUrl = hasScreenshot
+      ? demoDashboardScreenshotAbsoluteUrl(baseUrl, demoSlug)
+      : null;
+    const followup = buildFollowupMailPreviewForLead({
+      business: prep.business,
+      token: record.token,
+      locale,
+      baseUrl,
+      dashboardScreenshotUrl,
+    });
+    row.followupSubject = followup.subject;
+    row.followupPlainBody = followup.plainBody;
+    row.followupHtmlBody = followup.htmlBody;
+    row.mailVariant = "followup";
   }
 
   return out;

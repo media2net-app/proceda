@@ -14,6 +14,15 @@ export type LiveVisitorMarker = {
 
 export type AnalyticsPeriod = "today" | "7d" | "30d" | "all";
 
+export function parseAnalyticsPeriod(
+  input: string | null | undefined,
+): AnalyticsPeriod {
+  if (input === "today" || input === "7d" || input === "30d" || input === "all") {
+    return input;
+  }
+  return "today";
+}
+
 export type AnalyticsLiveSnapshot = {
   generatedAt: string;
   period: AnalyticsPeriod;

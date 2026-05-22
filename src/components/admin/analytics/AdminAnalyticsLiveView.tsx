@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { parseAnalyticsPeriod } from "@/lib/analytics-live-types";
 import AdminLiveGlobe from "@/components/admin/analytics/AdminLiveGlobe";
 import type { AnalyticsLiveSnapshot, AnalyticsPeriod } from "@/lib/analytics-live-types";
 
@@ -25,7 +27,12 @@ function timeAgo(iso: string): string {
 
 export default function AdminAnalyticsLiveView() {
   const t = useTranslations("adminAnalytics");
-  const [period, setPeriod] = useState<AnalyticsPeriod>("today");
+  const searchParams = useSearchParams();
+  const initialPeriod = parseAnalyticsPeriod(searchParams.get("period"));
+  const [period, setPeriod] = useState<AnalyticsPeriod>(initialPeriod);
+  const [outreachOnly, setOutreachOnly] = useState(
+    searchParams.get("outreach") === "1",
+  );
   const [data, setData] = useState<AnalyticsLiveSnapshot | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -39,10 +46,13 @@ export default function AdminAnalyticsLiveView() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch(
-        `/api/admin/analytics/live?period=${encodeURIComponent(period)}`,
-        { cache: "no-store" },
-      );
+      const q = new URLSearchParams({
+        period,
+        ...(outreachOnly ? { outreach: "1" } : {}),
+      });
+      const res = await fetch(`/api/admin/analytics/live?${q}`, {
+        cache: "no-store",
+      });
       const json = (await res.json()) as AnalyticsLiveSnapshot & {
         error?: string;
       };
@@ -57,7 +67,7 @@ export default function AdminAnalyticsLiveView() {
     } finally {
       setLoading(false);
     }
-  }, [period, t]);
+  }, [period, outreachOnly, t]);
 
   useEffect(() => {
     setLoading(true);
@@ -86,13 +96,24 @@ export default function AdminAnalyticsLiveView() {
             {t("subtitle", { time: updatedLabel })}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="scrollbar-hide-x -mx-4 flex gap-2 px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+          <button
+            type="button"
+            onClick={() => setOutreachOnly((v) => !v)}
+            className={`filter-pill shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+              outreachOnly
+                ? "bg-[#7F56D9] text-white"
+                : "border border-[#EAECF0] bg-white text-[#344054] hover:border-[#D6BBFB]"
+            }`}
+          >
+            {t("outreachOnly")}
+          </button>
           {periodOptions.map((opt) => (
             <button
               key={opt.value}
               type="button"
               onClick={() => setPeriod(opt.value)}
-              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+              className={`filter-pill shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition ${
                 period === opt.value
                   ? "bg-[#7F56D9] text-white"
                   : "border border-[#EAECF0] bg-white text-[#344054] hover:border-[#D6BBFB]"
@@ -111,7 +132,7 @@ export default function AdminAnalyticsLiveView() {
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_340px]">
-        <section className="relative min-h-[360px] overflow-hidden rounded-2xl border border-[#EAECF0] bg-gradient-to-br from-[#F9F5FF] via-white to-[#F2F4F7] p-4 lg:min-h-[480px]">
+        <section className="relative min-h-[min(50dvh,360px)] overflow-hidden rounded-2xl border border-[#EAECF0] bg-gradient-to-br from-[#F9F5FF] via-white to-[#F2F4F7] p-4 lg:min-h-[480px]">
           <AdminLiveGlobe
             visitors={data?.visitors ?? []}
             legendVisitor={t("legendVisitor")}

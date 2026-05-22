@@ -228,28 +228,28 @@ export function RapportageView() {
 
       <LiveScrapeLogPanel branchId={branchFilter} />
 
-      <div className="mb-6 flex flex-wrap gap-4">
-        <div className="min-w-[140px] rounded-xl border border-[#D6BBFB] bg-[#F9F5FF] p-4 shadow-xs">
+      <div className="scrollbar-hide-x -mx-4 mb-6 flex gap-3 px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+        <div className="min-w-[140px] shrink-0 rounded-xl border border-[#D6BBFB] bg-[#F9F5FF] p-4 shadow-xs">
           <p className="text-xs font-semibold uppercase text-[#6941C6]">{t("totalBusinesses")}</p>
           <p className="text-2xl font-bold text-[#7F56D9]">{totalBusinesses}</p>
           <p className="mt-1 text-xs text-[#667085]">{t("totalBusinessesSub")}</p>
         </div>
-        <div className="min-w-[140px] rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
+        <div className="min-w-[140px] shrink-0 rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
           <p className="text-xs font-semibold uppercase text-[#667085]">{t("withWebsite")}</p>
           <p className="text-2xl font-bold text-[#101828]">{withWebsiteCount}</p>
           <p className="mt-1 text-xs text-[#667085]">
             {t("withWebsiteSub", { total: String(totalBusinesses) })}
           </p>
         </div>
-        <div className="min-w-[140px] rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
+        <div className="min-w-[140px] shrink-0 rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
           <p className="text-xs font-semibold uppercase text-[#667085]">{t("withReport")}</p>
           <p className="text-2xl font-bold text-[#101828]">{withReport}</p>
         </div>
-        <div className="min-w-[140px] rounded-xl border border-[#ABEFC6] bg-[#ECFDF3] p-4 shadow-xs">
+        <div className="min-w-[140px] shrink-0 rounded-xl border border-[#ABEFC6] bg-[#ECFDF3] p-4 shadow-xs">
           <p className="text-xs font-semibold uppercase text-[#027A48]">{t("hotLeads")}</p>
           <p className="text-2xl font-bold text-[#027A48]">{hotCount}</p>
         </div>
-        <div className="min-w-[140px] rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
+        <div className="min-w-[140px] shrink-0 rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
           <p className="text-xs font-semibold uppercase text-[#667085]">{t("withEmail")}</p>
           <p className="text-2xl font-bold text-[#7F56D9]">{withEmailAll}</p>
           <p className="mt-1 text-xs text-[#667085]">
@@ -261,11 +261,11 @@ export function RapportageView() {
             )}
           </p>
         </div>
-        <div className="min-w-[140px] rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
+        <div className="min-w-[140px] shrink-0 rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
           <p className="text-xs font-semibold uppercase text-[#667085]">{t("withScreenshot")}</p>
           <p className="text-2xl font-bold text-[#101828]">{withScreenshot}</p>
         </div>
-        <div className="min-w-[140px] rounded-xl border border-[#FEDF89] bg-[#FFFAEB] p-4 shadow-xs">
+        <div className="min-w-[140px] shrink-0 rounded-xl border border-[#FEDF89] bg-[#FFFAEB] p-4 shadow-xs">
           <p className="text-xs font-semibold uppercase text-[#B54708]">{t("withFullReport")}</p>
           <p className="text-2xl font-bold text-[#B54708]">{withFull}</p>
         </div>

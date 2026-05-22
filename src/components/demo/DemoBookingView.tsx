@@ -108,7 +108,7 @@ export function DemoBookingView({ token }: { token: string }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F9FAFB] px-4">
+      <div className="public-shell flex min-h-[100dvh] items-center justify-center bg-[#F9FAFB] px-4 safe-x">
         <p className="text-sm text-[#667085]">{t("loading")}</p>
       </div>
     );
@@ -116,7 +116,7 @@ export function DemoBookingView({ token }: { token: string }) {
 
   if (!data) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F9FAFB] px-4">
+      <div className="public-shell flex min-h-[100dvh] items-center justify-center bg-[#F9FAFB] px-4 safe-x">
         <div className="max-w-md rounded-xl border border-[#EAECF0] bg-white p-8 text-center shadow-xs">
           <p className="font-medium text-[#101828]">{error ?? t("notFound")}</p>
         </div>
@@ -127,7 +127,7 @@ export function DemoBookingView({ token }: { token: string }) {
   if (done && bookedAt) {
     const when = new Date(bookedAt);
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#F9F5FF] to-[#F9FAFB] px-4 py-12">
+      <div className="public-shell flex min-h-[100dvh] items-center justify-center bg-gradient-to-b from-[#F9F5FF] to-[#F9FAFB] px-4 py-12 safe-x">
         <div className="max-w-lg w-full rounded-2xl border border-[#D6BBFB] bg-white p-8 text-center shadow-lg">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#F9F5FF] text-2xl">
             ✓
@@ -151,9 +151,9 @@ export function DemoBookingView({ token }: { token: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F9F5FF] via-[#F9FAFB] to-white">
-      <header className="border-b border-[#EAECF0] bg-white/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-3xl items-center gap-2 px-4">
+    <div className="public-shell min-h-[100dvh] overflow-x-hidden bg-gradient-to-b from-[#F9F5FF] via-[#F9FAFB] to-white pb-28 sm:pb-10">
+      <header className="safe-top border-b border-[#EAECF0] bg-white/80 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-3xl items-center gap-2 px-4 sm:h-16">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#7F56D9] text-sm font-bold text-white">
             P
           </span>
@@ -161,9 +161,9 @@ export function DemoBookingView({ token }: { token: string }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-10 lg:max-w-4xl">
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:py-10 lg:max-w-4xl">
         <p className="text-sm font-semibold text-[#7F56D9]">{t("eyebrow")}</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#101828]">
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-[#101828] sm:text-3xl">
           {t("title")}
         </h1>
         <p className="mt-2 text-[#475467]">
@@ -205,7 +205,7 @@ export function DemoBookingView({ token }: { token: string }) {
 
         <section className="mt-8 rounded-2xl border border-[#EAECF0] bg-white p-6 shadow-xs">
           <h2 className="text-sm font-semibold text-[#101828]">{t("pickDay")}</h2>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="scrollbar-hide-x -mx-1 mt-4 flex gap-2 px-1 pb-1 sm:flex-wrap">
             {data.schedule.days.map((day) => (
               <button
                 key={day.key}
@@ -214,7 +214,7 @@ export function DemoBookingView({ token }: { token: string }) {
                   setSelectedDay(day.key);
                   setSelectedSlot(null);
                 }}
-                className={`rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors ${
+                className={`shrink-0 rounded-lg border px-4 py-3 text-sm font-semibold transition-colors sm:py-2.5 ${
                   selectedDay === day.key
                     ? "border-[#7F56D9] bg-[#F9F5FF] text-[#6941C6]"
                     : "border-[#D0D5DD] bg-white text-[#344054] hover:border-[#D6BBFB]"
@@ -226,13 +226,13 @@ export function DemoBookingView({ token }: { token: string }) {
           </div>
 
           <h2 className="mt-8 text-sm font-semibold text-[#101828]">{t("pickTime")}</h2>
-          <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-5">
             {slotsForDay.map((slot) => (
               <button
                 key={slot.iso}
                 type="button"
                 onClick={() => setSelectedSlot(slot.iso)}
-                className={`rounded-lg border px-2 py-2 text-sm font-medium transition-colors ${
+                className={`min-h-11 rounded-lg border px-2 py-3 text-sm font-medium transition-colors sm:py-2 ${
                   selectedSlot === slot.iso
                     ? "border-[#7F56D9] bg-[#7F56D9] text-white"
                     : "border-[#EAECF0] bg-[#F9FAFB] text-[#344054] hover:border-[#D6BBFB]"
@@ -271,15 +271,20 @@ export function DemoBookingView({ token }: { token: string }) {
           </div>
         </section>
 
-        <button
-          type="button"
-          disabled={!selectedSlot || submitting}
-          onClick={confirmBooking}
-          className="mt-8 w-full rounded-lg bg-[#7F56D9] px-6 py-3.5 text-base font-semibold text-white hover:bg-[#6941C6] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-        >
-          {submitting ? t("booking") : t("ctaConfirm")}
-        </button>
       </main>
+
+      <div className="safe-bottom fixed inset-x-0 bottom-0 z-20 border-t border-[#EAECF0] bg-white/95 p-4 backdrop-blur-sm sm:static sm:z-auto sm:border-0 sm:bg-transparent sm:p-0">
+        <div className="mx-auto max-w-3xl sm:mt-8">
+          <button
+            type="button"
+            disabled={!selectedSlot || submitting}
+            onClick={confirmBooking}
+            className="w-full rounded-lg bg-[#7F56D9] px-6 py-3.5 text-base font-semibold text-white hover:bg-[#6941C6] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+          >
+            {submitting ? t("booking") : t("ctaConfirm")}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

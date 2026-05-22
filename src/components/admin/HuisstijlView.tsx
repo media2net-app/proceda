@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useAdminVertical } from "@/context/AdminVerticalContext";
 import type { HuisstijlFilter } from "@/lib/bedrijven/demo-ready-audit";
 
 type HuisstijlRow = {
@@ -214,6 +215,7 @@ const FILTER_OPTIONS: HuisstijlFilter[] = [
 
 export function HuisstijlView() {
   const t = useTranslations("adminHuisstijl");
+  const { vertical, verticalLabel } = useAdminVertical();
   const [filter, setFilter] = useState<HuisstijlFilter>("demoReady");
   const [search, setSearch] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
@@ -239,6 +241,7 @@ export function HuisstijlView() {
         filter,
         page: String(page),
         limit: "50",
+        branch: vertical,
       });
       if (debouncedQ) params.set("q", debouncedQ);
       const res = await fetch(`/api/bedrijven/huisstijl?${params}`);
@@ -257,7 +260,7 @@ export function HuisstijlView() {
     } finally {
       setLoading(false);
     }
-  }, [filter, page, debouncedQ, t]);
+  }, [filter, page, debouncedQ, vertical, t]);
 
   useEffect(() => {
     load();
@@ -275,7 +278,7 @@ export function HuisstijlView() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-[#101828]">
-          {t("title")}
+          {t("title")} · {verticalLabel}
         </h1>
         <p className="mt-1 text-sm text-[#667085]">{t("subtitle")}</p>
         {scannedLabel ? (
@@ -356,7 +359,7 @@ export function HuisstijlView() {
       ) : null}
 
       <div className="overflow-hidden rounded-xl border border-[#EAECF0] bg-white shadow-sm">
-        <div className="overflow-x-auto">
+        <div className="table-scroll">
           <table className="min-w-full divide-y divide-[#EAECF0] text-left text-sm">
             <thead className="bg-[#F9FAFB]">
               <tr>

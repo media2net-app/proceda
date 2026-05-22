@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useMailSync } from "@/context/MailSyncContext";
+import { useAdminVertical } from "@/context/AdminVerticalContext";
+import { AdminVerticalSelector } from "@/components/admin/AdminVerticalSelector";
 import { MAKELAARDIJ_PRODUCT_DEMO_SLUG } from "@/lib/product/config";
 
 type DashboardSidebarProps = {
@@ -214,6 +216,7 @@ export default function DashboardSidebar({ open = false, onClose }: DashboardSid
   const t = useTranslations("dashboard");
   const pathname = usePathname();
   const mail = useMailSync();
+  const { verticalLabel } = useAdminVertical();
   const productActive = pathname.startsWith(productNav.baseHref);
   const [productOpen, setProductOpen] = useState(productActive);
   const productExpanded = productOpen || productActive;
@@ -239,7 +242,8 @@ export default function DashboardSidebar({ open = false, onClose }: DashboardSid
         )}
       </div>
 
-      <div className="px-3 pt-4">
+      <div className="px-3 pt-4 space-y-3">
+        <AdminVerticalSelector />
         <div className="flex items-center gap-2 rounded-lg border border-[#D0D5DD] bg-white px-3 py-2 shadow-xs">
           <svg className="h-4 w-4 text-[#98A2B3]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
             <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -249,7 +253,7 @@ export default function DashboardSidebar({ open = false, onClose }: DashboardSid
         </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-0.5 p-3">
+      <nav className="scroll-touch flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
         {navItems.map(({ href, key, icon, exact, showUnread }) => {
           const isActive = linkActive(pathname, href, exact);
           const unread = showUnread && key === "sidebarMail" ? mail.unread : 0;
@@ -258,14 +262,18 @@ export default function DashboardSidebar({ open = false, onClose }: DashboardSid
               key={key}
               href={href}
               onClick={onClose}
-              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              className={`admin-nav-item flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-[#F2F4F7] text-[#101828]"
+                  ? "admin-nav-active bg-[#F2F4F7] text-[#101828]"
                   : "text-[#475467] hover:bg-[#F9FAFB] hover:text-[#101828]"
               }`}
             >
               <NavIcon name={icon} />
-              <span className="flex-1">{t(key)}</span>
+              <span className="flex-1">
+                {key === "sidebarMail"
+                  ? `${t(key)} · ${verticalLabel}`
+                  : t(key)}
+              </span>
               {unread > 0 && (
                 <span className="rounded-full bg-[#7F56D9] px-2 py-0.5 text-[11px] font-bold text-white">
                   {unread}
@@ -279,9 +287,9 @@ export default function DashboardSidebar({ open = false, onClose }: DashboardSid
           <button
             type="button"
             onClick={() => setProductOpen((v) => !v)}
-            className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`admin-nav-item flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               productActive
-                ? "bg-[#F2F4F7] text-[#101828]"
+                ? "admin-nav-active bg-[#F2F4F7] text-[#101828]"
                 : "text-[#475467] hover:bg-[#F9FAFB] hover:text-[#101828]"
             }`}
           >
@@ -311,9 +319,9 @@ export default function DashboardSidebar({ open = false, onClose }: DashboardSid
                     key={key}
                     href={href}
                     onClick={onClose}
-                    className={`flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`admin-nav-item flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-[#F9F5FF] text-[#6941C6]"
+                        ? "admin-nav-product-active bg-[#F9F5FF] text-[#6941C6]"
                         : "text-[#475467] hover:bg-[#F9FAFB] hover:text-[#101828]"
                     }`}
                   >
@@ -360,7 +368,7 @@ export default function DashboardSidebar({ open = false, onClose }: DashboardSid
       )}
 
       <aside
-        className={`fixed left-0 top-0 z-40 flex h-full w-64 flex-col border-r border-[#EAECF0] bg-white transition-transform duration-300 ease-out md:z-20 md:translate-x-0 ${
+        className={`admin-sidebar safe-top safe-x fixed left-0 top-0 z-40 flex h-full h-[100dvh] w-[min(100vw,16rem)] max-w-[85vw] flex-col border-r border-[#EAECF0] bg-white transition-transform duration-300 ease-out md:z-20 md:w-64 md:max-w-none md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         } md:flex`}
       >

@@ -37,7 +37,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#F9FAFB] px-4 py-12">
+    <div className="public-shell relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden bg-[#F9FAFB] px-4 py-12 safe-x safe-bottom">
       <div
         className="pointer-events-none absolute inset-0"
         aria-hidden

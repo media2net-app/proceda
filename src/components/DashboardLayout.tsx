@@ -1,30 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import {
+  DashboardHeaderLiveStats,
+  DashboardHeaderLiveStatsMobile,
+} from "@/components/admin/DashboardHeaderLiveStats";
 import DashboardSidebar from "./DashboardSidebar";
+import { AdminVerticalProvider } from "@/context/AdminVerticalContext";
 import { MailSyncProvider } from "@/context/MailSyncContext";
+import { TodayAnalyticsProvider } from "@/context/TodayAnalyticsContext";
+import { AdminThemeProvider, useAdminTheme } from "@/context/AdminThemeContext";
+import { AdminThemeToggle } from "@/components/admin/AdminThemeToggle";
 
 type Props = { children: React.ReactNode };
 
-export default function DashboardLayout({ children }: Props) {
+function DashboardShell({ children }: Props) {
   const t = useTranslations("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isDark } = useAdminTheme();
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [sidebarOpen]);
 
   return (
-    <MailSyncProvider>
-    <div className="min-h-screen bg-[#F9FAFB] text-[#101828]">
+    <div
+      className={`admin-shell min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#F9FAFB] text-[#101828] ${isDark ? "dark-mode" : ""}`}
+    >
       <DashboardSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="md:pl-64">
-        <header className="sticky top-0 z-10 border-b border-[#EAECF0] bg-white/95 px-4 py-4 backdrop-blur-sm sm:px-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+        <header className="admin-header safe-top sticky top-0 z-10 border-b border-[#EAECF0] bg-white/95 px-4 py-3 backdrop-blur-sm sm:px-6">
+          <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-4">
+            <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="rounded-lg p-2 text-[#667085] hover:bg-[#F2F4F7] hover:text-[#101828] md:hidden"
+                className="touch-target-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#667085] hover:bg-[#F2F4F7] hover:text-[#101828] md:hidden"
                 aria-label={t("openMenu")}
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -35,25 +54,51 @@ export default function DashboardLayout({ children }: Props) {
                 Proceda
               </Link>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="max-w-[40vw] truncate text-sm text-[#667085] sm:max-w-none">{t("user")}</span>
+
+            <DashboardHeaderLiveStats />
+
+            <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+              <AdminThemeToggle />
+              <span className="hidden max-w-[40vw] truncate text-sm text-[#667085] md:inline">
+                {t("user")}
+              </span>
               <button
                 type="button"
                 onClick={async () => {
                   await fetch("/api/auth/logout", { method: "POST" });
                   window.location.href = "/login";
                 }}
-                className="rounded-lg bg-[#7F56D9] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#6941C6]"
+                className="touch-target-auto flex h-11 shrink-0 items-center justify-center rounded-lg bg-[#7F56D9] px-3 text-sm font-semibold text-white transition-colors hover:bg-[#6941C6] sm:px-4"
               >
-                {t("logout")}
+                <span className="sm:hidden">{t("logoutShort")}</span>
+                <span className="hidden sm:inline">{t("logout")}</span>
               </button>
             </div>
           </div>
         </header>
 
-        <main className="px-4 py-8 sm:px-6">{children}</main>
+        <DashboardHeaderLiveStatsMobile />
+
+        <main className="safe-bottom min-w-0 max-w-[100vw] px-4 py-6 sm:px-6 sm:py-8">
+          {children}
+        </main>
       </div>
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: Props) {
+  return (
+    <MailSyncProvider>
+      <Suspense fallback={null}>
+        <AdminVerticalProvider>
+          <AdminThemeProvider>
+            <TodayAnalyticsProvider>
+              <DashboardShell>{children}</DashboardShell>
+            </TodayAnalyticsProvider>
+          </AdminThemeProvider>
+        </AdminVerticalProvider>
+      </Suspense>
     </MailSyncProvider>
   );
 }

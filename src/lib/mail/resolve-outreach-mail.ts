@@ -1,14 +1,20 @@
 import { loadDemoReadyAudit } from "@/lib/bedrijven/demo-ready-audit";
-import { DEFAULT_BRANCH } from "@/lib/bedrijven/branches";
+import {
+  DEFAULT_BRANCH,
+  type ScrapeBranchId,
+} from "@/lib/bedrijven/branches";
 import { normalizeEmail } from "@/lib/bedrijven/contact-utils";
 import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
+import { findBusinessById } from "@/lib/bedrijven/load-all-businesses";
 import { demoAppPublicPath, demoHomepagePublicPath } from "@/lib/bedrijven/demo-slug";
 import { businessIdToDemoSlug } from "@/lib/bedrijven/demo-slug";
 import type { Bedrijf } from "@/lib/bedrijven/types";
+import { buildMinimalReportForMail } from "./demo-outreach-draft";
 import {
-  buildMakelaarDemoProposalDraft,
-  buildMinimalReportForMail,
-} from "./demo-outreach-draft";
+  buildOutreachMailSubject,
+  buildOutreachProposalDraft,
+  defaultOutreachSubcategory,
+} from "./outreach-draft";
 import { resolveAppBaseUrl } from "./app-url";
 import { buildDemoBookingUrl, buildMailHtml } from "./templates";
 import type { MailAttachment } from "./smtp-client";
@@ -38,14 +44,18 @@ export async function resolveOutreachMailForBusiness(
   record: MailOutreachRecord;
   attachments?: MailAttachment[];
 } | null> {
-  const audit = await loadDemoReadyAudit();
+  const storedFirst = await findBusinessById(businessId);
+  const branchId: ScrapeBranchId =
+    storedFirst?.branchId ?? DEFAULT_BRANCH;
+
+  const audit = await loadDemoReadyAudit(branchId);
   const auditRow = audit?.results.find(
     (r) => r.businessId === businessId && r.demoReady,
   );
   if (!auditRow) return null;
 
-  const businesses = await loadAllBusinesses(DEFAULT_BRANCH);
-  const stored = businesses.find((b) => b.id === businessId);
+  const businesses = await loadAllBusinesses(branchId);
+  const stored = businesses.find((b) => b.id === businessId) ?? storedFirst;
   const business: Bedrijf = stored
     ? { ...stored, website: stored.website || auditRow.website }
     : {
@@ -57,10 +67,10 @@ export async function resolveOutreachMailForBusiness(
         city: "",
         province: "",
         category: "services",
-        subcategory: "real_estate_agency",
+        subcategory: defaultOutreachSubcategory(branchId),
         placeId: auditRow.businessId,
         source: "google",
-        branchId: DEFAULT_BRANCH,
+        branchId,
       };
 
   const email =
@@ -74,7 +84,7 @@ export async function resolveOutreachMailForBusiness(
   business.name = displayName;
 
   const demoSlug = businessIdToDemoSlug(businessId);
-  const draft = buildMakelaarDemoProposalDraft(displayName);
+  const draft = buildOutreachProposalDraft(branchId, displayName);
   const report = buildMinimalReportForMail({
     business,
     proposalEmailDraft: draft,
@@ -100,7 +110,7 @@ export async function resolveOutreachMailForBusiness(
       ? demoDashboardScreenshotAbsoluteUrl(base, demoSlug)
       : null;
 
-  const { subject, plainBody, htmlBody } = buildMailHtml({
+  const mailBuilt = buildMailHtml({
     business,
     report,
     demoUrl,
@@ -108,6 +118,8 @@ export async function resolveOutreachMailForBusiness(
     baseUrl: base,
     dashboardScreenshotUrl,
   });
+  const subject = buildOutreachMailSubject(branchId, displayName);
+  const { plainBody, htmlBody } = mailBuilt;
 
   return {
     business,

@@ -3,6 +3,10 @@
 import { Link } from "@/i18n/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useAdminVertical } from "@/context/AdminVerticalContext";
+import { AdminVerticalHub } from "@/components/admin/AdminVerticalHub";
+import { AdminOutboundFunnel } from "@/components/admin/AdminOutboundFunnel";
+import { AdminActionQueue } from "@/components/admin/AdminActionQueue";
 import type { AdminKpiStats } from "@/lib/bedrijven/kpi-stats";
 import { LEAD_QUALITY_THRESHOLDS, LEAD_SCORE_WEIGHTS } from "@/lib/bedrijven/lead-score";
 
@@ -117,18 +121,24 @@ function LeadBar({
 export function AdminKpiDashboard() {
   const t = useTranslations("adminKpi");
   const locale = useLocale();
+  const { vertical, verticalLabel } = useAdminVertical();
   const [stats, setStats] = useState<AdminKpiStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/bedrijven/kpi");
-      if (res.ok) setStats((await res.json()) as AdminKpiStats);
+      const res = await fetch(
+        `/api/bedrijven/kpi?branch=${encodeURIComponent(vertical)}`,
+      );
+      if (res.ok) {
+        const data = (await res.json()) as AdminKpiStats;
+        setStats(data);
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [vertical]);
 
   useEffect(() => {
     load();
@@ -142,10 +152,20 @@ export function AdminKpiDashboard() {
     : 0;
 
   return (
-    <div>
+    <div className="space-y-10">
+      <AdminVerticalHub />
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <AdminOutboundFunnel />
+        <AdminActionQueue />
+      </div>
+
+      <div>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-[#101828]">{t("title")}</h1>
+          <h2 className="text-xl font-semibold text-[#101828]">
+            {t("title")} · {verticalLabel}
+          </h2>
           <p className="mt-1 text-sm text-[#667085]">{t("subtitle")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -517,6 +537,7 @@ export function AdminKpiDashboard() {
       ) : (
         <p className="text-sm text-[#667085]">{t("loadError")}</p>
       )}
+      </div>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH, type ScrapeBranchId } from "@/lib/bedrijven/branches";
 import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
 import type { Bedrijf } from "@/lib/bedrijven/types";
 import { isMailConfigured } from "./email-config";
@@ -11,8 +12,9 @@ export { PROCEDA_PUBLIC_APP_URL, resolveAppBaseUrl } from "./app-url";
 export async function getMailKpiStats(
   locale: string = "nl",
   request?: Request,
+  branchId: ScrapeBranchId = DEFAULT_BRANCH,
 ): Promise<MailKpiStats> {
-  const previews = await listMailTemplates(locale, request);
+  const previews = await listMailTemplates(locale, request, branchId);
   let sent = 0;
   let booked = 0;
   let draft = 0;
@@ -44,6 +46,14 @@ export async function getMailKpiStats(
   const { clicked: demoClicked, clickRate: demoClickRate } =
     summarizeDemoClicks(previews, clickByToken);
 
+  const followupReady = previews.filter(
+    (p) =>
+      p.status === "sent" &&
+      p.demoVisited &&
+      !p.followupSentAt &&
+      p.followupHtmlBody,
+  ).length;
+
   const inbox = await loadInboxCache();
   const inStats = inboxStats(inbox.messages);
 
@@ -56,6 +66,7 @@ export async function getMailKpiStats(
     conversionSentToBooked,
     demoClicked,
     demoClickRate,
+    followupReady,
     draft,
     inboxTotal: inStats.total,
     inboxInbound: inStats.inbound,
@@ -69,8 +80,9 @@ export async function getMailKpiStats(
 export async function listMailTemplates(
   locale: string,
   request?: Request,
+  branchId: ScrapeBranchId = DEFAULT_BRANCH,
 ): Promise<MailTemplatePreview[]> {
-  return listDemoOutreachTemplates(locale, request);
+  return listDemoOutreachTemplates(locale, request, branchId);
 }
 
 export async function getDemoLeadByToken(

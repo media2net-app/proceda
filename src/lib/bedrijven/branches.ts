@@ -11,7 +11,7 @@ import {
 } from "./provinces";
 
 /** Verticale markt voor scrape + rapportage (landelijk per regio). */
-export const BRANCH_IDS = ["makelaardij", "lenjerii-hotel"] as const;
+export const BRANCH_IDS = ["makelaardij", "installatie", "lenjerii-hotel"] as const;
 
 export type ScrapeBranchId = (typeof BRANCH_IDS)[number];
 
@@ -29,6 +29,16 @@ export const BRANCHES: Record<ScrapeBranchId, BranchConfig> = {
     id: "makelaardij",
     name: "Makelaardij",
     googleNearbyTypes: ["real_estate_agency"],
+  },
+  installatie: {
+    id: "installatie",
+    name: "Installatie & techniek",
+    googleNearbyTypes: [
+      "electrician",
+      "plumber",
+      "general_contractor",
+      "roofing_contractor",
+    ],
   },
   "lenjerii-hotel": {
     id: "lenjerii-hotel",
@@ -190,6 +200,31 @@ function buildMakelaardijTextQueries(province: ProvinceConfig): string[] {
   return [...new Set(queries)];
 }
 
+export function buildInstallatieTextQueries(province: ProvinceConfig): string[] {
+  const cities = PROVINCE_CITIES[province.id as ProvinceId] ?? [];
+  const trades = [
+    "elektricien",
+    "loodgieter",
+    "installatiebedrijf",
+    "cv monteur",
+    "verwarming",
+    "sanitair",
+    "aannemer",
+    "dakdekker",
+    "zonnepanelen installateur",
+  ];
+  const queries: string[] = [];
+  for (const city of cities) {
+    for (const trade of trades) {
+      queries.push(`${trade} ${city}`);
+    }
+  }
+  for (const trade of trades) {
+    queries.push(`${trade} ${province.name}`);
+  }
+  return [...new Set(queries)];
+}
+
 export type ScrapeRegionConfig = ProvinceConfig & {
   branchId: ScrapeBranchId;
   nearbyTypes: string[];
@@ -212,9 +247,11 @@ export function getScrapeProvinceConfig(
   const textQueries =
     branchId === "makelaardij"
       ? buildMakelaardijTextQueries(base as ProvinceConfig)
-      : branchId === "lenjerii-hotel"
-        ? buildLenjeriiTextQueries(base.name, regionId)
-        : base.textQueries;
+      : branchId === "installatie"
+        ? buildInstallatieTextQueries(base as ProvinceConfig)
+        : branchId === "lenjerii-hotel"
+          ? buildLenjeriiTextQueries(base.name, regionId)
+          : base.textQueries;
 
   return {
     ...base,
@@ -230,6 +267,38 @@ export function getScrapeProvinceConfig(
     language: country === "ro" ? "ro" : "nl",
     regionCode: country,
   };
+}
+
+export function isInstallatieCandidate(place: {
+  name?: string;
+  types?: string[];
+}): boolean {
+  const types = (place.types ?? []).join(" ").toLowerCase();
+  const name = (place.name ?? "").toLowerCase();
+  const installTypes = [
+    "electrician",
+    "plumber",
+    "general_contractor",
+    "roofing_contractor",
+    "home_goods_store",
+  ];
+  if (installTypes.some((t) => types.includes(t))) return true;
+  return (
+    name.includes("elektr") ||
+    name.includes("loodgieter") ||
+    name.includes("installat") ||
+    name.includes("sanitair") ||
+    name.includes("verwarm") ||
+    name.includes("cv ") ||
+    name.includes(" cv") ||
+    name.includes("aannemer") ||
+    name.includes("dakdek") ||
+    name.includes("zonnepanel") ||
+    name.includes("airco") ||
+    name.includes("klimaat") ||
+    name.includes("monteur") ||
+    name.includes("technisch")
+  );
 }
 
 export function isMakelaardijCandidate(place: {
@@ -301,6 +370,7 @@ export function placeMatchesBranch(
   place: { name?: string; types?: string[] },
 ): boolean {
   if (branchId === "makelaardij") return isMakelaardijCandidate(place);
+  if (branchId === "installatie") return isInstallatieCandidate(place);
   if (branchId === "lenjerii-hotel") return classifyLenjeriiSegment(place) != null;
   return true;
 }

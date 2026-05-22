@@ -9,14 +9,25 @@ import path from "path";
 import { businessIdToDemoSlug } from "../src/lib/bedrijven/demo-slug";
 import { patchReportDemoUrls } from "../src/lib/bedrijven/patch-demo-urls";
 import {
+  resolveBranchId,
+  type ScrapeBranchId,
+} from "../src/lib/bedrijven/branches";
+import {
+  getDemoBrandsPath,
   getDemoReadyAuditPath,
+  ensureCampaignDir,
+} from "../src/lib/bedrijven/campaign-paths";
+import {
   loadDemoReadyAudit,
   type DemoReadyAuditRow,
 } from "../src/lib/bedrijven/demo-ready-audit";
 import type { DemoBrandsFile, DemoBrandEntry } from "../src/lib/demo-homepage/demo-brand-registry";
 import { clearDemoBrandRegistryCache } from "../src/lib/demo-homepage/demo-brand-registry";
 
-const OUT_PATH = path.join(process.cwd(), "data", "demo-brands.json");
+const BRANCH: ScrapeBranchId = resolveBranchId(
+  process.env.BRANCH?.trim() ?? null,
+);
+const OUT_PATH = getDemoBrandsPath(BRANCH);
 const SHARED_LISTINGS_SRC = path.join(
   process.cwd(),
   "public",
@@ -152,9 +163,10 @@ async function main() {
   const concArg = process.argv.find((a) => a.startsWith("--concurrency="));
   const concurrency = concArg ? parseInt(concArg.split("=")[1]!, 10) : 25;
 
-  const audit = await loadDemoReadyAudit();
+  await ensureCampaignDir(BRANCH);
+  const audit = await loadDemoReadyAudit(BRANCH);
   if (!audit) {
-    console.error(`Geen audit: ${getDemoReadyAuditPath()}`);
+    console.error(`Geen audit: ${getDemoReadyAuditPath(BRANCH)}`);
     process.exit(1);
   }
 

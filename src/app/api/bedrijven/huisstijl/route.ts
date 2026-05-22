@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { businessIdToDemoSlug, demoAppPublicPath } from "@/lib/bedrijven/demo-slug";
+import { resolveOutreachBranchId } from "@/lib/bedrijven/outreach-branches";
 import {
   filterAuditRows,
   loadDemoReadyAudit,
@@ -20,8 +21,11 @@ const VALID_FILTERS: HuisstijlFilter[] = [
 ];
 
 export async function GET(request: NextRequest) {
-  await refreshDemoBrandCache();
-  const audit = await loadDemoReadyAudit();
+  const branchId = resolveOutreachBranchId(
+    request.nextUrl.searchParams.get("branch"),
+  );
+  await refreshDemoBrandCache(branchId);
+  const audit = await loadDemoReadyAudit(branchId);
   if (!audit) {
     return NextResponse.json(
       {
@@ -83,9 +87,10 @@ export async function GET(request: NextRequest) {
     };
   });
 
-  const brandsFile = loadDemoBrandsFile();
+  const brandsFile = loadDemoBrandsFile(branchId);
 
   return NextResponse.json({
+    branchId,
     summary: {
       ...audit.summary,
       demosGenerated: brandsFile?.demoReadyCount ?? 0,

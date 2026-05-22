@@ -1,14 +1,14 @@
 {
   "totals": {
-    "nearbySearch": 10,
-    "textSearch": 3,
-    "placeDetails": 85
+    "nearbySearch": 0,
+    "textSearch": 0,
+    "placeDetails": 38
   },
   "byProvince": {
-    "ro-ilfov": {
-      "nearbySearch": 10,
-      "textSearch": 3,
-      "placeDetails": 85
+    "zuid-holland": {
+      "nearbySearch": 0,
+      "textSearch": 0,
+      "placeDetails": 38
     }
   },
   "estimatedBackfill": {
@@ -16,6 +16,6 @@
     "textSearch": 0,
     "placeDetails": 4838
   },
-  "updatedAt": "2026-05-22T10:26:08.056Z",
+  "updatedAt": "2026-05-22T20:25:41.543Z",
   "backfillNote": "Geschat: 1× Place Details per verrijkt bedrijf vóór live tracking."
 }

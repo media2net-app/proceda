@@ -10,10 +10,11 @@ import {
 } from "@/lib/analytics-demo-lead";
 import { resolveVisitorCoords } from "@/lib/analytics-geo";
 import { ANALYTICS_ACTIVE_MS } from "@/lib/analytics-db";
-import type {
-  AnalyticsLiveSnapshot,
-  AnalyticsPeriod,
-  LiveVisitorMarker,
+import {
+  parseAnalyticsPeriod,
+  type AnalyticsLiveSnapshot,
+  type AnalyticsPeriod,
+  type LiveVisitorMarker,
 } from "@/lib/analytics-live-types";
 
 export type { AnalyticsLiveSnapshot, LiveVisitorMarker } from "@/lib/analytics-live-types";
@@ -24,15 +25,6 @@ const PERIOD_LABELS: Record<AnalyticsPeriod, string> = {
   "30d": "Laatste 30 dagen",
   all: "Alles",
 };
-
-export function parseAnalyticsPeriod(
-  input: string | null | undefined,
-): AnalyticsPeriod {
-  if (input === "today" || input === "7d" || input === "30d" || input === "all") {
-    return input;
-  }
-  return "today";
-}
 
 function getPeriodRange(period: AnalyticsPeriod): {
   start: Date | null;
@@ -64,25 +56,46 @@ function periodWhere(
   return Object.keys(w).length ? { [field]: w } : {};
 }
 
+export type AnalyticsLiveOptions = {
+  /** Alleen sessies gekoppeld aan outreach-mail (mailToken). */
+  outreachOnly?: boolean;
+};
+
 export async function getAnalyticsLiveSnapshot(
   periodInput?: AnalyticsPeriod | string | null,
+  options?: AnalyticsLiveOptions,
 ): Promise<AnalyticsLiveSnapshot> {
   const period = parseAnalyticsPeriod(
     typeof periodInput === "string" ? periodInput : (periodInput ?? "today"),
   );
   const { start: periodStart, end: periodEnd } = getPeriodRange(period);
-  const periodLabel = PERIOD_LABELS[period];
+  const periodLabel = options?.outreachOnly
+    ? `${PERIOD_LABELS[period]} · Outreach`
+    : PERIOD_LABELS[period];
 
   const now = Date.now();
   const activeSince = new Date(now - ANALYTICS_ACTIVE_MS);
   const tenMinStart = new Date(now - 10 * 60 * 1000);
 
-  const sessionPeriod = periodWhere(periodStart, periodEnd, "firstSeenAt");
-  const viewPeriod = periodWhere(periodStart, periodEnd, "viewedAt");
-  const aptPeriod = periodWhere(periodStart, periodEnd, "createdAt");
+  const outreachFilter = options?.outreachOnly
+    ? { mailToken: { not: null } }
+    : {};
+
+  const sessionPeriod = {
+    ...periodWhere(periodStart, periodEnd, "firstSeenAt"),
+    ...outreachFilter,
+  };
+  const viewPeriod = {
+    ...periodWhere(periodStart, periodEnd, "viewedAt"),
+    ...(options?.outreachOnly ? { path: { contains: "/demo/" } } : {}),
+  };
+  const aptPeriod = {
+    ...periodWhere(periodStart, periodEnd, "createdAt"),
+    ...(options?.outreachOnly ? { source: "auto_mail" as const } : {}),
+  };
 
   const [
-    activeRows,
+    activeRowsRaw,
     sessions,
     pageViews,
     bookings,
@@ -91,7 +104,10 @@ export async function getAnalyticsLiveSnapshot(
     recentViews,
   ] = await Promise.all([
     prisma.analyticsSession.findMany({
-      where: { lastSeenAt: { gte: activeSince } },
+      where: {
+        lastSeenAt: { gte: activeSince },
+        ...outreachFilter,
+      },
       orderBy: { lastSeenAt: "desc" },
       take: 200,
     }),
@@ -114,6 +130,8 @@ export async function getAnalyticsLiveSnapshot(
       orderBy: { viewedAt: "asc" },
     }),
   ]);
+
+  const activeRows = activeRowsRaw;
 
   let bookingNow = 0;
   for (const row of activeRows) {

@@ -84,7 +84,7 @@ export function AppointmentsCalendar({
         </span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="table-scroll">
         <table className="w-full min-w-[720px] border-collapse text-xs">
           <thead>
             <tr className="border-b border-[#EAECF0] bg-[#F9FAFB]">

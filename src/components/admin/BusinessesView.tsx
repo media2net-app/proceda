@@ -15,6 +15,11 @@ import {
   type ScrapeBranchId,
 } from "@/lib/bedrijven/branches";
 import {
+  isOutreachBranchId,
+  type OutreachBranchId,
+} from "@/lib/bedrijven/outreach-branches";
+import { useAdminVertical } from "@/context/AdminVerticalContext";
+import {
   getRegionConfig,
   getRegionIdsForBranch,
   type ScrapeRegionId,
@@ -175,7 +180,19 @@ function BusinessRow({
 
 export function BusinessesView() {
   const t = useTranslations("adminBusinesses");
-  const [branch, setBranch] = useState<ScrapeBranchId>(DEFAULT_BRANCH);
+  const { vertical, setVertical, verticalLabel } = useAdminVertical();
+  /** Alleen voor Lenjerii RO — outreach (makelaardij/installatie) volgt de sidebar. */
+  const [legacyBranchOverride, setLegacyBranchOverride] =
+    useState<ScrapeBranchId | null>(null);
+
+  const branch: ScrapeBranchId =
+    legacyBranchOverride ??
+    (isOutreachBranchId(vertical) ? vertical : DEFAULT_BRANCH);
+
+  useEffect(() => {
+    setLegacyBranchOverride(null);
+  }, [vertical]);
+
   const [province, setProvince] = useState<ProvinceFilter>("all");
   const [cache, setCache] = useState<BedrijvenCache | null>(null);
   const [progress, setProgress] = useState<ScrapeProgressInfo | null>(null);
@@ -402,25 +419,66 @@ export function BusinessesView() {
     <div>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-[#101828]">{t("title")}</h1>
+          <h1 className="text-2xl font-semibold text-[#101828]">
+            {t("title")} · {branchName}
+          </h1>
           <p className="mt-1 text-sm text-[#667085]">{t("subtitle")}</p>
+          {isOutreachBranchId(vertical) && !legacyBranchOverride ? (
+            <p className="mt-1 text-xs text-[#6941C6]">
+              {t("branchFromSidebar", { name: verticalLabel })}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="sr-only" htmlFor="branch-select">
-            {t("branchLabel")}
-          </label>
-          <select
-            id="branch-select"
-            value={branch}
-            onChange={(e) => setBranch(e.target.value as ScrapeBranchId)}
-            className="rounded-lg border border-[#D0D5DD] bg-white px-3 py-2 text-sm font-medium text-[#344054] shadow-xs focus:border-[#7F56D9] focus:outline-none focus:ring-2 focus:ring-[#7F56D9]/20"
+          {isOutreachBranchId(vertical) && !legacyBranchOverride ? (
+            <span className="rounded-lg border border-[#D6BBFB] bg-[#F9F5FF] px-3 py-2 text-sm font-semibold text-[#6941C6]">
+              {verticalLabel}
+            </span>
+          ) : (
+            <>
+              <label className="sr-only" htmlFor="branch-select">
+                {t("branchLabel")}
+              </label>
+              <select
+                id="branch-select"
+                value={branch}
+                onChange={(e) => {
+                  const id = e.target.value as ScrapeBranchId;
+                  if (isOutreachBranchId(id)) {
+                    setLegacyBranchOverride(null);
+                    setVertical(id as OutreachBranchId);
+                  } else {
+                    setLegacyBranchOverride(id);
+                  }
+                }}
+                className="rounded-lg border border-[#D0D5DD] bg-white px-3 py-2 text-sm font-medium text-[#344054] shadow-xs focus:border-[#7F56D9] focus:outline-none focus:ring-2 focus:ring-[#7F56D9]/20"
+              >
+                {BRANCH_IDS.map((id) => (
+                  <option key={id} value={id}>
+                    {BRANCHES[id].name}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+          <button
+            type="button"
+            title={t("branchOtherMarkets")}
+            onClick={() => {
+              const next =
+                legacyBranchOverride === "lenjerii-hotel"
+                  ? null
+                  : "lenjerii-hotel";
+              setLegacyBranchOverride(next);
+            }}
+            className={`rounded-lg border px-2.5 py-2 text-xs font-medium ${
+              legacyBranchOverride === "lenjerii-hotel"
+                ? "border-[#7F56D9] bg-[#F9F5FF] text-[#6941C6]"
+                : "border-[#D0D5DD] bg-white text-[#667085] hover:bg-[#F9FAFB]"
+            }`}
           >
-            {BRANCH_IDS.map((id) => (
-              <option key={id} value={id}>
-                {BRANCHES[id].name}
-              </option>
-            ))}
-          </select>
+            {t("branchLenjerii")}
+          </button>
           <label className="sr-only" htmlFor="province-select">
             {t("provinceLabel")}
           </label>
@@ -459,8 +517,9 @@ export function BusinessesView() {
         {t("sourceGoogle", { branch: branchName, province: provinceLabel })}
       </p>
 
-      {branch === DEFAULT_BRANCH && (
+      {isOutreachBranchId(branch) && (
         <BusinessesOutreachKpi
+          branchId={branch}
           businesses={cache?.businesses ?? []}
           showNational={isAllProvinces}
         />
@@ -484,13 +543,13 @@ export function BusinessesView() {
       />
 
       {(cache || (!isAllProvinces && progress)) && (
-        <div className="mb-6 flex flex-wrap gap-4">
-          <div className="min-w-[140px] rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
+        <div className="scrollbar-hide-x -mx-4 mb-6 flex gap-3 px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+          <div className="min-w-[140px] shrink-0 rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
             <p className="text-xs font-semibold uppercase text-[#667085]">{t("total")}</p>
             <p className="text-2xl font-bold text-[#7F56D9]">{cache?.count ?? 0}</p>
           </div>
           {!isAllProvinces && progress && (
-            <div className="min-w-[160px] rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
+            <div className="min-w-[160px] shrink-0 rounded-xl border border-[#EAECF0] bg-white p-4 shadow-xs">
               <p className="text-xs font-semibold uppercase text-[#667085]">{t("remaining")}</p>
               <p className="text-2xl font-bold text-[#101828]">{progress.remaining}</p>
               <p className="mt-1 text-xs text-[#667085]">
@@ -622,7 +681,7 @@ export function BusinessesView() {
             />
           </div>
           <div className="overflow-hidden rounded-xl border border-[#EAECF0] bg-white shadow-xs">
-            <div className="-mx-1 overflow-x-auto px-1">
+            <div className="table-scroll -mx-1 px-1">
               <table className="w-full min-w-[900px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-[#EAECF0] text-xs text-[#667085]">

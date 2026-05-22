@@ -3,6 +3,7 @@ import { createAppointment, loadAppointments } from "@/lib/afspraken/storage";
 import { getDemoLeadByToken } from "@/lib/mail/mail-campaign";
 import { isValidBookingSlot } from "@/lib/mail/booking-slots";
 import { markMailBooked } from "@/lib/mail/storage";
+import { sendBookingConfirmationEmail } from "@/lib/mail/send-booking-confirmation";
 
 type RouteContext = { params: Promise<{ token: string }> };
 
@@ -26,6 +27,7 @@ export async function POST(request: Request, context: RouteContext) {
       contactName?: string;
       email?: string;
       phone?: string;
+      locale?: string;
     };
 
     const appointments = await loadAppointments();
@@ -52,7 +54,22 @@ export async function POST(request: Request, context: RouteContext) {
 
     await markMailBooked(lead.business.id, appointment.id);
 
-    return NextResponse.json({ appointment }, { status: 201 });
+    const confirmTo = body.email?.trim() || lead.business.email;
+    let confirmationSent = false;
+    if (confirmTo) {
+      const locale = body.locale === "en" ? "en" : "nl";
+      const result = await sendBookingConfirmationEmail({
+        appointment,
+        to: confirmTo,
+        locale,
+      });
+      confirmationSent = result.sent;
+    }
+
+    return NextResponse.json(
+      { appointment, confirmationSent },
+      { status: 201 },
+    );
   } catch (e) {
     const message = e instanceof Error ? e.message : "Booking failed";
     const status =

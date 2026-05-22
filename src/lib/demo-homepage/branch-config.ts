@@ -277,8 +277,18 @@ export function resolveDemoBranch(
     .join(" ")
     .toLowerCase();
 
+  if (business.branchId === "installatie") {
+    return "services";
+  }
   if (/makelaar|vastgoed|nvm|estate_agent|real_estate|woning/i.test(hay)) {
     return "makelaar";
+  }
+  if (
+    /elektr|loodgieter|installat|sanitair|verwarm|aannemer|dakdek|monteur|technisch|cv\b/i.test(
+      hay,
+    )
+  ) {
+    return "services";
   }
   if (
     business.category === "auto" ||

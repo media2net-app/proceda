@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useAdminVertical } from "@/context/AdminVerticalContext";
 import { useMailSync } from "@/context/MailSyncContext";
 import { InboxPanel } from "./InboxPanel";
 import type {
@@ -10,11 +11,27 @@ import type {
   MailTemplatePreview,
 } from "@/lib/mail/types";
 
-type StatusFilter = "all" | "draft" | "sent" | "booked" | "clicked";
+type StatusFilter =
+  | "all"
+  | "draft"
+  | "sent"
+  | "booked"
+  | "clicked"
+  | "followup";
+
+function isFollowupPoolLead(x: MailTemplatePreview): boolean {
+  return (
+    x.status === "sent" &&
+    !!x.demoVisited &&
+    !x.followupSentAt &&
+    !!x.followupHtmlBody
+  );
+}
 
 export function MailView() {
   const t = useTranslations("adminMail");
   const locale = useLocale();
+  const { vertical, verticalLabel } = useAdminVertical();
 
   const [templates, setTemplates] = useState<MailTemplatePreview[]>([]);
   const [stats, setStats] = useState<MailKpiStats | null>(null);
@@ -44,7 +61,9 @@ export function MailView() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/mail?locale=${locale}`);
+      const res = await fetch(
+        `/api/mail?locale=${locale}&branch=${encodeURIComponent(vertical)}`,
+      );
       const data = (await res.json()) as {
         templates: MailTemplatePreview[];
         stats: MailKpiStats;
@@ -61,16 +80,31 @@ export function MailView() {
     } finally {
       setLoading(false);
     }
-  }, [locale, t]);
+  }, [locale, vertical, t]);
 
   useEffect(() => {
     loadAccount();
     load();
   }, [load, loadAccount]);
 
+  const followupPool = useMemo(
+    () => templates.filter(isFollowupPoolLead),
+    [templates],
+  );
+
+  useEffect(() => {
+    if (statusFilter !== "followup" || followupPool.length === 0) return;
+    setSelectedSlug((prev) => {
+      if (prev && followupPool.some((x) => x.slug === prev)) return prev;
+      return followupPool[0]?.slug ?? null;
+    });
+  }, [statusFilter, followupPool]);
+
   const filtered = useMemo(() => {
     let list = templates;
-    if (statusFilter === "clicked") {
+    if (statusFilter === "followup") {
+      list = followupPool;
+    } else if (statusFilter === "clicked") {
       list = list.filter(
         (x) =>
           (x.status === "sent" || x.status === "booked") && x.demoVisited,
@@ -87,15 +121,37 @@ export function MailView() {
         (x.email?.toLowerCase().includes(q) ?? false) ||
         x.subject.toLowerCase().includes(q),
     );
-  }, [templates, search, statusFilter]);
+  }, [templates, search, statusFilter, followupPool]);
 
   const selected = useMemo(
     () => filtered.find((x) => x.slug === selectedSlug) ?? filtered[0] ?? null,
     [filtered, selectedSlug],
   );
 
+  const previewMail = useMemo(() => {
+    if (!selected) return null;
+    if (statusFilter === "followup" && selected.followupHtmlBody) {
+      return {
+        subject: selected.followupSubject ?? selected.subject,
+        htmlBody: selected.followupHtmlBody,
+        plainBody: selected.followupPlainBody ?? selected.plainBody,
+        variant: "followup" as const,
+      };
+    }
+    return {
+      subject: selected.subject,
+      htmlBody: selected.htmlBody,
+      plainBody: selected.plainBody,
+      variant: "initial" as const,
+    };
+  }, [selected, statusFilter]);
+
   async function copyHtml(item: MailTemplatePreview) {
-    await navigator.clipboard.writeText(item.htmlBody);
+    const html =
+      statusFilter === "followup" && item.followupHtmlBody
+        ? item.followupHtmlBody
+        : item.htmlBody;
+    await navigator.clipboard.writeText(html);
     setCopiedId(item.businessId);
     setTimeout(() => setCopiedId(null), 2000);
   }
@@ -140,6 +196,47 @@ export function MailView() {
     }
   }
 
+  async function sendFollowup(
+    item: MailTemplatePreview,
+    opts?: { email?: string; businessName?: string; testMode?: boolean },
+  ) {
+    const to = opts?.email?.trim() || item.email?.trim();
+    if (!to) return;
+    setSendingSlug(item.slug);
+    setError(null);
+    try {
+      const res = await fetch(`/api/mail/send-followup?locale=${locale}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-locale": locale,
+        },
+        body: JSON.stringify({
+          slug: item.slug,
+          email: to,
+          businessName: opts?.businessName?.trim(),
+          testMode: opts?.testMode,
+        }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        const err = data.error ?? t("sendError");
+        if (err === "MAIL_NOT_CONFIGURED") throw new Error(t("notConfigured"));
+        if (err === "FOLLOWUP_ALREADY_SENT") throw new Error(t("followupAlreadySent"));
+        if (err === "ALREADY_BOOKED") throw new Error(t("alreadyBooked"));
+        throw new Error(err);
+      }
+      if (!opts?.testMode) {
+        await load();
+        await mailSync.syncNow();
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("sendError"));
+    } finally {
+      setSendingSlug(null);
+    }
+  }
+
   const statusStyle = (status: MailTemplatePreview["status"]) => {
     if (status === "booked") return "bg-[#ECFDF3] text-[#027A48] border-[#ABEFC6]";
     if (status === "sent") return "bg-[#EFF8FF] text-[#175CD3] border-[#B2DDFF]";
@@ -156,7 +253,9 @@ export function MailView() {
   return (
     <div className="max-w-full space-y-8 overflow-x-hidden">
       <div>
-        <h1 className="text-2xl font-semibold text-[#101828]">{t("title")}</h1>
+        <h1 className="text-2xl font-semibold text-[#101828]">
+          {t("title")} · {verticalLabel}
+        </h1>
         <p className="mt-1 text-sm text-[#667085]">{t("subtitleDemo")}</p>
       </div>
 
@@ -184,7 +283,9 @@ export function MailView() {
 
       <div className="rounded-xl border border-[#D6BBFB] bg-[#F9F5FF] p-4">
         <p className="text-sm font-semibold text-[#6941C6]">{t("testSendTitle")}</p>
-        <p className="mt-1 text-xs text-[#667085]">{t("testSendHint")}</p>
+        <p className="mt-1 text-xs text-[#667085]">
+          {statusFilter === "followup" ? t("testSendHintFollowup") : t("testSendHint")}
+        </p>
         <div className="mt-3 flex flex-wrap items-end gap-3">
           <label className="flex min-w-[200px] flex-1 flex-col gap-1 text-xs font-medium text-[#344054]">
             {t("testSendEmail")}
@@ -207,14 +308,16 @@ export function MailView() {
           <button
             type="button"
             disabled={!selected || !accountOk || sendingSlug !== null}
-            onClick={() =>
-              selected &&
-              sendMail(selected, {
+            onClick={() => {
+              if (!selected) return;
+              const args = {
                 email: testEmail,
                 businessName: testCompany,
                 testMode: true,
-              })
-            }
+              };
+              if (statusFilter === "followup") sendFollowup(selected, args);
+              else sendMail(selected, args);
+            }}
             className="rounded-lg border border-[#7F56D9] bg-white px-4 py-2 text-sm font-semibold text-[#6941C6] hover:bg-[#F4EBFF] disabled:opacity-60"
           >
             {sendingSlug ? t("sending") : t("testSendButton")}
@@ -223,7 +326,7 @@ export function MailView() {
       </div>
 
       {stats && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-8">
           <KpiCard
             label={t("kpiConcept")}
             value={stats.readyToSend}
@@ -243,6 +346,12 @@ export function MailView() {
             sub={t("kpiDemoClicksSub", { rate: stats.demoClickRate })}
           />
           <KpiCard
+            label={t("kpiFollowupReady")}
+            value={stats.followupReady}
+            sub={t("kpiFollowupReadySub")}
+            accent={stats.followupReady > 0}
+          />
+          <KpiCard
             label={t("kpiReplies")}
             value={stats.inboxInbound}
             sub={
@@ -254,7 +363,7 @@ export function MailView() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2 border-b border-[#EAECF0]">
+      <div className="scrollbar-hide-x -mx-1 flex gap-1 border-b border-[#EAECF0] px-1 pb-px sm:flex-wrap sm:gap-2">
         <TabButton active={tab === "outreach"} onClick={() => setTab("outreach")}>
           {t("tabOutreach")} ({templates.length})
         </TabButton>
@@ -292,14 +401,23 @@ export function MailView() {
             <p className="mt-2 text-xs text-[#667085]">{t("hintScreenshots")}</p>
           </div>
 
+          {statusFilter === "followup" && (
+            <div className="rounded-xl border border-[#FEDF89] bg-[#FFFAEB] p-4 text-sm text-[#7A2E0E]">
+              <p className="font-semibold text-[#B54708]">{t("followupBannerTitle")}</p>
+              <p className="mt-1">{t("followupBannerBody", { count: followupPool.length })}</p>
+            </div>
+          )}
+
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap gap-2">
-              {(["draft", "sent", "booked", "clicked", "all"] as const).map((f) => (
+            <div className="scrollbar-hide-x -mx-1 flex gap-2 px-1 pb-0.5">
+              {(
+                ["draft", "sent", "booked", "clicked", "followup", "all"] as const
+              ).map((f) => (
                 <button
                   key={f}
                   type="button"
                   onClick={() => setStatusFilter(f)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  className={`filter-pill shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ${
                     statusFilter === f
                       ? "bg-[#7F56D9] text-white"
                       : "bg-[#F2F4F7] text-[#475467] hover:bg-[#EAECF0]"
@@ -314,7 +432,9 @@ export function MailView() {
                             (x.status === "sent" || x.status === "booked") &&
                             x.demoVisited,
                         ).length
-                      : templates.filter((x) => x.status === f).length}
+                      : f === "followup"
+                        ? followupPool.length
+                        : templates.filter((x) => x.status === f).length}
                   )
                 </button>
               ))}
@@ -345,8 +465,12 @@ export function MailView() {
               <p className="mt-2 text-xs text-[#98A2B3]">{t("emptyHint")}</p>
             </div>
           ) : (
-            <div className="grid gap-4 lg:grid-cols-[minmax(280px,360px)_1fr] lg:items-start">
-              <ul className="max-h-[calc(100vh-320px)] space-y-2 overflow-y-auto rounded-xl border border-[#EAECF0] bg-white p-2 shadow-xs">
+            <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(280px,360px)_1fr] lg:items-start">
+              <ul
+                className={`scroll-touch max-h-[min(70dvh,520px)] space-y-2 overflow-y-auto rounded-xl border border-[#EAECF0] bg-white p-2 shadow-xs lg:max-h-[calc(100dvh-320px)] ${
+                  selected ? "hidden lg:block" : "block"
+                }`}
+              >
                 {filtered.map((item) => {
                   const active = selected?.slug === item.slug;
                   return (
@@ -392,7 +516,9 @@ export function MailView() {
                             {item.email ?? t("noEmail")}
                           </p>
                           <p className="mt-0.5 truncate text-[10px] text-[#98A2B3]">
-                            {item.subject}
+                            {statusFilter === "followup" && item.followupSubject
+                              ? item.followupSubject
+                              : item.subject}
                           </p>
                         </div>
                       </button>
@@ -402,10 +528,17 @@ export function MailView() {
               </ul>
 
               {selected ? (
-                <div className="sticky top-24 rounded-xl border border-[#EAECF0] bg-white shadow-sm">
+                <div className="min-w-0 rounded-xl border border-[#EAECF0] bg-white shadow-sm lg:sticky lg:top-24">
                   <div className="border-b border-[#EAECF0] p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSlug(null)}
+                        className="filter-pill mb-1 w-full rounded-lg border border-[#D0D5DD] bg-white px-3 py-2 text-left text-xs font-semibold text-[#344054] hover:bg-[#F2F4F7] lg:hidden"
+                      >
+                        ← {t("backToList")}
+                      </button>
+                      <div className="min-w-0 flex-1">
                         <h2 className="text-lg font-semibold text-[#101828]">
                           {selected.businessName}
                         </h2>
@@ -413,8 +546,16 @@ export function MailView() {
                           {selected.city} · {selected.email}
                         </p>
                         <p className="mt-2 text-sm font-medium text-[#344054]">
-                          {t("subjectLabel")}: {selected.subject}
+                          {previewMail?.variant === "followup"
+                            ? t("followupSubjectLabel")
+                            : t("subjectLabel")}
+                          : {previewMail?.subject ?? selected.subject}
                         </p>
+                        {previewMail?.variant === "followup" ? (
+                          <p className="mt-1 text-xs text-[#6941C6]">
+                            {t("followupPreviewNote")}
+                          </p>
+                        ) : null}
                         {selected.demoVisited ? (
                           <p className="mt-2 text-sm text-[#B54708]">
                             {t("demoClickDetail", {
@@ -463,23 +604,41 @@ export function MailView() {
                             {sendingSlug === selected.slug ? t("sending") : t("sendMail")}
                           </button>
                         )}
+                        {statusFilter === "followup" &&
+                          isFollowupPoolLead(selected) &&
+                          selected.email && (
+                            <button
+                              type="button"
+                              disabled={sendingSlug === selected.slug || !accountOk}
+                              onClick={() => sendFollowup(selected)}
+                              className="rounded-lg bg-[#B54708] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#93370D] disabled:opacity-60"
+                            >
+                              {sendingSlug === selected.slug
+                                ? t("sending")
+                                : t("sendFollowup")}
+                            </button>
+                          )}
                       </div>
                     </div>
                   </div>
                   <div className="bg-[#F9FAFB] p-4">
                     <p className="text-xs font-semibold uppercase tracking-wide text-[#667085]">
-                      {t("previewHtml")}
+                      {previewMail?.variant === "followup"
+                        ? t("followupPreviewHtml")
+                        : t("previewHtml")}
                     </p>
                     <div
                       className="mt-3 overflow-hidden rounded-lg border border-[#EAECF0] bg-white"
-                      dangerouslySetInnerHTML={{ __html: selected.htmlBody }}
+                      dangerouslySetInnerHTML={{
+                        __html: previewMail?.htmlBody ?? selected.htmlBody,
+                      }}
                     />
                     <details className="mt-4">
                       <summary className="cursor-pointer text-xs font-semibold text-[#6941C6]">
                         {t("plainText")}
                       </summary>
                       <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap rounded-lg border border-[#EAECF0] bg-white p-3 text-sm text-[#344054]">
-                        {selected.plainBody}
+                        {previewMail?.plainBody ?? selected.plainBody}
                       </pre>
                     </details>
                   </div>
@@ -506,7 +665,7 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`border-b-2 px-4 py-2 text-sm font-semibold transition-colors ${
+      className={`shrink-0 border-b-2 px-4 py-3 text-sm font-semibold transition-colors sm:py-2 ${
         active
           ? "border-[#7F56D9] text-[#6941C6]"
           : "border-transparent text-[#667085] hover:text-[#344054]"

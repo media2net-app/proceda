@@ -8,7 +8,7 @@ import {
   hasAutoMailerContact,
   hasCallListContact,
 } from "./contact-utils";
-import { DEFAULT_BRANCH } from "./branches";
+import { DEFAULT_BRANCH, type ScrapeBranchId } from "./branches";
 import { loadAllBusinesses } from "./load-all-businesses";
 import type { Bedrijf } from "./types";
 import { PROVINCE_IDS, type ProvinceId } from "./provinces";
@@ -108,8 +108,10 @@ function pipelineEur(hot: number, warm: number): number {
   return (hot + warm) * DEAL_VALUE_EUR;
 }
 
-export async function getAdminKpiStats(): Promise<AdminKpiStats> {
-  const businesses = await loadAllBusinesses(DEFAULT_BRANCH);
+export async function getAdminKpiStats(
+  branchId: ScrapeBranchId = DEFAULT_BRANCH,
+): Promise<AdminKpiStats> {
+  const businesses = await loadAllBusinesses(branchId);
   const byId = new Map(businesses.map((b) => [b.id, b]));
   const summaries = await listReportSummaries(byId);
 
@@ -147,7 +149,7 @@ export async function getAdminKpiStats(): Promise<AdminKpiStats> {
 
   const provinces: ProvinceKpiRow[] = [];
   for (const id of PROVINCE_IDS) {
-    const cache = await loadBedrijvenCache(DEFAULT_BRANCH, id);
+    const cache = await loadBedrijvenCache(branchId, id);
     if (!cache || cache.count === 0) continue;
 
     const provBusinesses = cache.businesses;
@@ -186,11 +188,11 @@ export async function getAdminKpiStats(): Promise<AdminKpiStats> {
 
   const enrichedByProvince: Partial<Record<ProvinceId, number>> = {};
   for (const id of PROVINCE_IDS) {
-    const progress = await loadScrapeProgress(DEFAULT_BRANCH, id);
+    const progress = await loadScrapeProgress(branchId, id);
     if (progress.enrichedPlaceIds.length > 0) {
       enrichedByProvince[id] = progress.enrichedPlaceIds.length;
     } else {
-      const cache = await loadBedrijvenCache(DEFAULT_BRANCH, id);
+      const cache = await loadBedrijvenCache(branchId, id);
       if (cache?.count) enrichedByProvince[id] = cache.count;
     }
   }

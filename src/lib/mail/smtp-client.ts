@@ -57,12 +57,16 @@ export async function sendOutreachEmail(
     subject: params.subject,
     text: params.text,
     html: params.html,
-    attachments: params.attachments?.map((a) => ({
-      filename: a.filename,
-      content: a.content,
-      cid: a.cid,
-      contentType: a.contentType ?? "image/png",
-    })),
+    attachments: params.attachments?.map((a) => {
+      const isCalendar = a.contentType?.includes("text/calendar");
+      return {
+        filename: a.filename,
+        content: a.content,
+        ...(isCalendar ? {} : { cid: a.cid }),
+        contentType: a.contentType ?? "image/png",
+        ...(isCalendar ? { contentDisposition: "attachment" as const } : {}),
+      };
+    }),
   };
 
   const info = await transport.sendMail(mailOptions);

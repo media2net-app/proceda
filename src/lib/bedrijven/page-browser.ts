@@ -129,6 +129,60 @@ export async function browsePageForReport(
   }
 }
 
+/** Alleen e-mail (homepage + contact), zonder screenshot — voor bulk-enrich. */
+export async function browseWebsiteForEmail(url: string): Promise<string | undefined> {
+  try {
+    const puppeteer = await import("puppeteer");
+    const browser = await puppeteer.default.launch({
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+      ],
+    });
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 800 });
+    await page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    );
+
+    let html = "";
+    let finalUrl = url.startsWith("http") ? url : `https://${url}`;
+
+    try {
+      await page.goto(finalUrl, { waitUntil: "domcontentloaded", timeout: 25000 });
+    } catch {
+      await browser.close();
+      return undefined;
+    }
+
+    await dismissCookieConsent(page);
+    await sleep(600);
+
+    html = await page.content();
+    finalUrl = page.url();
+    let extractedEmail = extractEmailFromHtml(html);
+
+    if (!extractedEmail) {
+      const contactUrls = findContactPageUrls(html, finalUrl);
+      for (const contactUrl of contactUrls.slice(0, 4)) {
+        const visit = await visitForEmail(page, contactUrl);
+        if (visit.email) {
+          extractedEmail = visit.email;
+          break;
+        }
+      }
+    }
+
+    await browser.close();
+    return extractedEmail;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function saveScreenshotBuffer(
   buffer: Buffer,
   outPath: string,
