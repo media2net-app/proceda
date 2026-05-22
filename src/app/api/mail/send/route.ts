@@ -3,7 +3,7 @@ import { businessIdToSlug, slugToBusinessId } from "@/lib/bedrijven/slug";
 import { isMailConfigured } from "@/lib/mail/email-config";
 import { resolveOutreachMailForBusiness } from "@/lib/mail/resolve-outreach-mail";
 import { sendOutreachEmail } from "@/lib/mail/smtp-client";
-import { markMailSent } from "@/lib/mail/storage";
+import { assertMailOutreachDraft, markMailSent } from "@/lib/mail/storage";
 
 export async function POST(request: Request) {
   try {
@@ -27,6 +27,18 @@ export async function POST(request: Request) {
       request.headers.get("x-locale") ??
       new URL(request.url).searchParams.get("locale") ??
       "nl";
+
+    if (!body.testMode) {
+      try {
+        await assertMailOutreachDraft(businessId);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "";
+        if (msg === "ALREADY_SENT") {
+          return NextResponse.json({ error: "ALREADY_SENT" }, { status: 409 });
+        }
+        throw e;
+      }
+    }
 
     const resolved = await resolveOutreachMailForBusiness(
       businessId,

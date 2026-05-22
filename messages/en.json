@@ -617,6 +617,7 @@
     "loading": "Loading…",
     "loadError": "Failed to load mail",
     "sendError": "Failed to mark as sent",
+    "alreadySent": "This lead was already sent (or booked) — no duplicate email.",
     "empty": "No leads with email and report",
     "emptyHint": "Generate reports and ensure email is available from website scan.",
     "showPreview": "Preview",

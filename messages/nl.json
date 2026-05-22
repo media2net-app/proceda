@@ -616,6 +616,7 @@
     "loading": "Loading…",
     "loadError": "Failed to load mail",
     "sendError": "Failed to mark as sent",
+    "alreadySent": "Deze lead is al verstuurd (of geboekt) — geen dubbele mail.",
     "empty": "Geen leads in dit filter",
     "emptyHint": "Draai generate-demo-dashboard-batch als de lijst leeg is.",
     "showPreview": "Preview",

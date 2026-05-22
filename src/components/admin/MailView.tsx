@@ -121,6 +121,7 @@ export function MailView() {
         const data = (await res.json()) as { error?: string };
         const err = data.error ?? t("sendError");
         if (err === "MAIL_NOT_CONFIGURED") throw new Error(t("notConfigured"));
+        if (err === "ALREADY_SENT") throw new Error(t("alreadySent"));
         throw new Error(err);
       }
       if (!opts?.testMode) {

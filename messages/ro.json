@@ -617,6 +617,7 @@
     "loading": "Se încarcă…",
     "loadError": "Încărcare mail eșuată",
     "sendError": "Marcarea ca trimis a eșuat",
+    "alreadySent": "Acest lead a fost deja trimis (sau rezervat) — fără email duplicat.",
     "empty": "Niciun lead cu email și raport",
     "emptyHint": "Generează rapoarte și asigură email din scanarea site-ului.",
     "showPreview": "Preview",

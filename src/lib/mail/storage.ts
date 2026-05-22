@@ -62,18 +62,46 @@ export async function ensureMailRecord(
   return mailOutreachToRecord(existing);
 }
 
+/** Alleen concept (draft) mag verstuurd worden — voorkomt dubbele mail. */
+export async function assertMailOutreachDraft(
+  businessId: string,
+): Promise<MailOutreachRecord> {
+  const row = await prisma.mailOutreach.findUnique({
+    where: { businessId },
+  });
+  if (!row) {
+    throw new Error("MAIL_RECORD_NOT_FOUND");
+  }
+  if (row.status !== "draft") {
+    throw new Error("ALREADY_SENT");
+  }
+  return mailOutreachToRecord(row);
+}
+
 export async function markMailSent(
   businessId: string,
   recipientEmail?: string,
 ): Promise<MailOutreachRecord> {
   await ensureMailRecord(businessId, recipientEmail);
-  const row = await prisma.mailOutreach.update({
-    where: { businessId },
+  const updated = await prisma.mailOutreach.updateMany({
+    where: { businessId, status: "draft" },
     data: {
       status: "sent",
       sentAt: new Date(),
       recipientEmail: recipientEmail?.trim() || undefined,
     },
+  });
+  if (updated.count === 0) {
+    const row = await prisma.mailOutreach.findUnique({
+      where: { businessId },
+    });
+    if (row?.status === "sent" || row?.status === "booked") {
+      throw new Error("ALREADY_SENT");
+    }
+    throw new Error("MAIL_SEND_STATE_CONFLICT");
+  }
+  const row = await prisma.mailOutreach.findUniqueOrThrow({
+    where: { businessId },
   });
   return mailOutreachToRecord(row);
 }
