@@ -11,9 +11,12 @@ import {
 } from "./demo-outreach-draft";
 import { resolveAppBaseUrl } from "./mail-campaign";
 import { buildDemoBookingUrl, buildMailHtml } from "./templates";
+import type { MailAttachment } from "./smtp-client";
 import {
+  dashboardScreenshotCidSrc,
   dashboardScreenshotExists,
   demoDashboardScreenshotAbsoluteUrl,
+  readDashboardScreenshotAttachment,
 } from "@/lib/demo-app/dashboard-email-screenshot";
 import { ensureMailRecord } from "./storage";
 import type { BusinessReport } from "@/lib/bedrijven/business-report-types";
@@ -33,6 +36,7 @@ export async function resolveOutreachMailForBusiness(
   htmlBody: string;
   demoUrl: string;
   record: MailOutreachRecord;
+  attachments?: MailAttachment[];
 } | null> {
   const audit = await loadDemoReadyAudit();
   const auditRow = audit?.results.find(
@@ -87,9 +91,14 @@ export async function resolveOutreachMailForBusiness(
 
   const base = resolveAppBaseUrl(request);
   const hasScreenshot = await dashboardScreenshotExists(demoSlug);
-  const dashboardScreenshotUrl = hasScreenshot
-    ? demoDashboardScreenshotAbsoluteUrl(base, demoSlug)
+  const screenshotAttachment = hasScreenshot
+    ? await readDashboardScreenshotAttachment(demoSlug)
     : null;
+  const dashboardScreenshotUrl = screenshotAttachment
+    ? dashboardScreenshotCidSrc()
+    : hasScreenshot
+      ? demoDashboardScreenshotAbsoluteUrl(base, demoSlug)
+      : null;
 
   const { subject, plainBody, htmlBody } = buildMailHtml({
     business,
@@ -100,5 +109,14 @@ export async function resolveOutreachMailForBusiness(
     dashboardScreenshotUrl,
   });
 
-  return { business, report, subject, plainBody, htmlBody, demoUrl, record };
+  return {
+    business,
+    report,
+    subject,
+    plainBody,
+    htmlBody,
+    demoUrl,
+    record,
+    attachments: screenshotAttachment ? [screenshotAttachment] : undefined,
+  };
 }

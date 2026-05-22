@@ -50,6 +50,7 @@ export async function POST(request: Request) {
       subject,
       text: plainBody,
       html: htmlBody,
+      attachments: resolved.attachments,
     });
 
     const record = body.testMode

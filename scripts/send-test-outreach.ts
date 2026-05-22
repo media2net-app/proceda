@@ -73,6 +73,7 @@ async function main() {
     subject,
     text: plainBody,
     html: htmlBody,
+    attachments: resolved.attachments,
   });
 
   await markMailSent(businessId, TEST_EMAIL);

@@ -9,6 +9,9 @@ import {
 
 export const DEMO_EMAIL_SCREENSHOT_FILE = "email-dashboard.png";
 
+/** Content-ID voor inline screenshot in outreach-mail (betrouwbaarder dan externe URL). */
+export const DASHBOARD_SCREENSHOT_CID = "proceda-dashboard-preview";
+
 export function demoDashboardScreenshotPublicPath(demoSlug: string): string {
   return `/demos/${demoSlug}/assets/${DEMO_EMAIL_SCREENSHOT_FILE}`;
 }
@@ -41,6 +44,33 @@ export async function dashboardScreenshotExists(
   } catch {
     return false;
   }
+}
+
+export type DashboardScreenshotAttachment = {
+  cid: string;
+  filename: string;
+  content: Buffer;
+  contentType: "image/png";
+};
+
+export async function readDashboardScreenshotAttachment(
+  demoSlug: string,
+): Promise<DashboardScreenshotAttachment | null> {
+  try {
+    const content = await fs.readFile(demoDashboardScreenshotFilePath(demoSlug));
+    return {
+      cid: DASHBOARD_SCREENSHOT_CID,
+      filename: DEMO_EMAIL_SCREENSHOT_FILE,
+      content,
+      contentType: "image/png",
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function dashboardScreenshotCidSrc(): string {
+  return `cid:${DASHBOARD_SCREENSHOT_CID}`;
 }
 
 function sleep(ms: number) {

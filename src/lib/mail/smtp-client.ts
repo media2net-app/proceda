@@ -2,11 +2,19 @@ import nodemailer from "nodemailer";
 import type Mail from "nodemailer/lib/mailer";
 import { getMailConfig } from "./email-config";
 
+export type MailAttachment = {
+  filename: string;
+  content: Buffer;
+  cid: string;
+  contentType?: string;
+};
+
 export type SendOutreachParams = {
   to: string;
   subject: string;
   text: string;
   html: string;
+  attachments?: MailAttachment[];
 };
 
 export type SendResult = {
@@ -49,6 +57,12 @@ export async function sendOutreachEmail(
     subject: params.subject,
     text: params.text,
     html: params.html,
+    attachments: params.attachments?.map((a) => ({
+      filename: a.filename,
+      content: a.content,
+      cid: a.cid,
+      contentType: a.contentType ?? "image/png",
+    })),
   };
 
   const info = await transport.sendMail(mailOptions);
