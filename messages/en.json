@@ -142,18 +142,17 @@
     "login": "Log in"
   },
   "login": {
-    "welcome": "Welcome back",
-    "subtitle": "Log in to your account to continue",
+    "welcome": "Admin login",
+    "subtitle": "Only authorized administrators can sign in.",
     "email": "Email address",
     "emailPlaceholder": "name@company.com",
     "password": "Password",
-    "remember": "Remember me",
-    "forgotPassword": "Forgot password?",
     "submit": "Log in",
-    "noAccount": "Don't have an account?",
-    "contact": "Contact us",
-    "tagline": "Custom web applications for your business",
-    "demoHint": "Demo login is pre-filled for quick access."
+    "submitting": "Signing in…",
+    "invalidCredentials": "Incorrect email or password.",
+    "networkError": "Sign-in failed. Please try again.",
+    "adminOnly": "Access for Proceda administrators only.",
+    "tagline": "Custom web applications for your business"
   },
   "dashboard": {
     "title": "Dashboard",

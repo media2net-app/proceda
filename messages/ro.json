@@ -142,18 +142,17 @@
     "login": "Autentificare"
   },
   "login": {
-    "welcome": "Bine ai revenit",
-    "subtitle": "Autentificați-vă pentru a continua",
+    "welcome": "Autentificare admin",
+    "subtitle": "Doar administratorii autorizați au acces.",
     "email": "Adresă email",
     "emailPlaceholder": "nume@companie.com",
     "password": "Parolă",
-    "remember": "Ține-mă minte",
-    "forgotPassword": "Ai uitat parola?",
     "submit": "Autentificare",
-    "noAccount": "Nu ai cont?",
-    "contact": "Contactați-ne",
-    "tagline": "Aplicații web la comandă pentru afacerea ta",
-    "demoHint": "Autentificarea demo este precompletată pentru acces rapid."
+    "submitting": "Se autentifică…",
+    "invalidCredentials": "Email sau parolă incorectă.",
+    "networkError": "Autentificarea a eșuat. Încercați din nou.",
+    "adminOnly": "Acces doar pentru administratorii Proceda.",
+    "tagline": "Aplicații web la comandă pentru afacerea ta"
   },
   "dashboard": {
     "title": "Panou",

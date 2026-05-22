@@ -142,18 +142,17 @@
     "login": "Inloggen"
   },
   "login": {
-    "welcome": "Welkom terug",
-    "subtitle": "Log in op je account om door te gaan",
+    "welcome": "Admin login",
+    "subtitle": "Alleen geautoriseerde beheerders hebben toegang.",
     "email": "E-mailadres",
     "emailPlaceholder": "naam@bedrijf.nl",
     "password": "Wachtwoord",
-    "remember": "Onthoud mij",
-    "forgotPassword": "Wachtwoord vergeten?",
     "submit": "Inloggen",
-    "noAccount": "Nog geen account?",
-    "contact": "Neem contact op",
-    "tagline": "Maatwerk webapplicaties voor jouw bedrijf",
-    "demoHint": "Demo-login is vooringevuld voor snelle toegang."
+    "submitting": "Bezig met inloggen…",
+    "invalidCredentials": "Onjuist e-mailadres of wachtwoord.",
+    "networkError": "Inloggen mislukt. Probeer het opnieuw.",
+    "adminOnly": "Toegang alleen voor Proceda-beheerders.",
+    "tagline": "Maatwerk webapplicaties voor jouw bedrijf"
   },
   "dashboard": {
     "title": "Dashboard",

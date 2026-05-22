@@ -37,12 +37,16 @@ export default function DashboardLayout({ children }: Props) {
             </div>
             <div className="flex items-center gap-4">
               <span className="max-w-[40vw] truncate text-sm text-[#667085] sm:max-w-none">{t("user")}</span>
-              <Link
-                href="/login"
+              <button
+                type="button"
+                onClick={async () => {
+                  await fetch("/api/auth/logout", { method: "POST" });
+                  window.location.href = "/login";
+                }}
                 className="rounded-lg bg-[#7F56D9] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#6941C6]"
               >
                 {t("logout")}
-              </Link>
+              </button>
             </div>
           </div>
         </header>
