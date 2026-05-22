@@ -10,7 +10,7 @@ import type {
   MailTemplatePreview,
 } from "@/lib/mail/types";
 
-type StatusFilter = "all" | "draft" | "sent" | "booked";
+type StatusFilter = "all" | "draft" | "sent" | "booked" | "clicked";
 
 export function MailView() {
   const t = useTranslations("adminMail");
@@ -70,7 +70,12 @@ export function MailView() {
 
   const filtered = useMemo(() => {
     let list = templates;
-    if (statusFilter !== "all") {
+    if (statusFilter === "clicked") {
+      list = list.filter(
+        (x) =>
+          (x.status === "sent" || x.status === "booked") && x.demoVisited,
+      );
+    } else if (statusFilter !== "all") {
       list = list.filter((x) => x.status === statusFilter);
     }
     const q = search.trim().toLowerCase();
@@ -219,7 +224,7 @@ export function MailView() {
       </div>
 
       {stats && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
           <KpiCard label={t("kpiReady")} value={stats.readyToSend} accent />
           <KpiCard label={t("kpiDraft")} value={draftCount} sub={t("kpiDraftSub")} />
           <KpiCard label={t("kpiSent")} value={stats.sent} />
@@ -228,6 +233,11 @@ export function MailView() {
             label={t("kpiConversion")}
             value={`${stats.conversionSentToBooked}%`}
             sub={t("kpiConversionSub")}
+          />
+          <KpiCard
+            label={t("kpiDemoClicks")}
+            value={stats.demoClicked}
+            sub={t("kpiDemoClicksSub", { rate: stats.demoClickRate })}
           />
           <KpiCard
             label={t("kpiReplies")}
@@ -281,7 +291,7 @@ export function MailView() {
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap gap-2">
-              {(["draft", "sent", "booked", "all"] as const).map((f) => (
+              {(["draft", "sent", "booked", "clicked", "all"] as const).map((f) => (
                 <button
                   key={f}
                   type="button"
@@ -295,7 +305,13 @@ export function MailView() {
                   {t(`filter_${f}`)} (
                   {f === "all"
                     ? templates.length
-                    : templates.filter((x) => x.status === f).length}
+                    : f === "clicked"
+                      ? templates.filter(
+                          (x) =>
+                            (x.status === "sent" || x.status === "booked") &&
+                            x.demoVisited,
+                        ).length
+                      : templates.filter((x) => x.status === f).length}
                   )
                 </button>
               ))}
@@ -363,6 +379,11 @@ export function MailView() {
                             >
                               {t(`status.${item.status}`)}
                             </span>
+                            {item.demoVisited ? (
+                              <span className="shrink-0 rounded-full border border-[#FEDF89] bg-[#FFFAEB] px-1.5 py-0.5 text-[10px] font-semibold text-[#B54708]">
+                                {t("demoClickedBadge")}
+                              </span>
+                            ) : null}
                           </div>
                           <p className="truncate text-xs text-[#667085]">
                             {item.email ?? t("noEmail")}
@@ -391,6 +412,27 @@ export function MailView() {
                         <p className="mt-2 text-sm font-medium text-[#344054]">
                           {t("subjectLabel")}: {selected.subject}
                         </p>
+                        {selected.demoVisited ? (
+                          <p className="mt-2 text-sm text-[#B54708]">
+                            {t("demoClickDetail", {
+                              count: selected.demoClickCount ?? 0,
+                              sessions: selected.demoSessionCount ?? 0,
+                              last: selected.demoLastClickAt
+                                ? new Date(
+                                    selected.demoLastClickAt,
+                                  ).toLocaleString("nl-NL", {
+                                    dateStyle: "short",
+                                    timeStyle: "short",
+                                  })
+                                : "—",
+                            })}
+                          </p>
+                        ) : selected.status === "sent" ||
+                          selected.status === "booked" ? (
+                          <p className="mt-2 text-sm text-[#667085]">
+                            {t("demoNotClickedYet")}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <a

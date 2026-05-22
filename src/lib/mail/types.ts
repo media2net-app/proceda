@@ -31,6 +31,12 @@ export type MailTemplatePreview = {
   token: string;
   status: MailLeadStatus;
   sentAt?: string;
+  /** Bezoek aan persoonlijke /demo/{token} pagina (uit analytics). */
+  demoVisited?: boolean;
+  demoClickCount?: number;
+  demoSessionCount?: number;
+  demoFirstClickAt?: string;
+  demoLastClickAt?: string;
 };
 
 export type MailKpiStats = {
@@ -38,6 +44,9 @@ export type MailKpiStats = {
   sent: number;
   booked: number;
   conversionSentToBooked: number;
+  /** Verstuurd/geboekt met minstens één demo-pagina-bezoek */
+  demoClicked: number;
+  demoClickRate: number;
   draft: number;
   inboxTotal: number;
   inboxInbound: number;

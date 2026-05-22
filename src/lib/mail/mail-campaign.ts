@@ -2,6 +2,7 @@ import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
 import type { Bedrijf } from "@/lib/bedrijven/types";
 import { isMailConfigured } from "./email-config";
 import { loadInboxCache, inboxStats } from "./inbox-storage";
+import { summarizeDemoClicks } from "./demo-click-stats";
 import { listDemoOutreachTemplates } from "./list-demo-outreach";
 import type { MailKpiStats, MailTemplatePreview } from "./types";
 
@@ -63,6 +64,22 @@ export async function getMailKpiStats(
   const conversionSentToBooked =
     sent > 0 ? Math.round((booked / sent) * 100) : 0;
 
+  const clickByToken = new Map(
+    previews
+      .filter((p) => p.demoVisited && p.token)
+      .map((p) => [
+        p.token,
+        {
+          clickCount: p.demoClickCount ?? 0,
+          sessionCount: p.demoSessionCount ?? 0,
+          firstClickedAt: p.demoFirstClickAt ?? null,
+          lastClickedAt: p.demoLastClickAt ?? null,
+        },
+      ]),
+  );
+  const { clicked: demoClicked, clickRate: demoClickRate } =
+    summarizeDemoClicks(previews, clickByToken);
+
   const inbox = await loadInboxCache();
   const inStats = inboxStats(inbox.messages);
 
@@ -71,6 +88,8 @@ export async function getMailKpiStats(
     sent,
     booked,
     conversionSentToBooked,
+    demoClicked,
+    demoClickRate,
     draft,
     inboxTotal: inStats.total,
     inboxInbound: inStats.inbound,

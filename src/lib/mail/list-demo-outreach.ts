@@ -23,6 +23,7 @@ import {
   buildMinimalReportForMail,
 } from "./demo-outreach-draft";
 import { buildDemoBookingUrl, buildMailHtml } from "./templates";
+import { loadDemoClickStatsByTokens } from "./demo-click-stats";
 import { ensureMailRecordsBatch, listMailRecords } from "./storage";
 import type { MailTemplatePreview } from "./types";
 import { resolveAppBaseUrl } from "./mail-campaign";
@@ -145,5 +146,19 @@ export async function listDemoOutreachTemplates(
   }
 
   out.sort((a, b) => a.businessName.localeCompare(b.businessName, "nl"));
+
+  const clickByToken = await loadDemoClickStatsByTokens(
+    out.map((row) => row.token),
+  );
+  for (const row of out) {
+    const clicks = clickByToken.get(row.token);
+    if (!clicks) continue;
+    row.demoVisited = true;
+    row.demoClickCount = clicks.clickCount;
+    row.demoSessionCount = clicks.sessionCount;
+    row.demoFirstClickAt = clicks.firstClickedAt ?? undefined;
+    row.demoLastClickAt = clicks.lastClickedAt ?? undefined;
+  }
+
   return out;
 }
