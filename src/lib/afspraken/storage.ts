@@ -187,7 +187,24 @@ export async function updateAppointment(
 
 export async function deleteAppointment(id: string): Promise<boolean> {
   try {
+    const linked = await prisma.mailOutreach.findFirst({
+      where: { appointmentId: id },
+      select: { businessId: true, sentAt: true },
+    });
+
     await prisma.appointment.delete({ where: { id } });
+
+    if (linked) {
+      await prisma.mailOutreach.update({
+        where: { businessId: linked.businessId },
+        data: {
+          status: linked.sentAt ? "sent" : "draft",
+          bookedAt: null,
+          appointmentId: null,
+        },
+      });
+    }
+
     return true;
   } catch {
     return false;
