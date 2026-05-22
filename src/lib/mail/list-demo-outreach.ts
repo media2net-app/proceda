@@ -26,7 +26,7 @@ import { buildDemoBookingUrl, buildMailHtml } from "./templates";
 import { loadDemoClickStatsByTokens } from "./demo-click-stats";
 import { ensureMailRecordsBatch, listMailRecords } from "./storage";
 import type { MailTemplatePreview } from "./types";
-import { resolveAppBaseUrl } from "./mail-campaign";
+import { resolveAppBaseUrl } from "./app-url";
 
 function businessFromAuditRow(row: DemoReadyAuditRow): Bedrijf {
   return {

@@ -106,6 +106,64 @@ export async function markMailSent(
   return mailOutreachToRecord(row);
 }
 
+/** Follow-up: alleen na eerste mail (sent), nog geen follow-up, niet geboekt. */
+export async function assertMailFollowupEligible(
+  businessId: string,
+): Promise<MailOutreachRecord> {
+  const row = await prisma.mailOutreach.findUnique({
+    where: { businessId },
+  });
+  if (!row) throw new Error("MAIL_RECORD_NOT_FOUND");
+  if (row.status === "booked") throw new Error("ALREADY_BOOKED");
+  if (row.status !== "sent") throw new Error("FOLLOWUP_REQUIRES_SENT");
+  if (row.followupSentAt) throw new Error("FOLLOWUP_ALREADY_SENT");
+  if (!row.sentAt) throw new Error("FOLLOWUP_REQUIRES_SENT");
+  return mailOutreachToRecord(row);
+}
+
+export async function markMailFollowupSent(
+  businessId: string,
+): Promise<MailOutreachRecord> {
+  const updated = await prisma.mailOutreach.updateMany({
+    where: {
+      businessId,
+      status: "sent",
+      followupSentAt: null,
+    },
+    data: { followupSentAt: new Date() },
+  });
+  if (updated.count === 0) {
+    const row = await prisma.mailOutreach.findUnique({
+      where: { businessId },
+    });
+    if (row?.followupSentAt) throw new Error("FOLLOWUP_ALREADY_SENT");
+    if (row?.status === "booked") throw new Error("ALREADY_BOOKED");
+    throw new Error("FOLLOWUP_SEND_STATE_CONFLICT");
+  }
+  const row = await prisma.mailOutreach.findUniqueOrThrow({
+    where: { businessId },
+  });
+  return mailOutreachToRecord(row);
+}
+
+export async function listFollowupCandidates(options?: {
+  minDaysSinceSent?: number;
+}): Promise<MailOutreachRecord[]> {
+  const minDays = options?.minDaysSinceSent ?? 3;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - minDays);
+
+  const rows = await prisma.mailOutreach.findMany({
+    where: {
+      status: "sent",
+      followupSentAt: null,
+      sentAt: { lte: cutoff },
+    },
+    orderBy: { sentAt: "asc" },
+  });
+  return rows.map(mailOutreachToRecord);
+}
+
 export async function markMailBooked(
   businessId: string,
   appointmentId: string,

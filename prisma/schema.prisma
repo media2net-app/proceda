@@ -96,6 +96,7 @@ model MailOutreach {
   status          MailLeadStatus @default(draft)
   recipientEmail  String?
   sentAt          DateTime?
+  followupSentAt  DateTime?
   bookedAt        DateTime?
   appointmentId   String?        @unique
   createdAt       DateTime       @default(now())

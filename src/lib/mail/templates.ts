@@ -6,7 +6,15 @@ export const PROCEDA_MAIL_CTA_COLOR = "#7F56D9";
 
 const CTA_LABEL = "Plan een vrijblijvende demo (30 min)";
 
-export function buildMailSubject(businessName: string): string {
+export type MailTemplateVariant = "initial" | "followup";
+
+export function buildMailSubject(
+  businessName: string,
+  variant: MailTemplateVariant = "initial",
+): string {
+  if (variant === "followup") {
+    return `Herinnering — vrijblijvende demo voor ${businessName}`;
+  }
   return `Maatwerk webapp + AI-automatisering — ${businessName}`;
 }
 
@@ -36,10 +44,12 @@ export function buildMailHtml(params: {
   locale?: string;
   baseUrl?: string;
   dashboardScreenshotUrl?: string | null;
+  variant?: MailTemplateVariant;
 }): { subject: string; plainBody: string; htmlBody: string } {
   const { business, report, demoUrl } = params;
+  const variant = params.variant ?? "initial";
 
-  const subject = buildMailSubject(business.name);
+  const subject = buildMailSubject(business.name, variant);
 
   const plainBody = `${report.ai.proposalEmailDraft.trim()}\n\n${CTA_LABEL}: ${demoUrl}`;
 

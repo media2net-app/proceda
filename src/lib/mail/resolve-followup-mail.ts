@@ -2,11 +2,16 @@ import { loadDemoReadyAudit } from "@/lib/bedrijven/demo-ready-audit";
 import { DEFAULT_BRANCH } from "@/lib/bedrijven/branches";
 import { normalizeEmail } from "@/lib/bedrijven/contact-utils";
 import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
-import { demoAppPublicPath, demoHomepagePublicPath } from "@/lib/bedrijven/demo-slug";
-import { businessIdToDemoSlug } from "@/lib/bedrijven/demo-slug";
+import {
+  businessIdToDemoSlug,
+  demoAppPublicPath,
+  demoHomepagePublicPath,
+} from "@/lib/bedrijven/demo-slug";
 import type { Bedrijf } from "@/lib/bedrijven/types";
 import {
-  buildMakelaarDemoProposalDraft,
+  buildFollowUpProposalDraft,
+} from "./demo-outreach-followup-draft";
+import {
   buildMinimalReportForMail,
 } from "./demo-outreach-draft";
 import { resolveAppBaseUrl } from "./app-url";
@@ -18,11 +23,11 @@ import {
   demoDashboardScreenshotAbsoluteUrl,
   readDashboardScreenshotAttachment,
 } from "@/lib/demo-app/dashboard-email-screenshot";
-import { ensureMailRecord } from "./storage";
+import { getRecordByBusinessId } from "./storage";
 import type { BusinessReport } from "@/lib/bedrijven/business-report-types";
 import type { MailOutreachRecord } from "./types";
 
-export async function resolveOutreachMailForBusiness(
+export async function resolveFollowupMailForBusiness(
   businessId: string,
   locale: string,
   request?: Request,
@@ -38,6 +43,11 @@ export async function resolveOutreachMailForBusiness(
   record: MailOutreachRecord;
   attachments?: MailAttachment[];
 } | null> {
+  const record = await getRecordByBusinessId(businessId);
+  if (!record || record.status !== "sent" || record.followupSentAt) {
+    return null;
+  }
+
   const audit = await loadDemoReadyAudit();
   const auditRow = audit?.results.find(
     (r) => r.businessId === businessId && r.demoReady,
@@ -65,8 +75,8 @@ export async function resolveOutreachMailForBusiness(
 
   const email =
     normalizeEmail(recipientOverride) ??
-    normalizeEmail(stored?.email) ??
-    normalizeEmail(business.email);
+    normalizeEmail(record.recipientEmail) ??
+    normalizeEmail(stored?.email);
   if (!email) return null;
   business.email = email;
 
@@ -74,7 +84,7 @@ export async function resolveOutreachMailForBusiness(
   business.name = displayName;
 
   const demoSlug = businessIdToDemoSlug(businessId);
-  const draft = buildMakelaarDemoProposalDraft(displayName);
+  const draft = buildFollowUpProposalDraft(displayName);
   const report = buildMinimalReportForMail({
     business,
     proposalEmailDraft: draft,
@@ -82,7 +92,6 @@ export async function resolveOutreachMailForBusiness(
     demoHomepageUrl: demoHomepagePublicPath(demoSlug, locale),
   });
 
-  const record = await ensureMailRecord(businessId, email);
   const demoUrl = buildDemoBookingUrl(
     resolveAppBaseUrl(request),
     locale,
@@ -107,6 +116,7 @@ export async function resolveOutreachMailForBusiness(
     locale,
     baseUrl: base,
     dashboardScreenshotUrl,
+    variant: "followup",
   });
 
   return {

@@ -6,6 +6,7 @@ export type MailOutreachRecord = {
   status: MailLeadStatus;
   recipientEmail?: string;
   sentAt?: string;
+  followupSentAt?: string;
   bookedAt?: string;
   appointmentId?: string;
   createdAt: string;
@@ -31,6 +32,8 @@ export type MailTemplatePreview = {
   token: string;
   status: MailLeadStatus;
   sentAt?: string;
+  /** initial | followup — voor preview in admin */
+  mailVariant?: "initial" | "followup";
   /** Bezoek aan persoonlijke /demo/{token} pagina (uit analytics). */
   demoVisited?: boolean;
   demoClickCount?: number;
