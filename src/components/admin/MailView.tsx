@@ -225,8 +225,12 @@ export function MailView() {
 
       {stats && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-          <KpiCard label={t("kpiReady")} value={stats.readyToSend} accent />
-          <KpiCard label={t("kpiDraft")} value={draftCount} sub={t("kpiDraftSub")} />
+          <KpiCard
+            label={t("kpiConcept")}
+            value={stats.readyToSend}
+            sub={t("kpiConceptSub", { pool: stats.demoReadyPool })}
+            accent
+          />
           <KpiCard label={t("kpiSent")} value={stats.sent} />
           <KpiCard label={t("kpiBooked")} value={stats.booked} />
           <KpiCard

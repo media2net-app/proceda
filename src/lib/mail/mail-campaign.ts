@@ -84,7 +84,9 @@ export async function getMailKpiStats(
   const inStats = inboxStats(inbox.messages);
 
   return {
-    readyToSend: previews.length,
+    /** Concept / te versturen (niet de hele demo-klaare pool). */
+    readyToSend: draft,
+    demoReadyPool: previews.length,
     sent,
     booked,
     conversionSentToBooked,

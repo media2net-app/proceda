@@ -40,7 +40,10 @@ export type MailTemplatePreview = {
 };
 
 export type MailKpiStats = {
+  /** Aantal met status concept (te versturen). */
   readyToSend: number;
+  /** Alle demo-klaare makelaars in de verzendlijst. */
+  demoReadyPool: number;
   sent: number;
   booked: number;
   conversionSentToBooked: number;
