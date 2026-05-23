@@ -495,6 +495,8 @@
     "sourceGoogle": "Source: Google Places — {branch}, {province} (Netherlands)",
     "focusCity": "City: {city}",
     "googleRequired": "Google Places API missing. Add GOOGLE_PLACES_API_KEY to .env.local",
+    "scrapeProviderBrowser": "Gratis browser-scrape (DuckDuckGo + website)",
+    "scrapeProviderGoogle": "Google Places API (uitgeschakeld — zet GOOGLE_PLACES_ENABLED=true)",
     "loading": "Loading...",
     "noValue": "—",
     "columns": {

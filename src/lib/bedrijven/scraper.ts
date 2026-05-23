@@ -31,6 +31,8 @@ import {
   loadBedrijvenCacheFromDb,
   saveBedrijvenCacheToDb,
 } from "./business-db";
+import { resolveScrapeProvider } from "./scrape-provider";
+import { scrapeBedrijvenBatchBrowser } from "./browser-lead-scraper";
 
 const DATA_ROOT = path.join(process.cwd(), "data", "bedrijven");
 const META_PATH = path.join(process.cwd(), "data", "bedrijven-meta.json");
@@ -228,6 +230,10 @@ export async function scrapeBedrijvenBatch(
   branchId: ScrapeBranchId = DEFAULT_BRANCH,
   regionId?: ScrapeRegionId,
 ): Promise<ScrapeBatchResult> {
+  if (resolveScrapeProvider() === "browser") {
+    return scrapeBedrijvenBatchBrowser(branchId, regionId);
+  }
+
   const resolvedRegion = regionId ?? resolveRegionId(branchId, null);
   const province = getScrapeProvinceConfig(branchId, resolvedRegion);
   if (!province) throw new Error(`UNKNOWN_BRANCH_OR_PROVINCE:${branchId}/${resolvedRegion}`);
@@ -410,8 +416,8 @@ export async function scrapeBedrijvenBatch(
   };
 }
 
-export function getActiveDataSource(): "google" {
-  return "google";
+export function getActiveDataSource(): "google" | "browser" {
+  return resolveScrapeProvider();
 }
 
 export function resolveProvinceId(

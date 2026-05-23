@@ -51,7 +51,7 @@ export function businessToBedrijf(row: Business): Bedrijf {
     email: row.email ?? undefined,
     website: row.website ?? undefined,
     openingHours: row.openingHours ?? undefined,
-    source: "google",
+    source: row.source === "browser" ? "browser" : "google",
     lat: row.lat ?? undefined,
     lon: row.lon ?? undefined,
   };

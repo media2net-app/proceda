@@ -4,6 +4,7 @@ import {
   resolveBranchId,
   resolveProvinceId,
   scrapeBedrijvenBatch,
+  getActiveDataSource,
 } from "@/lib/bedrijven/scraper";
 import { getScrapeProvinceConfig } from "@/lib/bedrijven/branches";
 
@@ -46,6 +47,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
+      provider: getActiveDataSource(),
       branch: result.cache.branch,
       province: result.cache.province,
       provinceName: result.cache.provinceName,

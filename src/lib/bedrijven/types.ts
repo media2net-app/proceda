@@ -28,7 +28,7 @@ export type Bedrijf = {
   email?: string;
   website?: string;
   openingHours?: string;
-  source: "google";
+  source: "google" | "browser";
   placeId: string;
   lat?: number;
   lon?: number;
@@ -75,7 +75,7 @@ export type BedrijvenCache = {
   provinceName: string;
   scrapedAt: string;
   count: number;
-  dataSource: "google";
+  dataSource: "google" | "browser";
   businesses: Bedrijf[];
 };
 

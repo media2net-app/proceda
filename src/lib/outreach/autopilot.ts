@@ -315,6 +315,7 @@ export async function runAutopilotTick(
     try {
       const scrape = await scrapeBedrijvenBatch(scrapeBranch, provinceId as ProvinceId);
       summary.steps.scrape = {
+        provider: "browser",
         province: provinceId,
         batchAdded: scrape.batchAdded,
         remaining: scrape.remaining,

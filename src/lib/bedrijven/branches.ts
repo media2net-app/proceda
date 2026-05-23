@@ -186,7 +186,7 @@ function buildLenjeriiTextQueries(
   return [...new Set(queries)];
 }
 
-function buildMakelaardijTextQueries(province: ProvinceConfig): string[] {
+export function buildMakelaardijTextQueries(province: ProvinceConfig): string[] {
   const cities = PROVINCE_CITIES[province.id as ProvinceId] ?? [];
   const queries: string[] = [];
   for (const city of cities) {
@@ -223,6 +223,20 @@ export function buildInstallatieTextQueries(province: ProvinceConfig): string[] 
     queries.push(`${trade} ${province.name}`);
   }
   return [...new Set(queries)];
+}
+
+/** Zoekqueries voor gratis browser-lead scrape (geen Google API). */
+export function getBrowserLeadSearchQueries(
+  branchId: ScrapeBranchId,
+  province: ProvinceConfig,
+): string[] {
+  if (branchId === "installatie") {
+    return buildInstallatieTextQueries(province);
+  }
+  if (branchId === "makelaardij") {
+    return buildMakelaardijTextQueries(province);
+  }
+  return [`bedrijf ${province.name}`];
 }
 
 export type ScrapeRegionConfig = ProvinceConfig & {

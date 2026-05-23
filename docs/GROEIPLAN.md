@@ -181,6 +181,8 @@ Match `InboxMessage` op email → thread op leadkaart; reply rate + reactietijd.
 
 **Send-readiness gate** — geen mail (handmatig, batch, autopilot) zonder: demo-ready audit, logo+huisstijl, opgeslagen AI-rapport met voorstel, dashboard-screenshot, geverifieerd e-mailadres, juiste verticale.
 
+**Browser lead scrape (mei 2026)** — standaard geen Google Places API (`GOOGLE_PLACES_ENABLED` alleen met `true`). Autopilot/bedrijven-scrape: DuckDuckGo-zoekopdrachten + website e-mail extractie. Optioneel Puppeteer: `BROWSER_SCRAPE_USE_PUPPETEER=1` (lokaal).
+
 **Mobiel & cross-browser (mei 2026)** — viewport/safe-area, iOS input-zoom fix, admin mail master-detail op mobiel, sticky boek-CTA, horizontale KPI-scroll, `src/styles/mobile-compat.css`.
 
 ---
