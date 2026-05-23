@@ -12,7 +12,7 @@ Strategisch plan voor inzichten, sales-ops en schaalbare outbound. Bouwt voort o
 |------|--------|-----------|
 | **Live view** | Realtime bezoekers, boek-intent, top pages | Geen koppeling mail-campagne → boeking per lead |
 | **Mail admin** | sent/booked, demoVisited, follow-up ready | Geen open/reply/bounce; geen cohort per send-datum |
-| **Bedrijven KPI** | Pool, hot/warm, pipeline € | `successfulDeals = 0` — geen CRM-winst |
+| **Bedrijven KPI** | Pool, hot/warm, pipeline € | `successfulDeals` uit CRM `won` |
 | **Analytics DB** | `mailToken`, `bookingActive`, page views | Geen expliciete funnel-events |
 
 We meten **traffic**, maar nog niet genoeg **outbound ROI per stap**.
@@ -149,16 +149,18 @@ Match `InboxMessage` op email → thread op leadkaart; reply rate + reactietijd.
 | 2 | Outbound funnel dashboard | ✅ Fase 0 |
 | 3 | Actie-queue | ✅ Fase 0 |
 | 4 | Live view outreach-filter + period=all link | ✅ Fase 0 |
-| 5 | `AnalyticsEvent` + booking-stappen | 🔲 Fase 1 |
-| 6 | `sendBatch` + cohort | 🔲 Fase 1 |
-| 7 | CRM won/lost | 🔲 Fase 1 |
+| 5 | `AnalyticsEvent` + booking-stappen | ✅ Fase 1 |
+| 6 | `sendBatch` + cohort | ✅ Fase 1 |
+| 7 | CRM won/lost | ✅ Fase 1 |
 | 8 | Batch send + throttle | 🔲 Fase 2 |
 | 9 | Mail sequences | 🔲 Fase 2 |
 | 10 | Command center | 🔲 Fase 3 |
 
 **Admin dark mode** — ✅ gedaan (mei 2026).
 
-**Fase 0 (mei 2026)** — bevestigingsmail, funnel + actie-queue op KPI-dashboard, live view outreach-filter.
+**Fase 0 (mei 2026)** — bevestigingsmail, funnel + actie-queue op KPI-dashboard, live view outreach-filter, lead-timeline in mail-detail.
+
+**Fase 1 (mei 2026)** — `AnalyticsEvent` + booking-stappen, `sendBatch` cohort-panel, CRM pipeline (won/lost) op leadkaart, funnel-stap Gewonnen.
 
 **Mobiel & cross-browser (mei 2026)** — viewport/safe-area, iOS input-zoom fix, admin mail master-detail op mobiel, sticky boek-CTA, horizontale KPI-scroll, `src/styles/mobile-compat.css`.
 

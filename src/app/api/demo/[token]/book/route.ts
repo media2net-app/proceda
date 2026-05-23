@@ -4,6 +4,7 @@ import { getDemoLeadByToken } from "@/lib/mail/mail-campaign";
 import { isValidBookingSlot } from "@/lib/mail/booking-slots";
 import { markMailBooked } from "@/lib/mail/storage";
 import { sendBookingConfirmationEmail } from "@/lib/mail/send-booking-confirmation";
+import { recordAnalyticsEvent } from "@/lib/analytics-events";
 
 type RouteContext = { params: Promise<{ token: string }> };
 
@@ -53,6 +54,13 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     await markMailBooked(lead.business.id, appointment.id);
+
+    void recordAnalyticsEvent({
+      eventName: "booking_confirmed",
+      businessId: lead.business.id,
+      mailToken: token,
+      metadata: { appointmentId: appointment.id, scheduledAt: body.scheduledAt },
+    }).catch(() => {});
 
     const confirmTo = body.email?.trim() || lead.business.email;
     let confirmationSent = false;

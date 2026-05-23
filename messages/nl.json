@@ -724,6 +724,29 @@
     "ofSent": "{rate}% van verstuurd",
     "ofPrev": "{rate}% van vorige stap"
   },
+  "adminLeadTimeline": {
+    "title": "Lead-timeline",
+    "pipeline": "Pipeline",
+    "batch": "Batch {id}",
+    "empty": "Nog geen activiteit geregistreerd.",
+    "pipeline_lead": "Lead",
+    "pipeline_contacted": "Gecontacteerd",
+    "pipeline_meeting": "Meeting",
+    "pipeline_proposal": "Voorstel",
+    "pipeline_won": "Gewonnen",
+    "pipeline_lost": "Verloren"
+  },
+  "adminCohort": {
+    "title": "Send-batch cohorts",
+    "subtitle": "Verstuurd → open → geboekt → gewonnen per batch",
+    "empty": "Nog geen batches met verstuurde mails — sendBatch wordt gezet bij verzenden.",
+    "colBatch": "Batch",
+    "colSent": "Verstuurd",
+    "colOpen": "Geopend",
+    "colBooked": "Geboekt",
+    "colWon": "Gewonnen",
+    "colBookRate": "Book %"
+  },
   "adminActions": {
     "title": "Actie-queue vandaag",
     "subtitle": "{count} acties wachten",

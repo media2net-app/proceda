@@ -1,4 +1,5 @@
 import { listReportSummaries } from "./business-report-storage";
+import { prisma } from "@/lib/db/prisma";
 import {
   ensureUsageBackfill,
   getGooglePlacesCostSummary,
@@ -184,7 +185,12 @@ export async function getAdminKpiStats(
     });
   }
 
-  const successfulDeals = 0;
+  const successfulDeals = await prisma.mailOutreach.count({
+    where: {
+      pipelineStatus: "won",
+      business: { branchId },
+    },
+  });
 
   const enrichedByProvince: Partial<Record<ProvinceId, number>> = {};
   for (const id of PROVINCE_IDS) {

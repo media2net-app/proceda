@@ -43,6 +43,7 @@ export async function getOutreachFunnelStats(
   let sent = 0;
   let booked = 0;
   let opened = 0;
+  let won = 0;
 
   const sentTokens: string[] = [];
 
@@ -54,6 +55,7 @@ export async function getOutreachFunnelStats(
     }
     if (p.status === "booked") booked++;
     if (clickByToken.has(p.token) || p.demoVisited) opened++;
+    if (p.pipelineStatus === "won") won++;
   }
 
   const engaged =
@@ -108,6 +110,13 @@ export async function getOutreachFunnelStats(
       count: booked,
       rateFromPrev: pct(booked, engaged),
       rateFromSent: pct(booked, sent),
+    },
+    {
+      id: "won",
+      label: "Gewonnen",
+      count: won,
+      rateFromPrev: pct(won, booked),
+      rateFromSent: pct(won, sent),
     },
   ];
 

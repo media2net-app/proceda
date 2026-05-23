@@ -27,6 +27,15 @@ enum MailLeadStatus {
   booked
 }
 
+enum OutreachPipelineStatus {
+  lead
+  contacted
+  meeting
+  proposal
+  won
+  lost
+}
+
 enum InboxDirection {
   inbound
   outbound
@@ -91,22 +100,27 @@ model Appointment {
 }
 
 model MailOutreach {
-  businessId      String         @id
-  token           String         @unique
-  status          MailLeadStatus @default(draft)
-  recipientEmail  String?
-  sentAt          DateTime?
-  followupSentAt  DateTime?
-  bookedAt        DateTime?
-  appointmentId   String?        @unique
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  businessId       String                  @id
+  token            String                  @unique
+  status           MailLeadStatus          @default(draft)
+  recipientEmail   String?
+  sentAt           DateTime?
+  followupSentAt   DateTime?
+  bookedAt         DateTime?
+  appointmentId    String?                 @unique
+  sendBatch        String?
+  subjectVariant   String?                 @default("default")
+  pipelineStatus   OutreachPipelineStatus  @default(lead)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
 
   business    Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
   appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([token])
+  @@index([sendBatch])
+  @@index([pipelineStatus])
 }
 
 model InboxSyncState {
@@ -292,4 +306,21 @@ model AnalyticsPageView {
   @@index([viewedAt])
   @@index([sessionId])
   @@index([path])
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(uuid())
+  eventName  String
+  sessionId  String?
+  visitorId  String?
+  mailToken  String?
+  businessId String?
+  path       String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([eventName, createdAt])
+  @@index([mailToken])
+  @@index([businessId])
+  @@index([sessionId, eventName])
 }

@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/db/prisma";
 import { funnelLabelFromPath } from "@/lib/analytics-funnel";
+import {
+  pathToAnalyticsEvent,
+  recordAnalyticsEvent,
+} from "@/lib/analytics-events";
 import type { RequestGeo } from "@/lib/analytics-geo";
 
 export const ANALYTICS_ACTIVE_MS = 2 * 60 * 1000;
@@ -80,5 +84,17 @@ export async function recordAnalyticsPing(
         viewedAt: now,
       },
     });
+
+    const pathEvent = pathToAnalyticsEvent(input.path);
+    if (pathEvent) {
+      void recordAnalyticsEvent({
+        eventName: pathEvent,
+        sessionId: input.sessionId,
+        visitorId: input.visitorId,
+        mailToken: mailToken ?? undefined,
+        path: input.path,
+        dedupeSession: true,
+      }).catch(() => {});
+    }
   }
 }

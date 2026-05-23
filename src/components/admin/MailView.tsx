@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useAdminVertical } from "@/context/AdminVerticalContext";
 import { useMailSync } from "@/context/MailSyncContext";
 import { InboxPanel } from "./InboxPanel";
+import { AdminLeadTimeline } from "./AdminLeadTimeline";
 import type {
   MailAccountStatus,
   MailKpiStats,
@@ -620,6 +621,7 @@ export function MailView() {
                           )}
                       </div>
                     </div>
+                    <AdminLeadTimeline businessId={selected.businessId} />
                   </div>
                   <div className="bg-[#F9FAFB] p-4">
                     <p className="text-xs font-semibold uppercase tracking-wide text-[#667085]">

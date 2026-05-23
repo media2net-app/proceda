@@ -2,7 +2,9 @@ import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db/prisma";
 import { mailOutreachToRecord } from "@/lib/db/mappers";
 import { ensureBusinessStub } from "@/lib/bedrijven/business-db";
-import type { MailLeadStatus, MailOutreachRecord } from "./types";
+import { recordAnalyticsEvent } from "@/lib/analytics-events";
+import { buildSendBatchId } from "@/lib/mail/send-batch";
+import type { MailLeadStatus, MailOutreachRecord, OutreachPipelineStatus } from "./types";
 
 export function createMailToken(): string {
   return randomBytes(24).toString("base64url");
@@ -81,14 +83,24 @@ export async function assertMailOutreachDraft(
 export async function markMailSent(
   businessId: string,
   recipientEmail?: string,
+  options?: { branchId?: string; subjectVariant?: string },
 ): Promise<MailOutreachRecord> {
   await ensureMailRecord(businessId, recipientEmail);
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { branchId: true },
+  });
+  const branchId = options?.branchId ?? business?.branchId ?? "makelaardij";
+  const sendBatch = buildSendBatchId(branchId);
   const updated = await prisma.mailOutreach.updateMany({
     where: { businessId, status: "draft" },
     data: {
       status: "sent",
       sentAt: new Date(),
       recipientEmail: recipientEmail?.trim() || undefined,
+      sendBatch,
+      subjectVariant: options?.subjectVariant ?? "default",
+      pipelineStatus: "contacted",
     },
   });
   if (updated.count === 0) {
@@ -103,6 +115,12 @@ export async function markMailSent(
   const row = await prisma.mailOutreach.findUniqueOrThrow({
     where: { businessId },
   });
+  void recordAnalyticsEvent({
+    eventName: "mail_sent",
+    businessId,
+    mailToken: row.token,
+    metadata: { sendBatch, subjectVariant: row.subjectVariant },
+  }).catch(() => {});
   return mailOutreachToRecord(row);
 }
 
@@ -143,6 +161,11 @@ export async function markMailFollowupSent(
   const row = await prisma.mailOutreach.findUniqueOrThrow({
     where: { businessId },
   });
+  void recordAnalyticsEvent({
+    eventName: "followup_sent",
+    businessId,
+    mailToken: row.token,
+  }).catch(() => {});
   return mailOutreachToRecord(row);
 }
 
@@ -175,7 +198,19 @@ export async function markMailBooked(
       status: "booked",
       bookedAt: new Date(),
       appointmentId,
+      pipelineStatus: "meeting",
     },
+  });
+  return mailOutreachToRecord(row);
+}
+
+export async function updateMailPipelineStatus(
+  businessId: string,
+  pipelineStatus: OutreachPipelineStatus,
+): Promise<MailOutreachRecord> {
+  const row = await prisma.mailOutreach.update({
+    where: { businessId },
+    data: { pipelineStatus },
   });
   return mailOutreachToRecord(row);
 }

@@ -717,6 +717,29 @@
     "ofSent": "{rate}% din trimise",
     "ofPrev": "{rate}% pas anterior"
   },
+  "adminLeadTimeline": {
+    "title": "Cronologie lead",
+    "pipeline": "Pipeline",
+    "batch": "Batch {id}",
+    "empty": "Nicio activitate înregistrată.",
+    "pipeline_lead": "Lead",
+    "pipeline_contacted": "Contactat",
+    "pipeline_meeting": "Întâlnire",
+    "pipeline_proposal": "Propunere",
+    "pipeline_won": "Câștigat",
+    "pipeline_lost": "Pierdut"
+  },
+  "adminCohort": {
+    "title": "Cohorte send-batch",
+    "subtitle": "Trimis → deschis → rezervat → câștigat per batch",
+    "empty": "Niciun batch cu mail trimis — sendBatch se setează la trimitere.",
+    "colBatch": "Batch",
+    "colSent": "Trimis",
+    "colOpen": "Deschis",
+    "colBooked": "Rezervat",
+    "colWon": "Câștigat",
+    "colBookRate": "Book %"
+  },
   "adminActions": {
     "title": "Coadă acțiuni azi",
     "subtitle": "{count} acțiuni în așteptare",

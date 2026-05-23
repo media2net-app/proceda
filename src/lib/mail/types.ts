@@ -1,5 +1,13 @@
 export type MailLeadStatus = "draft" | "sent" | "booked";
 
+export type OutreachPipelineStatus =
+  | "lead"
+  | "contacted"
+  | "meeting"
+  | "proposal"
+  | "won"
+  | "lost";
+
 export type MailOutreachRecord = {
   businessId: string;
   token: string;
@@ -9,6 +17,9 @@ export type MailOutreachRecord = {
   followupSentAt?: string;
   bookedAt?: string;
   appointmentId?: string;
+  sendBatch?: string;
+  subjectVariant?: string;
+  pipelineStatus?: OutreachPipelineStatus;
   createdAt: string;
   updatedAt: string;
 };
@@ -45,6 +56,8 @@ export type MailTemplatePreview = {
   demoSessionCount?: number;
   demoFirstClickAt?: string;
   demoLastClickAt?: string;
+  sendBatch?: string;
+  pipelineStatus?: OutreachPipelineStatus;
 };
 
 export type MailKpiStats = {

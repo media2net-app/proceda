@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { storeDemoLeadSession } from "@/lib/analytics-demo-lead-client";
+import { trackClientAnalyticsEvent } from "@/lib/analytics-event-client";
 
 type Schedule = {
   days: { key: string; label: string; date: string }[];
@@ -55,6 +56,11 @@ export function DemoBookingView({ token }: { token: string }) {
         token: json.token,
         businessName: json.businessName,
       });
+      void trackClientAnalyticsEvent({
+        eventName: "booking_view",
+        mailToken: json.token,
+        path: window.location.pathname,
+      });
       setSelectedDay(json.schedule.days[0]?.key ?? null);
     } catch {
       setError(t("loadError"));
@@ -76,6 +82,11 @@ export function DemoBookingView({ token }: { token: string }) {
     if (!selectedSlot) return;
     setSubmitting(true);
     setError(null);
+    void trackClientAnalyticsEvent({
+      eventName: "booking_submit",
+      mailToken: token,
+      metadata: { scheduledAt: selectedSlot },
+    });
     try {
       const res = await fetch(`/api/demo/${token}/book`, {
         method: "POST",
@@ -231,7 +242,14 @@ export function DemoBookingView({ token }: { token: string }) {
               <button
                 key={slot.iso}
                 type="button"
-                onClick={() => setSelectedSlot(slot.iso)}
+                onClick={() => {
+                  setSelectedSlot(slot.iso);
+                  void trackClientAnalyticsEvent({
+                    eventName: "slot_select",
+                    mailToken: token,
+                    metadata: { slot: slot.iso, time: slot.timeLabel },
+                  });
+                }}
                 className={`min-h-11 rounded-lg border px-2 py-3 text-sm font-medium transition-colors sm:py-2 ${
                   selectedSlot === slot.iso
                     ? "border-[#7F56D9] bg-[#7F56D9] text-white"

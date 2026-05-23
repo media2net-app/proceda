@@ -155,6 +155,8 @@ export async function listDemoOutreachTemplates(
       status: record.status,
       sentAt: record.sentAt,
       followupSentAt: record.followupSentAt,
+      sendBatch: record.sendBatch,
+      pipelineStatus: record.pipelineStatus,
     });
   }
 

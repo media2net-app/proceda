@@ -51,7 +51,7 @@ export function AdminOutboundFunnel() {
         </p>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
         {data.steps.map((step) => (
           <div
             key={step.id}

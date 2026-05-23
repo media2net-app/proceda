@@ -725,6 +725,29 @@
     "ofSent": "{rate}% of sent",
     "ofPrev": "{rate}% of previous step"
   },
+  "adminLeadTimeline": {
+    "title": "Lead timeline",
+    "pipeline": "Pipeline",
+    "batch": "Batch {id}",
+    "empty": "No activity recorded yet.",
+    "pipeline_lead": "Lead",
+    "pipeline_contacted": "Contacted",
+    "pipeline_meeting": "Meeting",
+    "pipeline_proposal": "Proposal",
+    "pipeline_won": "Won",
+    "pipeline_lost": "Lost"
+  },
+  "adminCohort": {
+    "title": "Send-batch cohorts",
+    "subtitle": "Sent → open → booked → won per batch",
+    "empty": "No batches with sent mail yet — sendBatch is set on send.",
+    "colBatch": "Batch",
+    "colSent": "Sent",
+    "colOpen": "Opened",
+    "colBooked": "Booked",
+    "colWon": "Won",
+    "colBookRate": "Book %"
+  },
   "adminActions": {
     "title": "Action queue today",
     "subtitle": "{count} actions pending",
