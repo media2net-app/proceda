@@ -518,6 +518,14 @@ export function MailView() {
                                 {t("guessedEmailBadge")}
                               </span>
                             ) : null}
+                            {item.status === "draft" && item.sendReady === false ? (
+                              <span
+                                className="shrink-0 rounded-full border border-[#FEDF89] bg-[#FFFAEB] px-1.5 py-0.5 text-[10px] font-semibold text-[#B54708]"
+                                title={item.sendBlockers?.join(", ")}
+                              >
+                                {t("sendNotReadyBadge")}
+                              </span>
+                            ) : null}
                           </div>
                           <p className="truncate text-xs text-[#667085]">
                             {item.email ?? t("noEmail")}
@@ -584,6 +592,15 @@ export function MailView() {
                             {t("demoNotClickedYet")}
                           </p>
                         ) : null}
+                        {selected.status === "draft" &&
+                        selected.sendReady === false &&
+                        selected.sendBlockers?.length ? (
+                          <p className="mt-3 rounded-lg border border-[#FEDF89] bg-[#FFFAEB] px-3 py-2 text-xs text-[#B54708]">
+                            {t("sendNotReadyHint", {
+                              blockers: selected.sendBlockers.join(" · "),
+                            })}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <a
@@ -604,7 +621,16 @@ export function MailView() {
                         {selected.status === "draft" && selected.email && (
                           <button
                             type="button"
-                            disabled={sendingSlug === selected.slug || !accountOk}
+                            disabled={
+                              sendingSlug === selected.slug ||
+                              !accountOk ||
+                              selected.sendReady === false
+                            }
+                            title={
+                              selected.sendReady === false
+                                ? selected.sendBlockers?.join(", ")
+                                : undefined
+                            }
                             onClick={() => sendMail(selected)}
                             className="rounded-lg bg-[#7F56D9] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6941C6] disabled:opacity-60"
                           >

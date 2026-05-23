@@ -5,6 +5,7 @@ import { isMailConfigured } from "./email-config";
 import { loadInboxCache, inboxStats } from "./inbox-storage";
 import { summarizeDemoClicks } from "./demo-click-stats";
 import { listDemoOutreachTemplates } from "./list-demo-outreach";
+import { countSendReadyDrafts } from "@/lib/outreach/outreach-send-readiness";
 import type { MailKpiStats, MailTemplatePreview } from "./types";
 
 export { PROCEDA_PUBLIC_APP_URL, resolveAppBaseUrl } from "./app-url";
@@ -26,6 +27,8 @@ export async function getMailKpiStats(
       booked++;
     } else draft++;
   }
+
+  const sendReady = await countSendReadyDrafts(branchId, locale);
 
   const conversionSentToBooked =
     sent > 0 ? Math.round((booked / sent) * 100) : 0;
@@ -58,8 +61,8 @@ export async function getMailKpiStats(
   const inStats = inboxStats(inbox.messages);
 
   return {
-    /** Concept / te versturen (niet de hele demo-klaare pool). */
-    readyToSend: draft,
+    /** Concepten die het volledige outreach-proces doorlopen hebben. */
+    readyToSend: sendReady,
     demoReadyPool: previews.length,
     sent,
     booked,

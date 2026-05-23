@@ -4,6 +4,9 @@ import { isMailConfigured } from "@/lib/mail/email-config";
 import { resolveOutreachMailForBusiness } from "@/lib/mail/resolve-outreach-mail";
 import { sendOutreachEmail } from "@/lib/mail/smtp-client";
 import { assertMailOutreachDraft, markMailSent } from "@/lib/mail/storage";
+import { assertOutreachSendReady } from "@/lib/outreach/outreach-send-readiness";
+import { DEFAULT_BRANCH } from "@/lib/bedrijven/branches";
+import { findBusinessById } from "@/lib/bedrijven/load-all-businesses";
 
 export async function POST(request: Request) {
   try {
@@ -37,6 +40,14 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: "ALREADY_SENT" }, { status: 409 });
         }
         throw e;
+      }
+      const biz = await findBusinessById(businessId);
+      const branchId = biz?.branchId ?? DEFAULT_BRANCH;
+      try {
+        await assertOutreachSendReady(businessId, branchId, "initial");
+      } catch (e) {
+        const code = e instanceof Error ? e.message : "OUTREACH_NOT_READY";
+        return NextResponse.json({ error: code }, { status: 409 });
       }
     }
 

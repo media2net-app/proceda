@@ -663,6 +663,8 @@
     "kpiDemoClicksSub": "{rate}% of sent",
     "demoClickedBadge": "Clicked",
     "guessedEmailBadge": "Guessed email",
+    "sendNotReadyBadge": "Process incomplete",
+    "sendNotReadyHint": "Sending blocked until outreach is ready: {blockers}",
     "inboxThreadTitle": "Inbox thread",
     "inboxThreadEmpty": "No messages linked to this address",
     "demoClickDetail": "Booking page visited · {count} page view(s) · {sessions} session(s) · last {last}",

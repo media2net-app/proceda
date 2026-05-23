@@ -10,6 +10,7 @@ import {
   markMailSent,
 } from "@/lib/mail/storage";
 import { logOutreachAudit } from "@/lib/outreach/outreach-audit";
+import { assessOutreachSendReadiness } from "@/lib/outreach/outreach-send-readiness";
 import { getMailHealthReport } from "@/lib/mail/mail-health";
 import {
   pickSubjectVariant,
@@ -57,9 +58,9 @@ function emailDomain(email: string): string {
   return at >= 0 ? email.slice(at + 1).toLowerCase() : email.toLowerCase();
 }
 
-function buildDraftBatch(
+function buildDraftCandidatePool(
   previews: MailTemplatePreview[],
-  limit: number,
+  poolSize: number,
   maxPerDomain: number,
 ): MailTemplatePreview[] {
   const drafts = previews
@@ -81,10 +82,37 @@ function buildDraftBatch(
     seenEmails.add(email);
     domainCounts.set(domain, domainCount + 1);
     batch.push(item);
-    if (batch.length >= limit) break;
+    if (batch.length >= poolSize) break;
   }
 
   return batch;
+}
+
+async function buildSendReadyDraftBatch(
+  previews: MailTemplatePreview[],
+  branchId: ScrapeBranchId,
+  limit: number,
+  maxPerDomain: number,
+): Promise<MailTemplatePreview[]> {
+  const candidates = buildDraftCandidatePool(
+    previews,
+    Math.max(limit * 4, limit),
+    maxPerDomain,
+  );
+  const ready: MailTemplatePreview[] = [];
+
+  for (const item of candidates) {
+    const readiness = await assessOutreachSendReadiness(
+      item.businessId,
+      branchId,
+      "initial",
+    );
+    if (!readiness.ready) continue;
+    ready.push(item);
+    if (ready.length >= limit) break;
+  }
+
+  return ready;
 }
 
 export async function runBatchOutreachSend(
@@ -109,7 +137,9 @@ export async function runBatchOutreachSend(
   }
 
   const previews = await listDemoOutreachTemplates(locale, undefined, options.branchId);
-  const batch = buildDraftBatch(previews, limit, maxPerDomain);
+  const batch = dryRun
+    ? buildDraftCandidatePool(previews, limit, maxPerDomain)
+    : await buildSendReadyDraftBatch(previews, options.branchId, limit, maxPerDomain);
 
   const items: BatchSendItemResult[] = [];
   let sent = 0;
@@ -162,6 +192,23 @@ export async function runBatchOutreachSend(
         continue;
       }
       throw e;
+    }
+
+    const readiness = await assessOutreachSendReadiness(
+      item.businessId,
+      options.branchId,
+      "initial",
+    );
+    if (!readiness.ready) {
+      items.push({
+        businessId: item.businessId,
+        businessName: item.businessName,
+        email: item.email!,
+        status: "skipped",
+        reason: readiness.blockers[0] ?? "not_send_ready",
+      });
+      skipped++;
+      continue;
     }
 
     const resolved = await resolveOutreachMailForBusiness(

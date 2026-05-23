@@ -35,6 +35,7 @@ import { loadDemoClickStatsByTokens } from "./demo-click-stats";
 import { ensureMailRecordsBatch, listMailRecords } from "./storage";
 import type { MailTemplatePreview } from "./types";
 import { resolveAppBaseUrl } from "./app-url";
+import { assessOutreachSendReadiness } from "@/lib/outreach/outreach-send-readiness";
 
 function businessFromAuditRow(
   row: DemoReadyAuditRow,
@@ -170,6 +171,22 @@ export async function listDemoOutreachTemplates(
   }
 
   out.sort((a, b) => a.businessName.localeCompare(b.businessName, "nl"));
+
+  await Promise.all(
+    out.map(async (row) => {
+      if (row.status !== "draft") {
+        row.sendReady = true;
+        return;
+      }
+      const readiness = await assessOutreachSendReadiness(
+        row.businessId,
+        branchId,
+        "initial",
+      );
+      row.sendReady = readiness.ready;
+      row.sendBlockers = readiness.blockers;
+    }),
+  );
 
   const clickByToken = await loadDemoClickStatsByTokens(
     out.map((row) => row.token),

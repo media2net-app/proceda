@@ -63,6 +63,9 @@ export type MailTemplatePreview = {
   pipelineStatus?: OutreachPipelineStatus;
   /** E-mail waarschijnlijk geraden (info@domein) — extra voorzichtig versturen */
   emailGuessed?: boolean;
+  /** Volledig outreach-proces afgerond (logo, rapport, screenshot, …). */
+  sendReady?: boolean;
+  sendBlockers?: string[];
 };
 
 export type MailKpiStats = {

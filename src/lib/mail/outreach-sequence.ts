@@ -13,6 +13,7 @@ import {
 } from "@/lib/mail/storage";
 import { buildSequenceNudgeMail } from "@/lib/mail/sequence-nudge-mail";
 import { logOutreachAudit } from "@/lib/outreach/outreach-audit";
+import { assessOutreachSendReadiness } from "@/lib/outreach/outreach-send-readiness";
 import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
 
 export type SequenceDueItem = {
@@ -98,6 +99,20 @@ export async function runDueOutreachSequences(
 
     try {
       if (row.sequenceStep === 1) {
+        const readiness = await assessOutreachSendReadiness(
+          item.businessId,
+          branchId,
+          "followup",
+        );
+        if (!readiness.ready) {
+          items.push({
+            businessId: item.businessId,
+            status: "skipped",
+            reason: readiness.blockers[0] ?? "not_send_ready",
+          });
+          skipped++;
+          continue;
+        }
         const resolved = await resolveFollowupMailForBusiness(
           item.businessId,
           locale,
@@ -133,6 +148,20 @@ export async function runDueOutreachSequences(
         items.push({ businessId: item.businessId, status: "sent", reason: "day3_followup" });
         sent++;
       } else if (row.sequenceStep === 2 || row.sequenceStep === 3) {
+        const nudgeReady = await assessOutreachSendReadiness(
+          item.businessId,
+          branchId,
+          "sequence_nudge",
+        );
+        if (!nudgeReady.ready) {
+          items.push({
+            businessId: item.businessId,
+            status: "skipped",
+            reason: nudgeReady.blockers[0] ?? "not_send_ready",
+          });
+          skipped++;
+          continue;
+        }
         const dayLabel = row.sequenceStep === 2 ? "7" : "14";
         const demoUrl = buildDemoBookingUrl(
           resolveAppBaseUrl(),

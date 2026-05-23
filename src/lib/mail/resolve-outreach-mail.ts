@@ -10,6 +10,8 @@ import { demoAppPublicPath, demoHomepagePublicPath } from "@/lib/bedrijven/demo-
 import { businessIdToDemoSlug } from "@/lib/bedrijven/demo-slug";
 import type { Bedrijf } from "@/lib/bedrijven/types";
 import { buildMinimalReportForMail } from "./demo-outreach-draft";
+import { loadBusinessReport } from "@/lib/bedrijven/business-report-storage";
+import { enrichBusinessReport } from "@/lib/bedrijven/enrich-report";
 import {
   buildOutreachMailSubject,
   buildOutreachProposalDraft,
@@ -88,13 +90,16 @@ export async function resolveOutreachMailForBusiness(
   business.name = displayName;
 
   const demoSlug = businessIdToDemoSlug(businessId);
-  const draft = buildOutreachProposalDraft(branchId, displayName);
-  const report = buildMinimalReportForMail({
-    business,
-    proposalEmailDraft: draft,
-    demoAppUrl: demoAppPublicPath(demoSlug, locale),
-    demoHomepageUrl: demoHomepagePublicPath(demoSlug, locale),
-  });
+  const storedReport = await loadBusinessReport(businessId);
+  const report =
+    storedReport?.demoAppUrl && storedReport.ai?.proposalEmailDraft
+      ? enrichBusinessReport(storedReport, business)
+      : buildMinimalReportForMail({
+          business,
+          proposalEmailDraft: buildOutreachProposalDraft(branchId, displayName),
+          demoAppUrl: demoAppPublicPath(demoSlug, locale),
+          demoHomepageUrl: demoHomepagePublicPath(demoSlug, locale),
+        });
 
   const record = await ensureMailRecord(businessId, email);
   const sendBatch = buildSendBatchId(branchId);

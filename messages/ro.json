@@ -663,6 +663,8 @@
     "kpiDemoClicksSub": "{rate}% din trimise",
     "demoClickedBadge": "Click",
     "guessedEmailBadge": "Email ghicit",
+    "sendNotReadyBadge": "Proces incomplet",
+    "sendNotReadyHint": "Trimitere blocată până outreach-ul e gata: {blockers}",
     "inboxThreadTitle": "Thread inbox",
     "inboxThreadEmpty": "Niciun mesaj pentru această adresă",
     "demoClickDetail": "Pagină programare vizitată · {count} vizualizări · {sessions} sesiuni · ultima {last}",

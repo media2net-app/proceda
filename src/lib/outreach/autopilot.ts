@@ -30,8 +30,13 @@ import { syncBouncesFromInbox } from "@/lib/mail/sync-bounces-from-inbox";
 import { sendDueAppointmentReminders } from "@/lib/mail/send-booking-reminder";
 import { getOutreachActionQueue } from "@/lib/outreach/outreach-action-queue";
 import { logOutreachAudit } from "@/lib/outreach/outreach-audit";
+import {
+  assessOutreachSendReadiness,
+  countSendReadyDrafts,
+} from "@/lib/outreach/outreach-send-readiness";
 
-const MIN_DRAFTS_BEFORE_SCRAPE = 12;
+/** Alleen leads die het volledige outreach-proces doorlopen hebben tellen mee. */
+const MIN_SEND_READY_BEFORE_SCRAPE = 8;
 const BATCH_SEND_PER_TICK = 5;
 const FOLLOWUPS_PER_TICK = 3;
 
@@ -178,6 +183,18 @@ async function runAutopilotFollowups(
   for (const item of followups) {
     try {
       await assertMailFollowupEligible(item.businessId);
+      const readiness = await assessOutreachSendReadiness(
+        item.businessId,
+        branchId,
+        "followup",
+      );
+      if (!readiness.ready) {
+        items.push({
+          businessId: item.businessId,
+          status: readiness.blockers[0] ?? "not_send_ready",
+        });
+        continue;
+      }
       const resolved = await resolveFollowupMailForBusiness(
         item.businessId,
         locale,
@@ -229,9 +246,15 @@ export async function runAutopilotTick(
   };
 
   const previews = await listDemoOutreachTemplates(locale, undefined, scrapeBranch);
-  summary.draftCount = previews.filter(
+  const draftCount = previews.filter(
     (p) => p.status === "draft" && p.email?.trim(),
   ).length;
+  const sendReadyCount = await countSendReadyDrafts(scrapeBranch, locale);
+  summary.draftCount = sendReadyCount;
+  summary.steps.pipeline = {
+    draftConcepts: draftCount,
+    sendReady: sendReadyCount,
+  };
 
   try {
     summary.steps.inbox = await runInboxSync();
@@ -264,7 +287,7 @@ export async function runAutopilotTick(
 
     try {
       const health = await getMailHealthReport(scrapeBranch);
-      if (health.capRemaining > 0 && summary.draftCount > 0) {
+      if (health.capRemaining > 0 && sendReadyCount > 0) {
         const limit = Math.min(BATCH_SEND_PER_TICK, health.capRemaining);
         summary.steps.batchSend = await runBatchOutreachSend({
           branchId: scrapeBranch,
@@ -287,7 +310,7 @@ export async function runAutopilotTick(
     }
   }
 
-  if (summary.draftCount < MIN_DRAFTS_BEFORE_SCRAPE) {
+  if (sendReadyCount < MIN_SEND_READY_BEFORE_SCRAPE) {
     const provinceId = row.scrapeProvinceId ?? DEFAULT_PROVINCE;
     try {
       const scrape = await scrapeBedrijvenBatch(scrapeBranch, provinceId as ProvinceId);
@@ -316,8 +339,9 @@ export async function runAutopilotTick(
   } else {
     summary.steps.scrape = {
       skipped: true,
-      reason: "ENOUGH_DRAFTS",
-      draftCount: summary.draftCount,
+      reason: "ENOUGH_SEND_READY",
+      sendReady: sendReadyCount,
+      draftConcepts: draftCount,
     };
   }
 

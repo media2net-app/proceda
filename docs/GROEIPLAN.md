@@ -179,6 +179,8 @@ Match `InboxMessage` op email → thread op leadkaart; reply rate + reactietijd.
 
 **Fase 6 (mei 2026)** — header Start/Stop autopilot: inbox-sync, sequences, follow-ups, batch send, lead-scrape per provincie (Vercel cron elke 5 min).
 
+**Send-readiness gate** — geen mail (handmatig, batch, autopilot) zonder: demo-ready audit, logo+huisstijl, opgeslagen AI-rapport met voorstel, dashboard-screenshot, geverifieerd e-mailadres, juiste verticale.
+
 **Mobiel & cross-browser (mei 2026)** — viewport/safe-area, iOS input-zoom fix, admin mail master-detail op mobiel, sticky boek-CTA, horizontale KPI-scroll, `src/styles/mobile-compat.css`.
 
 ---

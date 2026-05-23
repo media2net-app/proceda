@@ -662,6 +662,8 @@
     "kpiDemoClicksSub": "{rate}% van verstuurd",
     "demoClickedBadge": "Geklikt",
     "guessedEmailBadge": "Geraden e-mail",
+    "sendNotReadyBadge": "Proces incompleet",
+    "sendNotReadyHint": "Versturen geblokkeerd tot het outreach-proces klaar is: {blockers}",
     "inboxThreadTitle": "Inbox-thread",
     "inboxThreadEmpty": "Geen mails gekoppeld aan dit adres",
     "demoClickDetail": "Afspraakpagina bezocht · {count}× paginaweergave · {sessions} sessie(s) · laatst {last}",
