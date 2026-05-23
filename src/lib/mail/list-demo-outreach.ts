@@ -1,5 +1,5 @@
 import { loadDemoReadyAudit } from "@/lib/bedrijven/demo-ready-audit";
-import { normalizeEmail } from "@/lib/bedrijven/contact-utils";
+import { normalizeEmail, isLikelyGuessedEmail } from "@/lib/bedrijven/contact-utils";
 import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
 import {
   DEFAULT_BRANCH,
@@ -29,6 +29,8 @@ import {
   defaultOutreachSubcategory,
 } from "./outreach-draft";
 import { buildDemoBookingUrl, buildMailHtml } from "./templates";
+import { buildOutreachUtmParams } from "./outreach-utm";
+import { buildSendBatchId } from "./send-batch";
 import { loadDemoClickStatsByTokens } from "./demo-click-stats";
 import { ensureMailRecordsBatch, listMailRecords } from "./storage";
 import type { MailTemplatePreview } from "./types";
@@ -118,7 +120,13 @@ export async function listDemoOutreachTemplates(
     });
 
     const record = recordByBiz.get(business.id)!;
-    const demoUrl = buildDemoBookingUrl(baseUrl, locale, record.token);
+    const sendBatchPreview = buildSendBatchId(branchId);
+    const utm = buildOutreachUtmParams({
+      branchId,
+      sendBatch: sendBatchPreview,
+      mailKind: "initial",
+    });
+    const demoUrl = buildDemoBookingUrl(baseUrl, locale, record.token, utm);
     const hasScreenshot = await dashboardScreenshotExists(demoSlug);
     const dashboardScreenshotUrl = hasScreenshot
       ? demoDashboardScreenshotAbsoluteUrl(baseUrl, demoSlug)
@@ -157,6 +165,7 @@ export async function listDemoOutreachTemplates(
       followupSentAt: record.followupSentAt,
       sendBatch: record.sendBatch,
       pipelineStatus: record.pipelineStatus,
+      emailGuessed: isLikelyGuessedEmail(email, business.website),
     });
   }
 

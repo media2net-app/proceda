@@ -61,6 +61,8 @@ export type MailTemplatePreview = {
   demoLastClickAt?: string;
   sendBatch?: string;
   pipelineStatus?: OutreachPipelineStatus;
+  /** E-mail waarschijnlijk geraden (info@domein) — extra voorzichtig versturen */
+  emailGuessed?: boolean;
 };
 
 export type MailKpiStats = {

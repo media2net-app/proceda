@@ -7,6 +7,7 @@ import {
 import { buildFollowUpProposalDraft } from "./demo-outreach-followup-draft";
 import { buildMinimalReportForMail } from "./demo-outreach-draft";
 import { buildDemoBookingUrl, buildMailHtml } from "./templates";
+import { buildOutreachUtmParams } from "./outreach-utm";
 
 /** Admin-preview en batch follow-up (zelfde copy als verzonden mail). */
 export function buildFollowupMailPreviewForLead(params: {
@@ -25,7 +26,12 @@ export function buildFollowupMailPreviewForLead(params: {
     demoAppUrl: demoAppPublicPath(demoSlug, locale),
     demoHomepageUrl: demoHomepagePublicPath(demoSlug, locale),
   });
-  const demoUrl = buildDemoBookingUrl(baseUrl, locale, token);
+  const utm = buildOutreachUtmParams({
+    branchId: business.branchId ?? "makelaardij",
+    sendBatch: undefined,
+    mailKind: "followup",
+  });
+  const demoUrl = buildDemoBookingUrl(baseUrl, locale, token, utm);
   const { subject, plainBody, htmlBody } = buildMailHtml({
     business,
     report,

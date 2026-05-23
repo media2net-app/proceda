@@ -4,6 +4,7 @@ import {
   pathToAnalyticsEvent,
   recordAnalyticsEvent,
 } from "@/lib/analytics-events";
+import { parseUtmFromPath } from "@/lib/mail/outreach-utm";
 import type { RequestGeo } from "@/lib/analytics-geo";
 
 export const ANALYTICS_ACTIVE_MS = 2 * 60 * 1000;
@@ -29,6 +30,7 @@ export async function recordAnalyticsPing(
   const bookingActive = input.bookingActive === true;
   const leadName = input.leadName?.trim().slice(0, 200) || null;
   const mailToken = input.mailToken?.trim().slice(0, 80) || null;
+  const utm = parseUtmFromPath(input.path);
 
   const existing = await prisma.analyticsSession.findUnique({
     where: { sessionId: input.sessionId },
@@ -53,6 +55,10 @@ export async function recordAnalyticsPing(
       funnelLabel,
       leadName,
       mailToken,
+      utmCampaign: utm?.utm_campaign ?? null,
+      utmSource: utm?.utm_source ?? null,
+      utmMedium: utm?.utm_medium ?? null,
+      utmContent: utm?.utm_content ?? null,
       bookingActive,
       firstSeenAt: now,
       lastSeenAt: now,
@@ -70,6 +76,10 @@ export async function recordAnalyticsPing(
       funnelLabel,
       ...(leadName ? { leadName } : {}),
       ...(mailToken ? { mailToken } : {}),
+      ...(utm?.utm_campaign ? { utmCampaign: utm.utm_campaign } : {}),
+      ...(utm?.utm_source ? { utmSource: utm.utm_source } : {}),
+      ...(utm?.utm_medium ? { utmMedium: utm.utm_medium } : {}),
+      ...(utm?.utm_content ? { utmContent: utm.utm_content } : {}),
       bookingActive,
       lastSeenAt: now,
     },

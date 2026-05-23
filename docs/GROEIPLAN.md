@@ -157,6 +157,11 @@ Match `InboxMessage` op email → thread op leadkaart; reply rate + reactietijd.
 | 10 | Command center | ✅ Fase 3 |
 | 11 | Outreach lead score + attributie | ✅ Fase 3 |
 | 12 | Compliance audit + suppressie | ✅ Fase 3 |
+| 13 | UTM in mail-links + analytics | ✅ Fase 4 |
+| 14 | Mail health (SPF/DMARC, dagcap) | ✅ Fase 4 |
+| 15 | Inbox-thread + reply rate | ✅ Fase 4 |
+| 16 | Geraden e-mail label + Slack webhook | ✅ Fase 4 |
+| 17 | Waitlist API | ✅ Fase 4 |
 
 **Admin dark mode** — ✅ gedaan (mei 2026).
 
@@ -167,6 +172,8 @@ Match `InboxMessage` op email → thread op leadkaart; reply rate + reactietijd.
 **Fase 2 (mei 2026)** — batch send (50/100, throttle), sequences dag 3/7/14, bellijst, A/B onderwerp, booking reminders 24u/1u.
 
 **Fase 3 (mei 2026)** — command center (acties + funnel + cohort + live outreach), outreach lead score + first/last touch, audit log + suppressielijst.
+
+**Fase 4 (mei 2026)** — UTM in mail-links, mail health panel, inbox-thread op leadkaart, reply rate, geraden e-mail badge, Slack bij boeking, waitlist API.
 
 **Mobiel & cross-browser (mei 2026)** — viewport/safe-area, iOS input-zoom fix, admin mail master-detail op mobiel, sticky boek-CTA, horizontale KPI-scroll, `src/styles/mobile-compat.css`.
 

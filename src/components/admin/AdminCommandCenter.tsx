@@ -8,6 +8,8 @@ import { AdminActionQueue } from "@/components/admin/AdminActionQueue";
 import { AdminOutboundFunnel } from "@/components/admin/AdminOutboundFunnel";
 import { AdminCohortPanel } from "@/components/admin/AdminCohortPanel";
 import { AdminCallListPanel } from "@/components/admin/AdminCallListPanel";
+import { AdminMailHealthPanel } from "@/components/admin/AdminMailHealthPanel";
+import { AdminUtmPanel } from "@/components/admin/AdminUtmPanel";
 import type { OutreachLeadScoreRow } from "@/lib/outreach/outreach-lead-score";
 
 type LiveMini = {
@@ -237,6 +239,11 @@ export function AdminCommandCenter() {
       <div className="grid gap-6 lg:grid-cols-2">
         <AdminLeadScorePanel />
         <AdminCallListPanel />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <AdminMailHealthPanel />
+        <AdminUtmPanel />
       </div>
 
       <AdminComplianceMini />

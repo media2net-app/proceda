@@ -648,6 +648,9 @@
     "kpiDemoClicks": "Demo geopend",
     "kpiDemoClicksSub": "{rate}% van verstuurd",
     "demoClickedBadge": "Geklikt",
+    "guessedEmailBadge": "Geraden e-mail",
+    "inboxThreadTitle": "Inbox-thread",
+    "inboxThreadEmpty": "Geen mails gekoppeld aan dit adres",
     "demoClickDetail": "Afspraakpagina bezocht · {count}× paginaweergave · {sessions} sessie(s) · laatst {last}",
     "demoNotClickedYet": "Nog geen bezoek aan de persoonlijke afspraakpagina (of alleen e-mailscanner).",
     "ctaNoteTitle": "CTA in every email",
@@ -794,6 +797,18 @@
     "colTouch": "Laatste touch",
     "complianceTitle": "Compliance & audit",
     "suppressedCount": "{count} leads op suppressielijst"
+  },
+  "adminMailHealth": {
+    "title": "Mail health",
+    "subtitle": "{sent}/{cap} vandaag verstuurd · domein {domain}"
+  },
+  "adminUtm": {
+    "title": "UTM & reply rate",
+    "replyRate": "{rate}% reply ({replies}/{sent} verstuurd)",
+    "empty": "Nog geen UTM-sessies — UTM zit in mail-links sinds Fase 4",
+    "colCampaign": "Campagne",
+    "colSessions": "Sessies",
+    "colEngaged": "Engaged"
   },
   "adminActions": {
     "title": "Actie-queue vandaag",

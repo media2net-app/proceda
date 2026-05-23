@@ -1,6 +1,7 @@
 import type { Bedrijf } from "@/lib/bedrijven/types";
 import type { BusinessReport } from "@/lib/bedrijven/business-report-types";
 import { buildFollowUpMailSubject } from "./demo-outreach-followup-draft";
+import { appendUtmToUrl, type OutreachUtmParams } from "./outreach-utm";
 
 /** Vaste Proceda-huisstijl voor outreach-CTA (niet klantkleur). */
 export const PROCEDA_MAIL_CTA_COLOR = "#7F56D9";
@@ -19,9 +20,16 @@ export function buildMailSubject(
   return `Maatwerk webapp + AI-automatisering — ${businessName}`;
 }
 
-export function buildDemoBookingUrl(baseUrl: string, locale: string, token: string): string {
+export function buildDemoBookingUrl(
+  baseUrl: string,
+  locale: string,
+  token: string,
+  utm?: OutreachUtmParams,
+): string {
   const base = baseUrl.replace(/\/$/, "");
-  return `${base}/${locale}/demo/${token}`;
+  const url = `${base}/${locale}/demo/${token}`;
+  if (!utm) return url;
+  return appendUtmToUrl(url, utm);
 }
 
 function buildDashboardScreenshotHtml(

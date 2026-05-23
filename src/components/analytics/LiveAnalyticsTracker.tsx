@@ -95,7 +95,9 @@ export default function LiveAnalyticsTracker() {
   }, []);
 
   const sendPing = useCallback(async () => {
-    const path = pathname || "/";
+    const search =
+      typeof window !== "undefined" ? window.location.search : "";
+    const path = (pathname || "/") + search;
     try {
       await fetch("/api/analytics/ping", {
         method: "POST",

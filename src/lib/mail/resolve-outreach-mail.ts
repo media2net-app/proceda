@@ -17,6 +17,8 @@ import {
 } from "./outreach-draft";
 import { resolveAppBaseUrl } from "./app-url";
 import { buildDemoBookingUrl, buildMailHtml } from "./templates";
+import { buildOutreachUtmParams } from "./outreach-utm";
+import { buildSendBatchId } from "./send-batch";
 import type { MailAttachment } from "./smtp-client";
 import {
   dashboardScreenshotCidSrc,
@@ -95,10 +97,19 @@ export async function resolveOutreachMailForBusiness(
   });
 
   const record = await ensureMailRecord(businessId, email);
+  const sendBatch = buildSendBatchId(branchId);
+  const subjectAb = options?.subjectAb;
+  const utm = buildOutreachUtmParams({
+    branchId,
+    sendBatch,
+    subjectVariant: subjectAb ? (subjectAb === "b" ? "B" : "A") : "default",
+    mailKind: "initial",
+  });
   const demoUrl = buildDemoBookingUrl(
     resolveAppBaseUrl(request),
     locale,
     record.token,
+    utm,
   );
 
   const base = resolveAppBaseUrl(request);

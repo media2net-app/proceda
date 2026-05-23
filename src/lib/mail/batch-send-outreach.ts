@@ -10,6 +10,7 @@ import {
   markMailSent,
 } from "@/lib/mail/storage";
 import { logOutreachAudit } from "@/lib/outreach/outreach-audit";
+import { getMailHealthReport } from "@/lib/mail/mail-health";
 import {
   pickSubjectVariant,
   subjectVariantLabel,
@@ -98,6 +99,13 @@ export async function runBatchOutreachSend(
 
   if (!dryRun && !isMailConfigured()) {
     throw new Error("MAIL_NOT_CONFIGURED");
+  }
+
+  if (!dryRun) {
+    const health = await getMailHealthReport(options.branchId);
+    if (health.capRemaining <= 0) {
+      throw new Error("DAILY_SEND_CAP_REACHED");
+    }
   }
 
   const previews = await listDemoOutreachTemplates(locale, undefined, options.branchId);

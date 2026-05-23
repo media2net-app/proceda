@@ -6,6 +6,7 @@ import { useAdminVertical } from "@/context/AdminVerticalContext";
 import { useMailSync } from "@/context/MailSyncContext";
 import { InboxPanel } from "./InboxPanel";
 import { AdminLeadTimeline } from "./AdminLeadTimeline";
+import { AdminLeadInboxThread } from "./AdminLeadInboxThread";
 import type {
   MailAccountStatus,
   MailKpiStats,
@@ -512,6 +513,11 @@ export function MailView() {
                                 {t("demoClickedBadge")}
                               </span>
                             ) : null}
+                            {item.emailGuessed ? (
+                              <span className="shrink-0 rounded-full border border-[#FCCEEE] bg-[#FDF2FA] px-1.5 py-0.5 text-[10px] font-semibold text-[#C11574]">
+                                {t("guessedEmailBadge")}
+                              </span>
+                            ) : null}
                           </div>
                           <p className="truncate text-xs text-[#667085]">
                             {item.email ?? t("noEmail")}
@@ -622,6 +628,7 @@ export function MailView() {
                       </div>
                     </div>
                     <AdminLeadTimeline businessId={selected.businessId} />
+                    <AdminLeadInboxThread email={selected.email} />
                   </div>
                   <div className="bg-[#F9FAFB] p-4">
                     <p className="text-xs font-semibold uppercase tracking-wide text-[#667085]">

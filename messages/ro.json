@@ -649,6 +649,9 @@
     "kpiDemoClicks": "Demo deschis",
     "kpiDemoClicksSub": "{rate}% din trimise",
     "demoClickedBadge": "Click",
+    "guessedEmailBadge": "Email ghicit",
+    "inboxThreadTitle": "Thread inbox",
+    "inboxThreadEmpty": "Niciun mesaj pentru această adresă",
     "demoClickDetail": "Pagină programare vizitată · {count} vizualizări · {sessions} sesiuni · ultima {last}",
     "demoNotClickedYet": "Încă fără vizită la pagina personală (sau doar scanner e-mail).",
     "ctaNoteTitle": "CTA în fiecare email",
@@ -787,6 +790,18 @@
     "colTouch": "Ultim touch",
     "complianceTitle": "Compliance & audit",
     "suppressedCount": "{count} lead-uri pe lista de suprimare"
+  },
+  "adminMailHealth": {
+    "title": "Mail health",
+    "subtitle": "{sent}/{cap} trimise azi · domeniu {domain}"
+  },
+  "adminUtm": {
+    "title": "UTM & reply rate",
+    "replyRate": "{rate}% reply ({replies}/{sent} trimise)",
+    "empty": "Nicio sesiune UTM — UTM în link-uri mail din Faza 4",
+    "colCampaign": "Campanie",
+    "colSessions": "Sesiuni",
+    "colEngaged": "Engaged"
   },
   "adminActions": {
     "title": "Coadă acțiuni azi",

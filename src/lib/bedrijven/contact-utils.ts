@@ -330,3 +330,14 @@ export function guessInfoEmailFromWebsite(
 
   return normalizeEmail(`info@${domain}`);
 }
+
+/** True als e-mail overeenkomt met info@{website-domein} (enriched guess). */
+export function isLikelyGuessedEmail(
+  email: string | undefined,
+  website: string | undefined,
+): boolean {
+  const normalized = normalizeEmail(email);
+  const guessed = website ? guessInfoEmailFromWebsite(website) : undefined;
+  if (!normalized || !guessed) return false;
+  return normalized === guessed;
+}

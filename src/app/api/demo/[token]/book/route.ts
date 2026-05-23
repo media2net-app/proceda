@@ -5,6 +5,7 @@ import { isValidBookingSlot } from "@/lib/mail/booking-slots";
 import { markMailBooked } from "@/lib/mail/storage";
 import { sendBookingConfirmationEmail } from "@/lib/mail/send-booking-confirmation";
 import { recordAnalyticsEvent } from "@/lib/analytics-events";
+import { notifySlackBookingConfirmed } from "@/lib/integrations/slack-notify";
 
 type RouteContext = { params: Promise<{ token: string }> };
 
@@ -63,6 +64,11 @@ export async function POST(request: Request, context: RouteContext) {
     }).catch(() => {});
 
     const confirmTo = body.email?.trim() || lead.business.email;
+    void notifySlackBookingConfirmed({
+      businessName: lead.business.name,
+      scheduledAt: body.scheduledAt,
+      email: confirmTo,
+    });
     let confirmationSent = false;
     if (confirmTo) {
       const locale = body.locale === "en" ? "en" : "nl";

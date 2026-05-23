@@ -291,6 +291,10 @@ model AnalyticsSession {
   funnelLabel   String?
   leadName      String?
   mailToken     String?
+  utmCampaign   String?
+  utmSource     String?
+  utmMedium     String?
+  utmContent    String?
   bookingActive Boolean  @default(false)
   firstSeenAt   DateTime @default(now())
   lastSeenAt    DateTime @default(now())
@@ -299,6 +303,7 @@ model AnalyticsSession {
 
   @@index([lastSeenAt])
   @@index([visitorId])
+  @@index([utmCampaign])
 }
 
 model AnalyticsPageView {
@@ -344,4 +349,28 @@ model OutreachAuditLog {
   @@index([createdAt])
   @@index([businessId])
   @@index([action])
+}
+
+model MailBounce {
+  id         String   @id @default(uuid())
+  email      String
+  businessId String?
+  reason     String?
+  source     String   @default("inbox")
+  createdAt  DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model WaitlistEntry {
+  id          String   @id @default(uuid())
+  email       String
+  branchId    String   @default("makelaardij")
+  companyName String?
+  locale      String   @default("nl")
+  createdAt   DateTime @default(now())
+
+  @@unique([email, branchId])
+  @@index([branchId])
 }

@@ -649,6 +649,9 @@
     "kpiDemoClicks": "Demo opened",
     "kpiDemoClicksSub": "{rate}% of sent",
     "demoClickedBadge": "Clicked",
+    "guessedEmailBadge": "Guessed email",
+    "inboxThreadTitle": "Inbox thread",
+    "inboxThreadEmpty": "No messages linked to this address",
     "demoClickDetail": "Booking page visited · {count} page view(s) · {sessions} session(s) · last {last}",
     "demoNotClickedYet": "No visit to the personal booking page yet (or email scanner only).",
     "ctaNoteTitle": "CTA in every email",
@@ -795,6 +798,18 @@
     "colTouch": "Last touch",
     "complianceTitle": "Compliance & audit",
     "suppressedCount": "{count} leads on suppression list"
+  },
+  "adminMailHealth": {
+    "title": "Mail health",
+    "subtitle": "{sent}/{cap} sent today · domain {domain}"
+  },
+  "adminUtm": {
+    "title": "UTM & reply rate",
+    "replyRate": "{rate}% reply ({replies}/{sent} sent)",
+    "empty": "No UTM sessions yet — UTM is in mail links since Phase 4",
+    "colCampaign": "Campaign",
+    "colSessions": "Sessions",
+    "colEngaged": "Engaged"
   },
   "adminActions": {
     "title": "Action queue today",
