@@ -175,6 +175,8 @@ Match `InboxMessage` op email → thread op leadkaart; reply rate + reactietijd.
 
 **Fase 4 (mei 2026)** — UTM in mail-links, mail health panel, inbox-thread op leadkaart, reply rate, geraden e-mail badge, Slack bij boeking, waitlist API.
 
+**Fase 5 (mei 2026)** — live view default outreach-only, bounce-detectie bij mail-sync (auto suppress), waitlist-panel in command center, recente bounces in mail health.
+
 **Mobiel & cross-browser (mei 2026)** — viewport/safe-area, iOS input-zoom fix, admin mail master-detail op mobiel, sticky boek-CTA, horizontale KPI-scroll, `src/styles/mobile-compat.css`.
 
 ---
@@ -193,7 +195,7 @@ Match `InboxMessage` op email → thread op leadkaart; reply rate + reactietijd.
 
 - [ ] Cohort vergelijking batch A vs B
 - [ ] Reply rate zichtbaar; ≥1 deal `won` of `lost` gelogd
-- [ ] Live view default: alleen outreach-verkeer
+- [x] Live view default: alleen outreach-verkeer
 
 ---
 

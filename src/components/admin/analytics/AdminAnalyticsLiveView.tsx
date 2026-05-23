@@ -30,9 +30,11 @@ export default function AdminAnalyticsLiveView() {
   const searchParams = useSearchParams();
   const initialPeriod = parseAnalyticsPeriod(searchParams.get("period"));
   const [period, setPeriod] = useState<AnalyticsPeriod>(initialPeriod);
-  const [outreachOnly, setOutreachOnly] = useState(
-    searchParams.get("outreach") === "1",
-  );
+  const [outreachOnly, setOutreachOnly] = useState(() => {
+    const param = searchParams.get("outreach");
+    if (param === "0") return false;
+    return param === "1" || param === null;
+  });
   const [data, setData] = useState<AnalyticsLiveSnapshot | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);

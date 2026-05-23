@@ -50,6 +50,21 @@ export function AdminMailHealthPanel() {
         ))}
       </ul>
       <p className="mt-3 text-xs text-[#98A2B3]">{data.dns.dkimHint}</p>
+      {data.recentBounces.length > 0 ? (
+        <div className="mt-4">
+          <p className="text-xs font-semibold uppercase text-[#667085]">{t("recentBounces")}</p>
+          <ul className="mt-2 space-y-1 text-xs text-[#344054]">
+            {data.recentBounces.map((b) => (
+              <li key={`${b.email}-${b.createdAt}`} className="rounded-lg bg-[#FEF3F2] px-2 py-1.5">
+                <span className="font-medium">{b.email}</span>
+                {b.reason ? (
+                  <span className="text-[#B42318]"> · {b.reason.slice(0, 60)}</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </section>
   );
 }

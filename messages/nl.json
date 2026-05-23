@@ -800,7 +800,16 @@
   },
   "adminMailHealth": {
     "title": "Mail health",
-    "subtitle": "{sent}/{cap} vandaag verstuurd · domein {domain}"
+    "subtitle": "{sent}/{cap} vandaag verstuurd · domein {domain}",
+    "recentBounces": "Recente bounces"
+  },
+  "adminWaitlist": {
+    "title": "Waitlist",
+    "subtitle": "{count} inschrijvingen in deze verticale",
+    "empty": "Nog geen waitlist-inschrijvingen",
+    "colEmail": "E-mail",
+    "colCompany": "Bedrijf",
+    "colDate": "Datum"
   },
   "adminUtm": {
     "title": "UTM & reply rate",

@@ -801,7 +801,16 @@
   },
   "adminMailHealth": {
     "title": "Mail health",
-    "subtitle": "{sent}/{cap} sent today · domain {domain}"
+    "subtitle": "{sent}/{cap} sent today · domain {domain}",
+    "recentBounces": "Recent bounces"
+  },
+  "adminWaitlist": {
+    "title": "Waitlist",
+    "subtitle": "{count} sign-ups in this vertical",
+    "empty": "No waitlist sign-ups yet",
+    "colEmail": "Email",
+    "colCompany": "Company",
+    "colDate": "Date"
   },
   "adminUtm": {
     "title": "UTM & reply rate",

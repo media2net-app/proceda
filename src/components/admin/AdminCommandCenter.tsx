@@ -10,6 +10,7 @@ import { AdminCohortPanel } from "@/components/admin/AdminCohortPanel";
 import { AdminCallListPanel } from "@/components/admin/AdminCallListPanel";
 import { AdminMailHealthPanel } from "@/components/admin/AdminMailHealthPanel";
 import { AdminUtmPanel } from "@/components/admin/AdminUtmPanel";
+import { AdminWaitlistPanel } from "@/components/admin/AdminWaitlistPanel";
 import type { OutreachLeadScoreRow } from "@/lib/outreach/outreach-lead-score";
 
 type LiveMini = {
@@ -245,6 +246,8 @@ export function AdminCommandCenter() {
         <AdminMailHealthPanel />
         <AdminUtmPanel />
       </div>
+
+      <AdminWaitlistPanel />
 
       <AdminComplianceMini />
     </div>

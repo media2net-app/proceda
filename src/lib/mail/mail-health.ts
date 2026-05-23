@@ -3,6 +3,7 @@ import "server-only";
 import { promises as dns } from "node:dns";
 import { prisma } from "@/lib/db/prisma";
 import { getMailConfig, isMailConfigured } from "@/lib/mail/email-config";
+import { listRecentBounces } from "@/lib/mail/sync-bounces-from-inbox";
 
 export type MailHealthReport = {
   configured: boolean;
@@ -18,6 +19,7 @@ export type MailHealthReport = {
     dkimHint: string;
   };
   checklist: { id: string; ok: boolean; label: string }[];
+  recentBounces: { email: string; reason?: string; createdAt: string }[];
   updatedAt: string;
 };
 
@@ -76,6 +78,7 @@ export async function getMailHealthReport(
   }
 
   const capRemaining = Math.max(0, dailyCap - sentToday);
+  const recentBounces = await listRecentBounces(8);
 
   const checklist = [
     {
@@ -119,6 +122,7 @@ export async function getMailHealthReport(
       dkimHint: "Voeg DKIM toe in Hostinger → Email → DNS (selector hostinger)",
     },
     checklist,
+    recentBounces,
     updatedAt: new Date().toISOString(),
   };
 }

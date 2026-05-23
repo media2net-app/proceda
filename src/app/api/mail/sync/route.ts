@@ -7,6 +7,7 @@ import {
   inboxStats,
 } from "@/lib/mail/inbox-storage";
 import { verifyImapConnection } from "@/lib/mail/imap-client";
+import { syncBouncesFromInbox } from "@/lib/mail/sync-bounces-from-inbox";
 
 export async function POST() {
   try {
@@ -21,6 +22,7 @@ export async function POST() {
       lastSyncError: null,
     });
     const stats = inboxStats(messages);
+    const bounceSync = await syncBouncesFromInbox();
 
     return NextResponse.json({
       messages: cache.messages,
@@ -28,6 +30,7 @@ export async function POST() {
       stats,
       connected: true,
       unread: stats.unread,
+      bounceSync,
     });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Sync failed";

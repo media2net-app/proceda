@@ -42,9 +42,5 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  const rows = await prisma.waitlistEntry.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 100,
-  });
-  return NextResponse.json({ entries: rows });
+  return NextResponse.json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
 }

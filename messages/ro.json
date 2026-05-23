@@ -793,7 +793,16 @@
   },
   "adminMailHealth": {
     "title": "Mail health",
-    "subtitle": "{sent}/{cap} trimise azi · domeniu {domain}"
+    "subtitle": "{sent}/{cap} trimise azi · domeniu {domain}",
+    "recentBounces": "Bounce-uri recente"
+  },
+  "adminWaitlist": {
+    "title": "Waitlist",
+    "subtitle": "{count} înscrieri în această verticală",
+    "empty": "Încă nu există înscrieri",
+    "colEmail": "Email",
+    "colCompany": "Companie",
+    "colDate": "Dată"
   },
   "adminUtm": {
     "title": "UTM & reply rate",
