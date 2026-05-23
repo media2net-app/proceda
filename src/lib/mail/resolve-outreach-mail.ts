@@ -27,6 +27,7 @@ import {
 import { ensureMailRecord } from "./storage";
 import type { BusinessReport } from "@/lib/bedrijven/business-report-types";
 import type { MailOutreachRecord } from "./types";
+import type { OutreachSubjectAb } from "./subject-variants";
 
 export async function resolveOutreachMailForBusiness(
   businessId: string,
@@ -34,6 +35,7 @@ export async function resolveOutreachMailForBusiness(
   request?: Request,
   recipientOverride?: string,
   businessNameOverride?: string,
+  options?: { subjectAb?: OutreachSubjectAb },
 ): Promise<{
   business: Bedrijf;
   report: BusinessReport;
@@ -118,7 +120,12 @@ export async function resolveOutreachMailForBusiness(
     baseUrl: base,
     dashboardScreenshotUrl,
   });
-  const subject = buildOutreachMailSubject(branchId, displayName);
+  const subject = buildOutreachMailSubject(
+    branchId,
+    displayName,
+    "initial",
+    options?.subjectAb,
+  );
   const { plainBody, htmlBody } = mailBuilt;
 
   return {

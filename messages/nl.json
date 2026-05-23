@@ -747,6 +747,34 @@
     "colWon": "Gewonnen",
     "colBookRate": "Book %"
   },
+  "adminBatchSend": {
+    "title": "Batch versturen",
+    "subtitle": "Concept-leads in één run (A/B onderwerp, throttle per domein)",
+    "limit": "Aantal",
+    "delay": "Pauze (ms)",
+    "maxPerDomain": "Max/domein",
+    "dryRun": "Preview",
+    "sendBatch": "Verstuur batch",
+    "running": "Bezig…",
+    "error": "Batch mislukt",
+    "dryRunResult": "{n} leads in preview (niets verstuurd)",
+    "result": "{sent} verstuurd · {skipped} overgeslagen · {failed} mislukt"
+  },
+  "adminCallList": {
+    "title": "Bellijst",
+    "subtitle": "Hot/warm + telefoon + demo-link geopend",
+    "empty": "Geen bellijst-leads nu",
+    "refresh": "Ververs"
+  },
+  "adminSequence": {
+    "title": "Mail-sequences",
+    "subtitle": "{count} due (dag 3 / 7 / 14)",
+    "empty": "Geen openstaande sequence-stappen",
+    "dryRun": "Preview",
+    "runNow": "Verstuur due",
+    "running": "Bezig…",
+    "result": "{sent} verstuurd · {skipped} over · {failed} mislukt"
+  },
   "adminActions": {
     "title": "Actie-queue vandaag",
     "subtitle": "{count} acties wachten",

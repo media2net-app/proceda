@@ -5,6 +5,11 @@ import {
   buildInstallatieDemoProposalDraft,
   buildInstallatieMailSubject,
 } from "./installatie-outreach-draft";
+import {
+  buildInstallatieSubjectAb,
+  buildMakelaarSubjectAb,
+  type OutreachSubjectAb,
+} from "./subject-variants";
 import { buildMailSubject, type MailTemplateVariant } from "./templates";
 
 export function buildOutreachProposalDraft(
@@ -21,9 +26,16 @@ export function buildOutreachMailSubject(
   branchId: ScrapeBranchId,
   businessName: string,
   variant: MailTemplateVariant = "initial",
+  subjectAb?: OutreachSubjectAb,
 ): string {
   if (variant === "followup") {
     return buildMailSubject(businessName, "followup");
+  }
+  if (subjectAb) {
+    if (branchId === "installatie") {
+      return buildInstallatieSubjectAb(businessName, subjectAb);
+    }
+    return buildMakelaarSubjectAb(businessName, subjectAb);
   }
   if (branchId === "installatie") {
     return buildInstallatieMailSubject(businessName);

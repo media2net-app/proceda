@@ -740,6 +740,34 @@
     "colWon": "Câștigat",
     "colBookRate": "Book %"
   },
+  "adminBatchSend": {
+    "title": "Trimitere batch",
+    "subtitle": "Lead-uri draft într-o singură rulare (A/B subiect, throttle domeniu)",
+    "limit": "Număr",
+    "delay": "Pauză (ms)",
+    "maxPerDomain": "Max/domeniu",
+    "dryRun": "Preview",
+    "sendBatch": "Trimite batch",
+    "running": "În curs…",
+    "error": "Batch eșuat",
+    "dryRunResult": "{n} lead-uri în preview (nimic trimis)",
+    "result": "{sent} trimise · {skipped} omise · {failed} eșuate"
+  },
+  "adminCallList": {
+    "title": "Listă apeluri",
+    "subtitle": "Hot/warm + telefon + link demo deschis",
+    "empty": "Nicio lead de apel acum",
+    "refresh": "Reîmprospătează"
+  },
+  "adminSequence": {
+    "title": "Secvențe mail",
+    "subtitle": "{count} due (zi 3 / 7 / 14)",
+    "empty": "Niciun pas de secvență",
+    "dryRun": "Preview",
+    "runNow": "Trimite due",
+    "running": "În curs…",
+    "result": "{sent} trimise · {skipped} omise · {failed} eșuate"
+  },
   "adminActions": {
     "title": "Coadă acțiuni azi",
     "subtitle": "{count} acțiuni în așteptare",

@@ -151,6 +151,9 @@ export function mailOutreachToRecord(row: MailOutreach): MailOutreachRecord {
     sendBatch: row.sendBatch ?? undefined,
     subjectVariant: row.subjectVariant ?? undefined,
     pipelineStatus: row.pipelineStatus as MailOutreachRecord["pipelineStatus"],
+    doNotMail: row.doNotMail,
+    sequenceStep: row.sequenceStep,
+    sequenceNextAt: row.sequenceNextAt?.toISOString(),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

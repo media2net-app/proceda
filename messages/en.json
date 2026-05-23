@@ -748,6 +748,34 @@
     "colWon": "Won",
     "colBookRate": "Book %"
   },
+  "adminBatchSend": {
+    "title": "Batch send",
+    "subtitle": "Draft leads in one run (A/B subject, domain throttle)",
+    "limit": "Count",
+    "delay": "Delay (ms)",
+    "maxPerDomain": "Max/domain",
+    "dryRun": "Preview",
+    "sendBatch": "Send batch",
+    "running": "Running…",
+    "error": "Batch failed",
+    "dryRunResult": "{n} leads in preview (nothing sent)",
+    "result": "{sent} sent · {skipped} skipped · {failed} failed"
+  },
+  "adminCallList": {
+    "title": "Call list",
+    "subtitle": "Hot/warm + phone + demo link opened",
+    "empty": "No call list leads now",
+    "refresh": "Refresh"
+  },
+  "adminSequence": {
+    "title": "Mail sequences",
+    "subtitle": "{count} due (day 3 / 7 / 14)",
+    "empty": "No pending sequence steps",
+    "dryRun": "Preview",
+    "runNow": "Send due",
+    "running": "Running…",
+    "result": "{sent} sent · {skipped} skipped · {failed} failed"
+  },
   "adminActions": {
     "title": "Action queue today",
     "subtitle": "{count} actions pending",

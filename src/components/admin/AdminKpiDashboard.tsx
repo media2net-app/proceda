@@ -8,6 +8,9 @@ import { AdminVerticalHub } from "@/components/admin/AdminVerticalHub";
 import { AdminOutboundFunnel } from "@/components/admin/AdminOutboundFunnel";
 import { AdminActionQueue } from "@/components/admin/AdminActionQueue";
 import { AdminCohortPanel } from "@/components/admin/AdminCohortPanel";
+import { AdminBatchSendPanel } from "@/components/admin/AdminBatchSendPanel";
+import { AdminCallListPanel } from "@/components/admin/AdminCallListPanel";
+import { AdminSequencePanel } from "@/components/admin/AdminSequencePanel";
 import type { AdminKpiStats } from "@/lib/bedrijven/kpi-stats";
 import { LEAD_QUALITY_THRESHOLDS, LEAD_SCORE_WEIGHTS } from "@/lib/bedrijven/lead-score";
 
@@ -162,6 +165,13 @@ export function AdminKpiDashboard() {
       </div>
 
       <AdminCohortPanel />
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <AdminBatchSendPanel />
+        <AdminSequencePanel />
+      </div>
+
+      <AdminCallListPanel />
 
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>

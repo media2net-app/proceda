@@ -6,6 +6,19 @@ import { recordAnalyticsEvent } from "@/lib/analytics-events";
 import { buildSendBatchId } from "@/lib/mail/send-batch";
 import type { MailLeadStatus, MailOutreachRecord, OutreachPipelineStatus } from "./types";
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function addDays(from: Date, days: number): Date {
+  return new Date(from.getTime() + days * DAY_MS);
+}
+
+function suppressOutreachData(): {
+  doNotMail: boolean;
+  sequenceNextAt: null;
+} {
+  return { doNotMail: true, sequenceNextAt: null };
+}
+
 export function createMailToken(): string {
   return randomBytes(24).toString("base64url");
 }
@@ -92,15 +105,18 @@ export async function markMailSent(
   });
   const branchId = options?.branchId ?? business?.branchId ?? "makelaardij";
   const sendBatch = buildSendBatchId(branchId);
+  const sentAt = new Date();
   const updated = await prisma.mailOutreach.updateMany({
     where: { businessId, status: "draft" },
     data: {
       status: "sent",
-      sentAt: new Date(),
+      sentAt,
       recipientEmail: recipientEmail?.trim() || undefined,
       sendBatch,
       subjectVariant: options?.subjectVariant ?? "default",
       pipelineStatus: "contacted",
+      sequenceStep: 1,
+      sequenceNextAt: addDays(sentAt, 3),
     },
   });
   if (updated.count === 0) {
@@ -142,13 +158,25 @@ export async function assertMailFollowupEligible(
 export async function markMailFollowupSent(
   businessId: string,
 ): Promise<MailOutreachRecord> {
+  const existing = await prisma.mailOutreach.findUnique({
+    where: { businessId },
+    select: { sentAt: true },
+  });
+  const followupAt = new Date();
+  const sequenceNextAt =
+    existing?.sentAt != null ? addDays(existing.sentAt, 7) : addDays(followupAt, 4);
+
   const updated = await prisma.mailOutreach.updateMany({
     where: {
       businessId,
       status: "sent",
       followupSentAt: null,
     },
-    data: { followupSentAt: new Date() },
+    data: {
+      followupSentAt: followupAt,
+      sequenceStep: 2,
+      sequenceNextAt,
+    },
   });
   if (updated.count === 0) {
     const row = await prisma.mailOutreach.findUnique({
@@ -199,6 +227,7 @@ export async function markMailBooked(
       bookedAt: new Date(),
       appointmentId,
       pipelineStatus: "meeting",
+      ...suppressOutreachData(),
     },
   });
   return mailOutreachToRecord(row);
@@ -208,11 +237,40 @@ export async function updateMailPipelineStatus(
   businessId: string,
   pipelineStatus: OutreachPipelineStatus,
 ): Promise<MailOutreachRecord> {
+  const suppress =
+    pipelineStatus === "won" || pipelineStatus === "lost"
+      ? suppressOutreachData()
+      : {};
   const row = await prisma.mailOutreach.update({
     where: { businessId },
-    data: { pipelineStatus },
+    data: { pipelineStatus, ...suppress },
   });
   return mailOutreachToRecord(row);
+}
+
+export async function setMailDoNotMail(
+  businessId: string,
+  doNotMail: boolean,
+): Promise<MailOutreachRecord> {
+  const row = await prisma.mailOutreach.update({
+    where: { businessId },
+    data: {
+      doNotMail,
+      sequenceNextAt: doNotMail ? null : undefined,
+    },
+  });
+  return mailOutreachToRecord(row);
+}
+
+export async function advanceMailSequence(
+  businessId: string,
+  step: number,
+  sequenceNextAt: Date | null,
+): Promise<void> {
+  await prisma.mailOutreach.update({
+    where: { businessId },
+    data: { sequenceStep: step, sequenceNextAt },
+  });
 }
 
 export async function listMailRecords(): Promise<MailOutreachRecord[]> {

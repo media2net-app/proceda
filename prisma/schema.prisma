@@ -88,6 +88,8 @@ model Appointment {
   meetLink        String
   status          AppointmentStatus @default(scheduled)
   notes           String?
+  reminder24SentAt DateTime?
+  reminder1SentAt  DateTime?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
@@ -111,6 +113,9 @@ model MailOutreach {
   sendBatch        String?
   subjectVariant   String?                 @default("default")
   pipelineStatus   OutreachPipelineStatus  @default(lead)
+  doNotMail        Boolean                 @default(false)
+  sequenceStep     Int                     @default(0)
+  sequenceNextAt   DateTime?
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
 
@@ -121,6 +126,8 @@ model MailOutreach {
   @@index([token])
   @@index([sendBatch])
   @@index([pipelineStatus])
+  @@index([sequenceNextAt])
+  @@index([doNotMail])
 }
 
 model InboxSyncState {

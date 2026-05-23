@@ -20,6 +20,9 @@ export type MailOutreachRecord = {
   sendBatch?: string;
   subjectVariant?: string;
   pipelineStatus?: OutreachPipelineStatus;
+  doNotMail?: boolean;
+  sequenceStep?: number;
+  sequenceNextAt?: string;
   createdAt: string;
   updatedAt: string;
 };
