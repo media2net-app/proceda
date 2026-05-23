@@ -33,11 +33,13 @@ const navItems: {
     | "sidebarRapportage"
     | "sidebarMail"
     | "sidebarAfspraken"
-    | "sidebarLiveView";
+    | "sidebarLiveView"
+    | "sidebarCommandCenter";
   icon: NavIconName;
   exact?: boolean;
   showUnread?: boolean;
 }[] = [
+  { href: "/dashboard-admin/command-center", key: "sidebarCommandCenter", icon: "chart2" },
   { href: "/dashboard-admin", key: "sidebarKpi", icon: "chart", exact: true },
   { href: "/dashboard-admin/live-view", key: "sidebarLiveView", icon: "globe" },
   { href: "/dashboard-admin/bedrijven", key: "sidebarBedrijven", icon: "building" },

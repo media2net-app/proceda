@@ -12,6 +12,7 @@ import {
   setMailDoNotMail,
 } from "@/lib/mail/storage";
 import { buildSequenceNudgeMail } from "@/lib/mail/sequence-nudge-mail";
+import { logOutreachAudit } from "@/lib/outreach/outreach-audit";
 import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
 
 export type SequenceDueItem = {
@@ -123,6 +124,12 @@ export async function runDueOutreachSequences(
           attachments: resolved.attachments,
         });
         await markMailFollowupSent(item.businessId);
+        void logOutreachAudit({
+          action: "sequence_sent",
+          businessId: item.businessId,
+          branchId,
+          metadata: { step: "day3_followup" },
+        }).catch(() => {});
         items.push({ businessId: item.businessId, status: "sent", reason: "day3_followup" });
         sent++;
       } else if (row.sequenceStep === 2 || row.sequenceStep === 3) {
@@ -152,6 +159,12 @@ export async function runDueOutreachSequences(
         } else {
           await advanceMailSequence(item.businessId, 4, null);
         }
+        void logOutreachAudit({
+          action: "sequence_sent",
+          businessId: item.businessId,
+          branchId,
+          metadata: { step: `day${dayLabel}_nudge` },
+        }).catch(() => {});
         items.push({
           businessId: item.businessId,
           status: "sent",

@@ -158,6 +158,7 @@
     "title": "Panou",
     "sidebarOverview": "Prezentare generală",
     "sidebarKpi": "Dashboard",
+    "sidebarCommandCenter": "Command center",
     "sidebarBedrijven": "Afaceri",
     "sidebarHuisstijl": "Identitate vizuală",
     "sidebarRapportage": "Raportare",
@@ -767,6 +768,25 @@
     "runNow": "Trimite due",
     "running": "În curs…",
     "result": "{sent} trimise · {skipped} omise · {failed} eșuate"
+  },
+  "adminCommandCenter": {
+    "title": "Command center",
+    "subtitle": "Acțiuni, funnel, cohort și live outreach pe un ecran",
+    "liveTitle": "Live outreach",
+    "liveSubtitle": "Doar trafic campanie · period=all",
+    "liveOpen": "Live view complet",
+    "liveActive": "Activ acum",
+    "liveOutreach": "Cu nume lead",
+    "liveBooking": "Intent rezervare",
+    "scoresTitle": "Scor lead outreach",
+    "scoresSubtitle": "Euristică: scor raport + demo + engaged + pipeline",
+    "scoresEmpty": "Niciun lead trimis",
+    "colLead": "Lead",
+    "colScore": "Scor",
+    "colSignals": "Semnale",
+    "colTouch": "Ultim touch",
+    "complianceTitle": "Compliance & audit",
+    "suppressedCount": "{count} lead-uri pe lista de suprimare"
   },
   "adminActions": {
     "title": "Coadă acțiuni azi",

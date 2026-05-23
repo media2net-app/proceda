@@ -331,3 +331,17 @@ model AnalyticsEvent {
   @@index([businessId])
   @@index([sessionId, eventName])
 }
+
+model OutreachAuditLog {
+  id         String   @id @default(uuid())
+  action     String
+  businessId String?
+  branchId   String?
+  actor      String   @default("admin")
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([businessId])
+  @@index([action])
+}

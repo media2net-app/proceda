@@ -4,6 +4,7 @@ import { mailOutreachToRecord } from "@/lib/db/mappers";
 import { ensureBusinessStub } from "@/lib/bedrijven/business-db";
 import { recordAnalyticsEvent } from "@/lib/analytics-events";
 import { buildSendBatchId } from "@/lib/mail/send-batch";
+import { logOutreachAudit } from "@/lib/outreach/outreach-audit";
 import type { MailLeadStatus, MailOutreachRecord, OutreachPipelineStatus } from "./types";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -137,6 +138,12 @@ export async function markMailSent(
     mailToken: row.token,
     metadata: { sendBatch, subjectVariant: row.subjectVariant },
   }).catch(() => {});
+  void logOutreachAudit({
+    action: "mail_sent",
+    businessId,
+    branchId,
+    metadata: { sendBatch, subjectVariant: row.subjectVariant },
+  }).catch(() => {});
   return mailOutreachToRecord(row);
 }
 
@@ -194,6 +201,7 @@ export async function markMailFollowupSent(
     businessId,
     mailToken: row.token,
   }).catch(() => {});
+  void logOutreachAudit({ action: "followup_sent", businessId }).catch(() => {});
   return mailOutreachToRecord(row);
 }
 
@@ -245,6 +253,11 @@ export async function updateMailPipelineStatus(
     where: { businessId },
     data: { pipelineStatus, ...suppress },
   });
+  void logOutreachAudit({
+    action: "pipeline_update",
+    businessId,
+    metadata: { pipelineStatus },
+  }).catch(() => {});
   return mailOutreachToRecord(row);
 }
 
@@ -259,6 +272,10 @@ export async function setMailDoNotMail(
       sequenceNextAt: doNotMail ? null : undefined,
     },
   });
+  void logOutreachAudit({
+    action: doNotMail ? "suppress" : "unsuppress",
+    businessId,
+  }).catch(() => {});
   return mailOutreachToRecord(row);
 }
 

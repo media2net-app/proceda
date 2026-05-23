@@ -154,7 +154,9 @@ Match `InboxMessage` op email → thread op leadkaart; reply rate + reactietijd.
 | 7 | CRM won/lost | ✅ Fase 1 |
 | 8 | Batch send + throttle | ✅ Fase 2 |
 | 9 | Mail sequences | ✅ Fase 2 |
-| 10 | Command center | 🔲 Fase 3 |
+| 10 | Command center | ✅ Fase 3 |
+| 11 | Outreach lead score + attributie | ✅ Fase 3 |
+| 12 | Compliance audit + suppressie | ✅ Fase 3 |
 
 **Admin dark mode** — ✅ gedaan (mei 2026).
 
@@ -163,6 +165,8 @@ Match `InboxMessage` op email → thread op leadkaart; reply rate + reactietijd.
 **Fase 1 (mei 2026)** — `AnalyticsEvent` + booking-stappen, `sendBatch` cohort-panel, CRM pipeline (won/lost) op leadkaart, funnel-stap Gewonnen.
 
 **Fase 2 (mei 2026)** — batch send (50/100, throttle), sequences dag 3/7/14, bellijst, A/B onderwerp, booking reminders 24u/1u.
+
+**Fase 3 (mei 2026)** — command center (acties + funnel + cohort + live outreach), outreach lead score + first/last touch, audit log + suppressielijst.
 
 **Mobiel & cross-browser (mei 2026)** — viewport/safe-area, iOS input-zoom fix, admin mail master-detail op mobiel, sticky boek-CTA, horizontale KPI-scroll, `src/styles/mobile-compat.css`.
 

@@ -158,6 +158,7 @@
     "title": "Dashboard",
     "sidebarOverview": "Overview",
     "sidebarKpi": "Dashboard",
+    "sidebarCommandCenter": "Command center",
     "sidebarBedrijven": "Businesses",
     "sidebarHuisstijl": "Huisstijl",
     "sidebarRapportage": "Reporting",
@@ -774,6 +775,25 @@
     "runNow": "Verstuur due",
     "running": "Bezig…",
     "result": "{sent} verstuurd · {skipped} over · {failed} mislukt"
+  },
+  "adminCommandCenter": {
+    "title": "Command center",
+    "subtitle": "Acties, funnel, cohort en live outreach — alles op één scherm",
+    "liveTitle": "Live outreach",
+    "liveSubtitle": "Alleen campagne-verkeer · period=all",
+    "liveOpen": "Volledige live view",
+    "liveActive": "Actief nu",
+    "liveOutreach": "Met leadnaam",
+    "liveBooking": "Boek-intent",
+    "scoresTitle": "Outreach lead score",
+    "scoresSubtitle": "Heuristiek: rapport-score + demo + engaged + pipeline",
+    "scoresEmpty": "Nog geen verstuurde leads",
+    "colLead": "Lead",
+    "colScore": "Score",
+    "colSignals": "Signalen",
+    "colTouch": "Laatste touch",
+    "complianceTitle": "Compliance & audit",
+    "suppressedCount": "{count} leads op suppressielijst"
   },
   "adminActions": {
     "title": "Actie-queue vandaag",

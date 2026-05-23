@@ -9,6 +9,7 @@ import {
   assertMailOutreachDraft,
   markMailSent,
 } from "@/lib/mail/storage";
+import { logOutreachAudit } from "@/lib/outreach/outreach-audit";
 import {
   pickSubjectVariant,
   subjectVariantLabel,
@@ -210,7 +211,7 @@ export async function runBatchOutreachSend(
     if (i < batch.length - 1) await sleep(delayMs);
   }
 
-  return {
+  const result = {
     branchId: options.branchId,
     dryRun: false,
     queued: batch.length,
@@ -219,4 +220,22 @@ export async function runBatchOutreachSend(
     failed,
     items,
   };
+  void logBatchAudit(options.branchId, result).catch(() => {});
+  return result;
+}
+
+async function logBatchAudit(
+  branchId: string,
+  result: Pick<BatchSendResult, "sent" | "skipped" | "failed" | "dryRun">,
+) {
+  if (result.dryRun) return;
+  await logOutreachAudit({
+    action: "batch_send",
+    branchId,
+    metadata: {
+      sent: result.sent,
+      skipped: result.skipped,
+      failed: result.failed,
+    },
+  });
 }
