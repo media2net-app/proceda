@@ -102,7 +102,8 @@ export async function loadBedrijvenCacheFromDb(
     provinceName,
     scrapedAt: rows[0]?.scrapedAt.toISOString() ?? new Date().toISOString(),
     count: rows.length,
-    dataSource: "google",
+    dataSource:
+      rows.some((r) => r.source === "browser") ? "browser" : "google",
     businesses: rows.map(businessToBedrijf),
   };
 }

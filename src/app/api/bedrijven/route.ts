@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       provinceName: branchId === "lenjerii-hotel" ? "România" : "Nederland",
       scrapedAt: new Date().toISOString(),
       count: businesses.length,
-      dataSource: "google" as const,
+      dataSource: configuredSource,
       businesses,
       configuredSource,
       progress: null,
