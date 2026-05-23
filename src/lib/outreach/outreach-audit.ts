@@ -11,7 +11,10 @@ export type OutreachAuditAction =
   | "pipeline_update"
   | "suppress"
   | "unsuppress"
-  | "reminder_sent";
+  | "reminder_sent"
+  | "autopilot_start"
+  | "autopilot_stop"
+  | "autopilot_tick";
 
 export async function logOutreachAudit(input: {
   action: OutreachAuditAction;

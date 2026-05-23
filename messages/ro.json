@@ -253,6 +253,19 @@
     "task3": "Validează prompturile sales assistant",
     "task4": "Verifică planul de capacitate pentru iunie"
   },
+  "adminAutopilot": {
+    "start": "Start",
+    "stop": "Stop",
+    "starting": "Pornire…",
+    "stopping": "Oprire…",
+    "running": "Autopilot",
+    "mailMissing": "Mail neconfigurat",
+    "mailMissingHint": "Configurează SMTP/IMAP pentru autopilot",
+    "draftsHint": "{count} draft-uri pregătite",
+    "tickDone": "{drafts} draft-uri · {sent} trimise · +{scraped} lead-uri",
+    "tickFailed": "Tick eșuat",
+    "actionFailed": "Acțiune eșuată"
+  },
   "product": {
     "makelaardijLabel": "Produs · Imobiliare",
     "overviewTitle": "Produs — Imobiliare",

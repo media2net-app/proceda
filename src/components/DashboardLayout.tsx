@@ -13,6 +13,7 @@ import { MailSyncProvider } from "@/context/MailSyncContext";
 import { TodayAnalyticsProvider } from "@/context/TodayAnalyticsContext";
 import { AdminThemeProvider, useAdminTheme } from "@/context/AdminThemeContext";
 import { AdminThemeToggle } from "@/components/admin/AdminThemeToggle";
+import { AdminAutopilotControls } from "@/components/admin/AdminAutopilotControls";
 
 type Props = { children: React.ReactNode };
 
@@ -58,6 +59,7 @@ function DashboardShell({ children }: Props) {
             <DashboardHeaderLiveStats />
 
             <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+              <AdminAutopilotControls />
               <AdminThemeToggle />
               <span className="hidden max-w-[40vw] truncate text-sm text-[#667085] md:inline">
                 {t("user")}

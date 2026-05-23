@@ -374,3 +374,15 @@ model WaitlistEntry {
   @@unique([email, branchId])
   @@index([branchId])
 }
+
+model OutreachAutopilot {
+  branchId         String    @id
+  active           Boolean   @default(false)
+  startedAt        DateTime?
+  stoppedAt        DateTime?
+  lastTickAt       DateTime?
+  lastTickSummary  Json?
+  scrapeProvinceId String?
+  ticksTotal       Int       @default(0)
+  updatedAt        DateTime  @updatedAt
+}

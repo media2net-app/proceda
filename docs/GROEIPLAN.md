@@ -177,6 +177,8 @@ Match `InboxMessage` op email → thread op leadkaart; reply rate + reactietijd.
 
 **Fase 5 (mei 2026)** — live view default outreach-only, bounce-detectie bij mail-sync (auto suppress), waitlist-panel in command center, recente bounces in mail health.
 
+**Fase 6 (mei 2026)** — header Start/Stop autopilot: inbox-sync, sequences, follow-ups, batch send, lead-scrape per provincie (Vercel cron elke 5 min).
+
 **Mobiel & cross-browser (mei 2026)** — viewport/safe-area, iOS input-zoom fix, admin mail master-detail op mobiel, sticky boek-CTA, horizontale KPI-scroll, `src/styles/mobile-compat.css`.
 
 ---

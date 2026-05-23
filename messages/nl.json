@@ -253,6 +253,19 @@
     "task3": "Validate sales assistant prompts",
     "task4": "Check capacity plan for June"
   },
+  "adminAutopilot": {
+    "start": "Start",
+    "stop": "Stop",
+    "starting": "Starten…",
+    "stopping": "Stoppen…",
+    "running": "Autopilot",
+    "mailMissing": "Mail niet geconfigureerd",
+    "mailMissingHint": "Stel SMTP/IMAP in om autopilot te gebruiken",
+    "draftsHint": "{count} concept-mails klaar",
+    "tickDone": "{drafts} concepten · {sent} verstuurd · +{scraped} leads",
+    "tickFailed": "Tick mislukt",
+    "actionFailed": "Actie mislukt"
+  },
   "product": {
     "makelaardijLabel": "Product · Makelaardij",
     "overviewTitle": "Product — Makelaardij",
