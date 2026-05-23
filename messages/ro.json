@@ -264,7 +264,11 @@
     "draftsHint": "{count} draft-uri pregătite",
     "tickDone": "{drafts} draft-uri · {sent} trimise · +{scraped} lead-uri",
     "tickFailed": "Tick eșuat",
-    "actionFailed": "Acțiune eșuată"
+    "actionFailed": "Acțiune eșuată",
+    "logTitle": "Terminal autopilot",
+    "logWaiting": "Aștept primul tick…",
+    "logRunning": "Pas în execuție…",
+    "logFooter": "{ticks} tick-uri · {ready} draft-uri în pool"
   },
   "product": {
     "makelaardijLabel": "Produs · Imobiliare",

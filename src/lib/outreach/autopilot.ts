@@ -34,6 +34,14 @@ import {
   assessOutreachSendReadiness,
   countSendReadyDrafts,
 } from "@/lib/outreach/outreach-send-readiness";
+import {
+  appendAutopilotLog,
+  createLogLine,
+  formatTickSummaryToLog,
+  parseActivityLog,
+} from "@/lib/outreach/autopilot-log";
+
+export type { AutopilotLogLine, AutopilotLogLevel } from "@/lib/outreach/autopilot-log";
 
 /** Alleen leads die het volledige outreach-proces doorlopen hebben tellen mee. */
 const MIN_SEND_READY_BEFORE_SCRAPE = 8;
@@ -51,6 +59,8 @@ export type AutopilotPublicState = {
   ticksTotal: number;
   draftCount: number;
   mailConfigured: boolean;
+  activityLog: import("@/lib/outreach/autopilot-log").AutopilotLogLine[];
+  tickInProgress: boolean;
 };
 
 export type AutopilotTickSummary = {
@@ -97,6 +107,8 @@ export async function getAutopilotState(
     ticksTotal: row.ticksTotal,
     draftCount,
     mailConfigured: isMailConfigured(),
+    activityLog: parseActivityLog(row.activityLog),
+    tickInProgress: row.tickInProgress ?? false,
   };
 }
 
@@ -110,14 +122,31 @@ export async function startAutopilot(branchId: OutreachBranchId) {
       startedAt: now,
       stoppedAt: null,
       scrapeProvinceId: DEFAULT_PROVINCE,
+      activityLog: [],
+      tickInProgress: false,
     },
     update: {
       active: true,
       startedAt: now,
       stoppedAt: null,
       scrapeProvinceId: DEFAULT_PROVINCE,
+      activityLog: [],
+      tickInProgress: false,
     },
   });
+  await appendAutopilotLog(branchId, [
+    createLogLine(
+      "ok",
+      "system",
+      "Autopilot gestart",
+      `Verticale: ${branchId} · ${now.toLocaleString("nl-NL")}`,
+    ),
+    createLogLine(
+      "info",
+      "system",
+      "Modus: browser-scrape (geen Google API) · send-readiness verplicht",
+    ),
+  ]);
   void logOutreachAudit({
     action: "autopilot_start",
     branchId,
@@ -128,9 +157,12 @@ export async function startAutopilot(branchId: OutreachBranchId) {
 
 export async function stopAutopilot(branchId: OutreachBranchId) {
   const now = new Date();
+  await appendAutopilotLog(branchId, [
+    createLogLine("warn", "system", "Autopilot gestopt", now.toLocaleString("nl-NL")),
+  ]);
   await prisma.outreachAutopilot.update({
     where: { branchId },
-    data: { active: false, stoppedAt: now },
+    data: { active: false, stoppedAt: now, tickInProgress: false },
   });
   void logOutreachAudit({
     action: "autopilot_stop",
@@ -238,6 +270,14 @@ export async function runAutopilotTick(
   }
 
   const scrapeBranch = scrapeBranchFromOutreach(branchId);
+  const tickNum = row.ticksTotal + 1;
+
+  await prisma.outreachAutopilot.update({
+    where: { branchId },
+    data: { tickInProgress: true },
+  });
+
+  try {
   const summary: AutopilotTickSummary = {
     at: new Date().toISOString(),
     draftCount: 0,
@@ -257,6 +297,9 @@ export async function runAutopilotTick(
   };
 
   try {
+    await appendAutopilotLog(branchId, [
+      createLogLine("run", "inbox", "Inbox synchroniseren…"),
+    ]);
     summary.steps.inbox = await runInboxSync();
   } catch (e) {
     summary.errors.push(e instanceof Error ? e.message : "inbox_sync_failed");
@@ -264,18 +307,27 @@ export async function runAutopilotTick(
 
   if (isMailConfigured()) {
     try {
+      await appendAutopilotLog(branchId, [
+        createLogLine("run", "reminders", "Boekingsherinneringen controleren…"),
+      ]);
       summary.steps.reminders = await sendDueAppointmentReminders(false);
     } catch (e) {
       summary.errors.push(e instanceof Error ? e.message : "reminders_failed");
     }
 
     try {
+      await appendAutopilotLog(branchId, [
+        createLogLine("run", "sequences", "Due sequences uitvoeren…"),
+      ]);
       summary.steps.sequences = await runDueOutreachSequences(scrapeBranch, locale, false);
     } catch (e) {
       summary.errors.push(e instanceof Error ? e.message : "sequences_failed");
     }
 
     try {
+      await appendAutopilotLog(branchId, [
+        createLogLine("run", "followup", "Follow-ups verwerken…"),
+      ]);
       summary.steps.followups = await runAutopilotFollowups(
         scrapeBranch,
         locale,
@@ -286,6 +338,9 @@ export async function runAutopilotTick(
     }
 
     try {
+      await appendAutopilotLog(branchId, [
+        createLogLine("run", "mail", "Batch send (verzendklare concepten)…"),
+      ]);
       const health = await getMailHealthReport(scrapeBranch);
       if (health.capRemaining > 0 && sendReadyCount > 0) {
         const limit = Math.min(BATCH_SEND_PER_TICK, health.capRemaining);
@@ -313,6 +368,14 @@ export async function runAutopilotTick(
   if (sendReadyCount < MIN_SEND_READY_BEFORE_SCRAPE) {
     const provinceId = row.scrapeProvinceId ?? DEFAULT_PROVINCE;
     try {
+      await appendAutopilotLog(branchId, [
+        createLogLine(
+          "run",
+          "scrape",
+          `Browser lead scrape (${provinceId})…`,
+          "DuckDuckGo + website e-mail",
+        ),
+      ]);
       const scrape = await scrapeBedrijvenBatch(scrapeBranch, provinceId as ProvinceId);
       summary.steps.scrape = {
         provider: "browser",
@@ -346,6 +409,9 @@ export async function runAutopilotTick(
     };
   }
 
+  const tickLog = formatTickSummaryToLog(summary, tickNum);
+  await appendAutopilotLog(branchId, tickLog);
+
   await prisma.outreachAutopilot.update({
     where: { branchId },
     data: {
@@ -366,4 +432,10 @@ export async function runAutopilotTick(
   }).catch(() => {});
 
   return summary;
+  } finally {
+    await prisma.outreachAutopilot.update({
+      where: { branchId },
+      data: { tickInProgress: false },
+    }).catch(() => {});
+  }
 }

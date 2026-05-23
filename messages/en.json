@@ -264,7 +264,11 @@
     "draftsHint": "{count} draft emails ready",
     "tickDone": "{drafts} drafts · {sent} sent · +{scraped} leads",
     "tickFailed": "Tick failed",
-    "actionFailed": "Action failed"
+    "actionFailed": "Action failed",
+    "logTitle": "Autopilot terminal",
+    "logWaiting": "Waiting for first tick…",
+    "logRunning": "Running step…",
+    "logFooter": "{ticks} ticks · {ready} drafts in pool"
   },
   "product": {
     "makelaardijLabel": "Product · Real estate",

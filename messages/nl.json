@@ -264,7 +264,11 @@
     "draftsHint": "{count} concept-mails klaar",
     "tickDone": "{drafts} concepten · {sent} verstuurd · +{scraped} leads",
     "tickFailed": "Tick mislukt",
-    "actionFailed": "Actie mislukt"
+    "actionFailed": "Actie mislukt",
+    "logTitle": "Autopilot terminal",
+    "logWaiting": "Wachten op eerste tick…",
+    "logRunning": "Stap wordt uitgevoerd…",
+    "logFooter": "{ticks} ticks · {ready} concepten in pool"
   },
   "product": {
     "makelaardijLabel": "Product · Makelaardij",

@@ -14,6 +14,8 @@ import { TodayAnalyticsProvider } from "@/context/TodayAnalyticsContext";
 import { AdminThemeProvider, useAdminTheme } from "@/context/AdminThemeContext";
 import { AdminThemeToggle } from "@/components/admin/AdminThemeToggle";
 import { AdminAutopilotControls } from "@/components/admin/AdminAutopilotControls";
+import { AdminAutopilotLogSidebar } from "@/components/admin/AdminAutopilotLogSidebar";
+import { AutopilotProvider, useAutopilot } from "@/context/AutopilotContext";
 
 type Props = { children: React.ReactNode };
 
@@ -21,6 +23,7 @@ function DashboardShell({ children }: Props) {
   const t = useTranslations("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isDark } = useAdminTheme();
+  const { active: autopilotActive } = useAutopilot();
 
   useEffect(() => {
     if (!sidebarOpen) return;
@@ -37,7 +40,7 @@ function DashboardShell({ children }: Props) {
     >
       <DashboardSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="md:pl-64">
+      <div className={`md:pl-64 ${autopilotActive ? "pb-[min(40dvh,16rem)] lg:pb-0 lg:pr-[22rem]" : ""}`}>
         <header className="admin-header safe-top sticky top-0 z-10 border-b border-[#EAECF0] bg-white/95 px-4 py-3 backdrop-blur-sm sm:px-6">
           <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-4">
             <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
@@ -85,6 +88,8 @@ function DashboardShell({ children }: Props) {
           {children}
         </main>
       </div>
+
+      <AdminAutopilotLogSidebar />
     </div>
   );
 }
@@ -96,7 +101,9 @@ export default function DashboardLayout({ children }: Props) {
         <AdminVerticalProvider>
           <AdminThemeProvider>
             <TodayAnalyticsProvider>
-              <DashboardShell>{children}</DashboardShell>
+              <AutopilotProvider>
+                <DashboardShell>{children}</DashboardShell>
+              </AutopilotProvider>
             </TodayAnalyticsProvider>
           </AdminThemeProvider>
         </AdminVerticalProvider>

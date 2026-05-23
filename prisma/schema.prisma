@@ -382,6 +382,8 @@ model OutreachAutopilot {
   stoppedAt        DateTime?
   lastTickAt       DateTime?
   lastTickSummary  Json?
+  activityLog      Json?
+  tickInProgress   Boolean   @default(false)
   scrapeProvinceId String?
   ticksTotal       Int       @default(0)
   updatedAt        DateTime  @updatedAt
