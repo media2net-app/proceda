@@ -31,6 +31,17 @@ import type {
 } from "./types";
 import { loadBedrijvenCacheFromDb, saveBedrijvenCacheToDb } from "./business-db";
 import { upsertBusinessesBatch } from "./business-db";
+import { useScrapeDatabase } from "./scrape-storage-mode";
+import {
+  browserScrapeBatchCooldown,
+  deleteBrowserScrapeProgressForBranch,
+  isBranchBrowserScrapeExhaustedInDb,
+  isProvinceBrowserScrapeExhaustedInDb,
+  loadBrowserScrapeProgressFromDb,
+  saveBrowserScrapeProgressToDb,
+  touchBrowserScrapeBatchAttempt,
+  type BrowserScrapeProgressState,
+} from "./browser-scrape-progress-db";
 
 const DATA_ROOT = path.join(process.cwd(), "data", "bedrijven");
 const META_PATH = path.join(process.cwd(), "data", "bedrijven-meta.json");
@@ -70,20 +81,7 @@ const BLOCKED_HOST_PATTERNS = [
   /wikipedia\.org/i,
 ];
 
-type BrowserScrapeProgress = {
-  branch: ScrapeBranchId;
-  province: ScrapeRegionId;
-  queries: string[];
-  queryIndex: number;
-  urlQueue: string[];
-  enrichedHosts: string[];
-  discoveryComplete: boolean;
-  active?: boolean;
-  phase?: string;
-  percent?: number;
-  log?: string[];
-  updatedAt: string;
-};
+type BrowserScrapeProgress = BrowserScrapeProgressState;
 
 type SearchHit = { url: string; title?: string };
 
@@ -143,6 +141,9 @@ async function loadProgress(
   regionId: ScrapeRegionId,
   province: ProvinceConfig,
 ): Promise<BrowserScrapeProgress> {
+  if (useScrapeDatabase()) {
+    return loadBrowserScrapeProgressFromDb(branchId, regionId, province);
+  }
   try {
     const raw = await fs.readFile(progressPath(branchId, regionId), "utf-8");
     const parsed = JSON.parse(raw) as BrowserScrapeProgress;
@@ -169,8 +170,12 @@ async function loadProgress(
 }
 
 async function saveProgress(progress: BrowserScrapeProgress) {
-  await fs.mkdir(path.join(DATA_ROOT, progress.branch), { recursive: true });
   progress.updatedAt = new Date().toISOString();
+  if (useScrapeDatabase()) {
+    await saveBrowserScrapeProgressToDb(progress);
+    return;
+  }
+  await fs.mkdir(path.join(DATA_ROOT, progress.branch), { recursive: true });
   await fs.writeFile(
     progressPath(progress.branch, progress.province),
     JSON.stringify(progress, null, 2),
@@ -198,6 +203,7 @@ async function loadCache(
 
 async function saveCache(cache: BedrijvenCache) {
   await saveBedrijvenCacheToDb(cache);
+  if (useScrapeDatabase()) return;
   await fs.mkdir(path.join(DATA_ROOT, cache.branch), { recursive: true });
   await fs.writeFile(
     cachePath(cache.branch, cache.province),
@@ -211,6 +217,9 @@ async function canScrapeBatch(
   regionId: ScrapeRegionId,
   minIntervalMs = MIN_BATCH_INTERVAL_MS,
 ): Promise<{ allowed: boolean; waitSeconds?: number }> {
+  if (useScrapeDatabase()) {
+    return browserScrapeBatchCooldown(branchId, regionId, minIntervalMs);
+  }
   try {
     const raw = await fs.readFile(META_PATH, "utf-8");
     const meta = JSON.parse(raw) as {
@@ -233,6 +242,10 @@ async function canScrapeBatch(
 }
 
 async function writeMeta(branchId: ScrapeBranchId, regionId: ScrapeRegionId) {
+  if (useScrapeDatabase()) {
+    await touchBrowserScrapeBatchAttempt(branchId, regionId);
+    return;
+  }
   await fs.mkdir(path.dirname(META_PATH), { recursive: true });
   await fs.writeFile(
     META_PATH,
@@ -700,6 +713,9 @@ export async function isProvinceBrowserScrapeExhausted(
   branchId: ScrapeBranchId,
   regionId: ScrapeRegionId,
 ): Promise<boolean> {
+  if (useScrapeDatabase()) {
+    return isProvinceBrowserScrapeExhaustedInDb(branchId, regionId);
+  }
   try {
     const raw = await fs.readFile(progressPath(branchId, regionId), "utf-8");
     const progress = JSON.parse(raw) as BrowserScrapeProgress;
@@ -722,6 +738,9 @@ export async function isProvinceBrowserScrapeExhausted(
 export async function resetBranchBrowserScrapeProgress(
   branchId: ScrapeBranchId,
 ): Promise<number> {
+  if (useScrapeDatabase()) {
+    return deleteBrowserScrapeProgressForBranch(branchId);
+  }
   let removed = 0;
   const dir = path.join(DATA_ROOT, branchId);
   try {
@@ -741,6 +760,9 @@ export async function resetBranchBrowserScrapeProgress(
 export async function isBranchBrowserScrapeExhausted(
   branchId: ScrapeBranchId,
 ): Promise<boolean> {
+  if (useScrapeDatabase()) {
+    return isBranchBrowserScrapeExhaustedInDb(branchId);
+  }
   let anyStarted = false;
   for (const provinceId of PROVINCE_IDS) {
     try {

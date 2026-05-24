@@ -271,6 +271,24 @@ model ScrapeProgress {
   @@id([branchId, regionId])
 }
 
+model BrowserScrapeProgress {
+  branchId           String
+  regionId           String
+  queries            String[] @default([])
+  queryIndex         Int      @default(0)
+  urlQueue           Json     @default("[]")
+  enrichedHosts      String[] @default([])
+  discoveryComplete  Boolean  @default(false)
+  active             Boolean?
+  phase              String?
+  percent            Float?
+  log                String[] @default([])
+  lastBatchAttemptAt DateTime?
+  updatedAt          DateTime @updatedAt
+
+  @@id([branchId, regionId])
+}
+
 model GooglePlacesUsage {
   provinceId String @id
   calls      Int    @default(0)
