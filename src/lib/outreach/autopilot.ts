@@ -407,7 +407,7 @@ async function runInboxSync(): Promise<Record<string, unknown>> {
 }
 
 async function runAutopilotFollowups(
-  branchId: ScrapeBranchId,
+  branchId: OutreachBranchId,
   locale: string,
   limit: number,
 ): Promise<{ sent: number; failed: number; items: { businessId: string; status: string }[] }> {
@@ -577,7 +577,7 @@ export async function runAutopilotTick(
           createLogLine("run", "followup", "Follow-ups verwerken…"),
         ]);
         summary.steps.followups = await runAutopilotFollowups(
-          scrapeBranch,
+          branchId,
           locale,
           FOLLOWUPS_PER_TICK,
         );

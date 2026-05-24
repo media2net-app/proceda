@@ -6,8 +6,8 @@ import { BRANCHES } from "@/lib/bedrijven/branches";
 import {
   ADMIN_VERTICAL_ALL,
   useAdminVertical,
-  type OutreachBranchId,
 } from "@/context/AdminVerticalContext";
+import type { OutreachBranchId } from "@/lib/bedrijven/outreach-branches";
 
 export function AdminVerticalSelector() {
   const t = useTranslations("adminVertical");

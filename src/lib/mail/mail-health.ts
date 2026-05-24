@@ -6,9 +6,9 @@ import { getMailConfig, isMailConfigured } from "@/lib/mail/email-config";
 import { listRecentBounces } from "@/lib/mail/sync-bounces-from-inbox";
 import {
   ADMIN_VERTICAL_ALL,
-  type AdminVerticalScope,
   OUTREACH_BRANCH_IDS,
 } from "@/lib/bedrijven/outreach-branches";
+import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
 
 export type MailHealthReport = {
   configured: boolean;
@@ -44,7 +44,7 @@ async function txtRecords(host: string): Promise<string[]> {
 }
 
 export async function getMailHealthReport(
-  scope: AdminVerticalScope,
+  scope: ScrapeBranchId | typeof ADMIN_VERTICAL_ALL,
 ): Promise<MailHealthReport> {
   const config = getMailConfig();
   const fromDomain = config ? mailDomain(config.from) : null;

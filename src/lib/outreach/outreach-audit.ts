@@ -19,6 +19,7 @@ export type OutreachAuditAction =
   | "reminder_sent"
   | "autopilot_start"
   | "autopilot_stop"
+  | "autopilot_switch"
   | "autopilot_tick";
 
 export async function logOutreachAudit(input: {

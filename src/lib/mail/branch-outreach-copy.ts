@@ -1,4 +1,5 @@
 import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
+import type { AppTypeKey } from "@/lib/bedrijven/lead-score";
 import {
   accountantsFollowUpBody,
   accountantsOutreachBody,
@@ -126,7 +127,7 @@ export function buildBranchFollowUpDraft(
 
 /** Metadata voor rapport / mail-builder per verticale. */
 export function branchReportMeta(branchId: ScrapeBranchId): {
-  primaryAppType: string;
+  primaryAppType: AppTypeKey;
   detectedServices: string[];
   servicesSummary: string;
   servicesOffered: string;
@@ -134,35 +135,35 @@ export function branchReportMeta(branchId: ScrapeBranchId): {
   switch (branchId) {
     case "installatie":
       return {
-        primaryAppType: "field-service-portal",
+        primaryAppType: "internal-tools",
         detectedServices: ["installatie", "werkbonnen"],
         servicesSummary: "Installatie en werkbonnen",
         servicesOffered: "Installatie & techniek",
       };
     case "vastgoedbeheer":
       return {
-        primaryAppType: "property-management-portal",
+        primaryAppType: "customer-portal",
         detectedServices: ["vastgoedbeheer", "objecten"],
         servicesSummary: "Vastgoedbeheer en objecten",
         servicesOffered: "Vastgoedbeheer",
       };
     case "accountants":
       return {
-        primaryAppType: "accounting-portal",
+        primaryAppType: "crm-dashboard",
         detectedServices: ["accountancy", "dossiers"],
         servicesSummary: "Accountancy en dossiers",
         servicesOffered: "Accountancy & boekhouding",
       };
     case "recruitment":
       return {
-        primaryAppType: "recruitment-portal",
+        primaryAppType: "crm-dashboard",
         detectedServices: ["recruitment", "vacatures"],
         servicesSummary: "Recruitment en vacatures",
         servicesOffered: "Recruitment",
       };
     case "verzekering":
       return {
-        primaryAppType: "insurance-portal",
+        primaryAppType: "customer-portal",
         detectedServices: ["verzekeringen", "advies"],
         servicesSummary: "Verzekeringsadvies",
         servicesOffered: "Verzekeringsadvies",

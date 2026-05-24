@@ -39,7 +39,7 @@ function sampleBusiness(branchId: ScrapeBranchId): Bedrijf {
     category: "services",
     subcategory: defaultOutreachSubcategory(branchId),
     placeId: SAMPLE_BUSINESS_ID,
-    source: "template-sample",
+    source: "browser",
     branchId,
     email: "info@voorbeeld.nl",
   };

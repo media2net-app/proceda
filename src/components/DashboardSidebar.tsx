@@ -115,18 +115,6 @@ function CubeIcon() {
   );
 }
 
-function PaletteIcon() {
-  return (
-    <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4.098 19.902a3.75 3.75 0 005.803 0M4.098 19.902c0-1.705.842-3.248 2.197-4.196M12 16.5V9.75m0 0a3.75 3.75 0 013.75-3.75M12 9.75a3.75 3.75 0 00-3.75-3.75M12 9.75V6m0 0a3.75 3.75 0 013.75-3.75M12 6a3.75 3.75 0 00-3.75-3.75"
-      />
-    </svg>
-  );
-}
-
 function GlobeIcon() {
   return (
     <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -142,7 +130,6 @@ function NavIcon({ name }: { name: NavIconName }) {
   if (name === "chart2") return <GridIcon />;
   if (name === "chart") return <ChartIcon />;
   if (name === "cube") return <CubeIcon />;
-  if (name === "palette") return <PaletteIcon />;
   return <BuildingIcon />;
 }
 

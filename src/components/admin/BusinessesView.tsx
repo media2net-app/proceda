@@ -222,7 +222,7 @@ export function BusinessesView() {
   const isAllProvinces = province === "all";
   const provinceConfig = isAllProvinces
     ? null
-    : getRegionConfig(branch, province);
+    : getRegionConfig(regionBranch, province);
   const branchName =
     branch === ADMIN_VERTICAL_ALL ? verticalLabel : BRANCHES[branch].name;
   const mapCenter: [number, number] = isAllProvinces
@@ -503,7 +503,7 @@ export function BusinessesView() {
             <option value="all">{t("provinceAll")}</option>
             {regionIds.map((id) => (
               <option key={id} value={id}>
-                {getRegionConfig(branch, id)?.name ?? id}
+                {getRegionConfig(regionBranch, id)?.name ?? id}
               </option>
             ))}
           </select>

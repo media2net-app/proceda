@@ -45,6 +45,13 @@ export async function GET(request: Request) {
     });
   }
 
+  if (branchId === ADMIN_VERTICAL_ALL) {
+    return NextResponse.json(
+      { error: "branch=all requires province=all" },
+      { status: 400 },
+    );
+  }
+
   const provinceId = resolveProvinceId(provinceParam, branchId);
   const cache = await loadBedrijvenCache(branchId, provinceId);
   const status = await getScrapeStatus(branchId, provinceId);
