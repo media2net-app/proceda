@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { resolveOutreachBranchId } from "@/lib/bedrijven/outreach-branches";
 import {
+  isLocalScrapeEnvironment,
+  LOCAL_SCRAPE_ONLY_MESSAGE,
+} from "@/lib/bedrijven/local-scrape-only";
+import {
   ensurePipelineAutopilotRunning,
   listActiveAutopilotBranches,
   runAutopilotTick,
@@ -18,6 +22,13 @@ function isCronAuthorized(request: Request): boolean {
 }
 
 export async function POST(request: Request) {
+  if (!isLocalScrapeEnvironment()) {
+    return NextResponse.json(
+      { error: "LOCAL_SCRAPE_ONLY", message: LOCAL_SCRAPE_ONLY_MESSAGE },
+      { status: 503 },
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const isCron = searchParams.get("cron") === "1";
 

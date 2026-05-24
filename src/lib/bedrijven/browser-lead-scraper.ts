@@ -28,9 +28,11 @@ import type {
   ScrapeBatchLeadLog,
   ScrapeBatchOptions,
   ScrapeBatchResult,
+  ScrapeProgress,
 } from "./types";
 import { loadBedrijvenCacheFromDb, saveBedrijvenCacheToDb } from "./business-db";
 import { upsertBusinessesBatch } from "./business-db";
+import { prisma } from "@/lib/db/prisma";
 import { useScrapeDatabase } from "./scrape-storage-mode";
 import {
   browserScrapeBatchCooldown,
@@ -264,7 +266,7 @@ function parseDuckDuckGoHtml(html: string): SearchHit[] {
   const hits: SearchHit[] = [];
   const seen = new Set<string>();
 
-  $("a.result__a, a[data-testid='result-title-a']").each((_, el) => {
+  $("a.result__a, a.result-link, a[data-testid='result-title-a']").each((_, el) => {
     const href = $(el).attr("href");
     if (!href) return;
     let url = href;
@@ -296,16 +298,22 @@ function parseDuckDuckGoHtml(html: string): SearchHit[] {
 
 async function searchDuckDuckGoFetch(query: string): Promise<SearchHit[]> {
   const q = encodeURIComponent(query);
-  const res = await fetch(`https://html.duckduckgo.com/html/?q=${q}`, {
+  const res = await fetch(`https://html.duckduckgo.com/html/`, {
+    method: "POST",
     signal: AbortSignal.timeout(15_000),
     headers: {
       "User-Agent":
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       Accept: "text/html",
+      "Content-Type": "application/x-www-form-urlencoded",
     },
+    body: `q=${q}`,
   });
   if (!res.ok) return [];
   const html = await res.text();
+  if (html.includes("anomaly-modal") || html.includes("bots use DuckDuckGo")) {
+    return [];
+  }
   return parseDuckDuckGoHtml(html);
 }
 
@@ -326,18 +334,42 @@ async function searchDuckDuckGoPuppeteer(query: string): Promise<SearchHit[]> {
   }
 }
 
-async function searchWeb(query: string): Promise<SearchHit[]> {
+async function searchWeb(
+  query: string,
+  onLog?: ScrapeBatchOptions["onScrapeLog"],
+): Promise<{ hits: SearchHit[]; source: string }> {
   const useBrowser = process.env.BROWSER_SCRAPE_USE_PUPPETEER === "1";
   if (useBrowser) {
-    return searchDuckDuckGoPuppeteer(query);
+    const hits = await searchDuckDuckGoPuppeteer(query);
+    return { hits, source: "duckduckgo-puppeteer" };
   }
-  const fromFetch = await searchDuckDuckGoFetch(query);
-  if (fromFetch.length >= 3) return fromFetch;
-  try {
-    return await searchDuckDuckGoPuppeteer(query);
-  } catch {
-    return fromFetch;
+
+  let hits = await searchDuckDuckGoFetch(query);
+  let source = "duckduckgo";
+
+  if (hits.length === 0) {
+    await onLog?.(
+      "DuckDuckGo geen resultaten (bot-check of lege pagina)",
+      query,
+    );
   }
+
+  if (hits.length < 3) {
+    try {
+      const puppeteerHits = await searchDuckDuckGoPuppeteer(query);
+      if (puppeteerHits.length > hits.length) {
+        hits = puppeteerHits;
+        source = "duckduckgo-puppeteer";
+      }
+    } catch (e) {
+      await onLog?.(
+        "Puppeteer fallback niet beschikbaar",
+        e instanceof Error ? e.message : "mislukt",
+      );
+    }
+  }
+
+  return { hits, source };
 }
 
 function extractPhoneFromHtml(html: string): string | undefined {
@@ -482,28 +514,61 @@ export async function scrapeBedrijvenBatchBrowser(
 
   const enrichedHosts = new Set(progress.enrichedHosts);
 
+  const onLog = options?.onScrapeLog;
+  let urlsAddedThisBatch = 0;
+  const queueBefore = progress.urlQueue.length;
+
+  await onLog?.(
+    `Discovery start · ${province.name}`,
+    `${progress.queryIndex}/${progress.queries.length} queries · queue ${progress.urlQueue.length}`,
+  );
+
   for (let i = 0; i < queriesPerBatch; i++) {
     if (progress.queryIndex >= progress.queries.length) {
       progress.discoveryComplete = true;
       break;
     }
     const query = progress.queries[progress.queryIndex]!;
+    const queryNum = progress.queryIndex + 1;
     progress.queryIndex++;
     appendLog(progress, `Zoeken: ${query}`);
+    await onLog?.(
+      `Zoekopdracht ${queryNum}/${progress.queries.length}`,
+      query,
+    );
     await saveProgress(progress);
 
-    const hits = await searchWeb(query);
+    const { hits, source } = await searchWeb(query, onLog);
+    await onLog?.(
+      `${hits.length} resultaten (${source})`,
+      hits.length > 0
+        ? hits
+            .slice(0, 5)
+            .map((h) => h.title ? `${h.title} · ${h.url}` : h.url)
+            .join(" | ")
+        : "Geen URLs — volgende tick probeert opnieuw",
+    );
+
     for (const hit of hits) {
       try {
         const host = new URL(hit.url).hostname;
         if (!enrichedHosts.has(host) && !progress.urlQueue.includes(hit.url)) {
           progress.urlQueue.push(hit.url);
+          urlsAddedThisBatch++;
+          await onLog?.(
+            `+1 URL in queue (#${progress.urlQueue.length})`,
+            hit.title ? `${hit.title} · ${hit.url}` : hit.url,
+          );
         }
       } catch {
         /* skip */
       }
     }
     appendLog(progress, `+${hits.length} URLs (queue: ${progress.urlQueue.length})`);
+    await onLog?.(
+      `Queue na query: ${progress.urlQueue.length} URLs`,
+      `Totaal +${progress.urlQueue.length - queueBefore} deze tick`,
+    );
     await saveProgress(progress);
     await sleep(searchDelayMs);
   }
@@ -548,21 +613,57 @@ export async function scrapeBedrijvenBatchBrowser(
       remaining: 0,
       discoveryComplete: true,
       done: true,
+      queriesDone: progress.queryIndex,
+      queriesTotal: progress.queries.length,
+      queueSize: 0,
+      urlsAddedThisBatch,
       leadLog,
     };
   }
 
   if (pendingUrls.length === 0) {
     progress.active = false;
-    progress.phase = "idle";
+    progress.phase = "discovering";
     await saveProgress(progress);
-    throw new Error(
-      "BROWSER_DISCOVERY_IN_PROGRESS: Nog geen websites in queue. Probeer opnieuw.",
+    await onLog?.(
+      "Discovery bezig — queue nog leeg",
+      `Queries ${progress.queryIndex}/${progress.queries.length} · volgende tick verder`,
     );
+    const cache =
+      (await loadCache(branchId, resolvedRegion)) ??
+      ({
+        branch: branchId,
+        province: resolvedRegion,
+        provinceName: province.name,
+        scrapedAt: new Date().toISOString(),
+        count: 0,
+        dataSource: "browser",
+        businesses: [],
+      } satisfies BedrijvenCache);
+
+    return {
+      cache,
+      batchAdded: 0,
+      totalEnriched: progress.enrichedHosts.length,
+      queueTotal: progress.urlQueue.length,
+      remaining: 0,
+      discoveryComplete: progress.discoveryComplete,
+      done: false,
+      discoveryInProgress: true,
+      queriesDone: progress.queryIndex,
+      queriesTotal: progress.queries.length,
+      queueSize: progress.urlQueue.length,
+      urlsAddedThisBatch,
+      leadLog,
+    };
   }
 
   progress.phase = "enriching";
   const toProcess = pendingUrls.slice(0, websitesPerBatch);
+  await onLog?.(
+    `Enrich start: ${toProcess.length} websites`,
+    `Parallel ×${enrichConcurrency} · ${pendingUrls.length} pending`,
+  );
   appendLog(
     progress,
     `Websites scrapen: ${toProcess.length} (parallel ×${enrichConcurrency})…`,
@@ -694,6 +795,10 @@ export async function scrapeBedrijvenBatchBrowser(
     progress,
     `Klaar: +${added.length} leads met e-mail (totaal ${merged.length}, ${remaining} URLs resterend)`,
   );
+  await onLog?.(
+    `Enrich klaar: +${added.length} leads met e-mail`,
+    `${remaining} URLs resterend · totaal cache ${merged.length}`,
+  );
   await saveProgress(progress);
 
   return {
@@ -704,6 +809,10 @@ export async function scrapeBedrijvenBatchBrowser(
     remaining,
     discoveryComplete: progress.discoveryComplete,
     done,
+    queriesDone: progress.queryIndex,
+    queriesTotal: progress.queries.length,
+    queueSize: progress.urlQueue.length,
+    urlsAddedThisBatch,
     leadLog,
   };
 }
@@ -776,4 +885,144 @@ export async function isBranchBrowserScrapeExhausted(
     }
   }
   return anyStarted;
+}
+
+function pendingBrowserUrls(progress: BrowserScrapeProgress): string[] {
+  const enriched = new Set(progress.enrichedHosts);
+  return progress.urlQueue.filter((url) => {
+    try {
+      return !enriched.has(new URL(url).hostname);
+    } catch {
+      return false;
+    }
+  });
+}
+
+function browserProgressToLegacy(progress: BrowserScrapeProgress): ScrapeProgress {
+  const pending = pendingBrowserUrls(progress);
+  return {
+    branch: progress.branch,
+    province: progress.province,
+    discoveryComplete: progress.discoveryComplete,
+    discoveryCursor: {
+      phase: "text",
+      gridIndex: 0,
+      typeIndex: 0,
+      queryIndex: progress.queryIndex,
+    },
+    placeQueue: pending.map((url) => ({ place_id: url, name: url })),
+    enrichedPlaceIds: [...progress.enrichedHosts],
+    updatedAt: progress.updatedAt,
+    active: progress.active,
+    phase:
+      progress.phase === "discovering" ||
+      progress.phase === "enriching" ||
+      progress.phase === "done" ||
+      progress.phase === "idle"
+        ? progress.phase
+        : "idle",
+    percent: progress.percent,
+    log: progress.log,
+  };
+}
+
+export async function getBrowserScrapeStatus(
+  branchId: ScrapeBranchId,
+  regionId: ScrapeRegionId,
+) {
+  const province = getScrapeProvinceConfig(branchId, regionId);
+  if (!province) {
+    throw new Error(`UNKNOWN_BRANCH_OR_PROVINCE:${branchId}/${regionId}`);
+  }
+  const progress = await loadProgress(branchId, regionId, province);
+  const cache = await loadCache(branchId, regionId);
+  const pending = pendingBrowserUrls(progress);
+  return {
+    totalEnriched: progress.enrichedHosts.length,
+    count: cache?.count ?? 0,
+    queueTotal: progress.urlQueue.length,
+    remaining: pending.length,
+    discoveryComplete: progress.discoveryComplete,
+    done:
+      progress.discoveryComplete &&
+      pending.length === 0 &&
+      progress.enrichedHosts.length > 0,
+    active: progress.active ?? false,
+    phase: progress.phase ?? "idle",
+    percent: progress.percent ?? 0,
+    statusMessage: progress.log?.slice(-1)[0] ?? "",
+    log: progress.log ?? [],
+    enrichingDone: 0,
+    enrichingTotal: 0,
+    updatedAt: progress.updatedAt,
+  };
+}
+
+export async function loadBrowserScrapeProgressLegacy(
+  branchId: ScrapeBranchId,
+  regionId: ScrapeRegionId,
+): Promise<ScrapeProgress> {
+  const province = getScrapeProvinceConfig(branchId, regionId);
+  if (!province) {
+    return {
+      branch: branchId,
+      province: regionId,
+      discoveryComplete: false,
+      discoveryCursor: {
+        phase: "text",
+        gridIndex: 0,
+        typeIndex: 0,
+        queryIndex: 0,
+      },
+      placeQueue: [],
+      enrichedPlaceIds: [],
+      updatedAt: new Date().toISOString(),
+    };
+  }
+  const progress = await loadProgress(branchId, regionId, province);
+  return browserProgressToLegacy(progress);
+}
+
+export async function stopBrowserProvinceScrape(
+  branchId: ScrapeBranchId,
+  regionId: ScrapeRegionId,
+): Promise<ScrapeProgress> {
+  const province = getScrapeProvinceConfig(branchId, regionId);
+  if (!province) {
+    throw new Error(`UNKNOWN_BRANCH_OR_PROVINCE:${branchId}/${regionId}`);
+  }
+  const progress = await loadProgress(branchId, regionId, province);
+  const enriched = new Set(progress.enrichedHosts);
+  const pendingBefore = pendingBrowserUrls(progress).length;
+  progress.urlQueue = progress.urlQueue.filter((url) => {
+    try {
+      return enriched.has(new URL(url).hostname);
+    } catch {
+      return false;
+    }
+  });
+  progress.discoveryComplete = true;
+  progress.active = false;
+  progress.phase = "idle";
+  progress.percent = progress.enrichedHosts.length > 0 ? 100 : 0;
+  appendLog(
+    progress,
+    `Queue stopped (${pendingBefore} skipped, ${progress.enrichedHosts.length} already processed).`,
+  );
+  await saveProgress(progress);
+  return browserProgressToLegacy(progress);
+}
+
+export async function resetBrowserProvinceScrape(
+  branchId: ScrapeBranchId,
+  regionId: ScrapeRegionId,
+): Promise<void> {
+  if (useScrapeDatabase()) {
+    await prisma.browserScrapeProgress.deleteMany({
+      where: { branchId, regionId },
+    });
+  } else {
+    await fs.unlink(progressPath(branchId, regionId)).catch(() => undefined);
+  }
+  await fs.unlink(cachePath(branchId, regionId)).catch(() => undefined);
 }

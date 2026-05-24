@@ -24,9 +24,7 @@ export async function POST(request: Request) {
     }
 
     const progress = await stopProvinceScrape(branchId, provinceId);
-    const remaining = progress.placeQueue.filter(
-      (p) => !progress.enrichedPlaceIds.includes(p.place_id),
-    ).length;
+    const remaining = progress.placeQueue.length;
 
     return NextResponse.json({
       ok: true,

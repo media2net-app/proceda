@@ -16,7 +16,7 @@ export type AutopilotLogLine = {
   detail?: string;
 };
 
-const MAX_LOG_LINES = 400;
+const MAX_LOG_LINES = 800;
 
 export function createLogLine(
   level: AutopilotLogLevel,
@@ -78,22 +78,29 @@ export function createScrapeLeadLogLine(entry: ScrapeBatchLeadLog): AutopilotLog
     const detailParts = [entry.website];
     if (entry.email) detailParts.push(entry.email);
     if (entry.detail) detailParts.push(entry.detail);
-    return createLogLine("ok", "lead", name, detailParts.join(" · "));
+    return createLogLine("ok", "lead", `+1 lead · ${name}`, detailParts.join(" · "));
   }
   if (entry.status === "no_email") {
     const name = entry.name?.trim();
     return createLogLine(
       "skip",
       "lead",
-      name && name !== host ? `${name} · geen e-mail` : `${host} · geen e-mail`,
+      `+0 · ${name && name !== host ? name : host} · geen e-mail`,
       entry.website,
     );
   }
-  return createLogLine("warn", "lead", `${host} · niet bereikbaar`, entry.website);
+  return createLogLine("warn", "lead", `+0 · ${host} · niet bereikbaar`, entry.website);
 }
 
 export function createScrapeLeadScanLogLine(website: string): AutopilotLogLine {
-  return createLogLine("run", "lead", websiteHost(website), website);
+  return createLogLine("run", "lead", `→ scan ${websiteHost(website)}`, website);
+}
+
+export function createScrapeStepLogLine(
+  message: string,
+  detail?: string,
+): AutopilotLogLine {
+  return createLogLine("run", "discover", message, detail);
 }
 
 export function parseActivityLog(raw: unknown): AutopilotLogLine[] {
@@ -317,18 +324,30 @@ export function formatTickSummaryToLog(
         String(scrape.reason ?? ""),
       ),
     );
+  } else if (scrape?.discoveryInProgress) {
+    lines.push(
+      createLogLine(
+        "info",
+        "discover",
+        `Discovery ${scrape.province}: queries ${scrape.queriesDone ?? "?"}/${scrape.queriesTotal ?? "?"}`,
+        `Queue ${scrape.queueSize ?? 0} · +${scrape.urlsAddedThisBatch ?? 0} URLs deze tick · volgende tick gaat door`,
+      ),
+    );
   } else if (scrape) {
     lines.push(
       createLogLine(
-        "ok",
+        scrape.batchAdded ? "ok" : "info",
         "scrape",
         `Browser scrape (${scrape.province}): +${scrape.batchAdded ?? 0} leads · ${scrape.remaining ?? 0} in queue`,
-        scrape.done ? "Provincie afgerond" : "Nog bezig",
+        scrape.done
+          ? "Provincie afgerond"
+          : `Queries ${scrape.queriesDone ?? "?"}/${scrape.queriesTotal ?? "?"} · queue ${scrape.queueSize ?? scrape.remaining ?? 0}`,
       ),
     );
   }
 
   for (const err of summary.errors) {
+    if (String(err).startsWith("BROWSER_DISCOVERY_IN_PROGRESS")) continue;
     lines.push(createLogLine("error", "tick", err));
   }
 

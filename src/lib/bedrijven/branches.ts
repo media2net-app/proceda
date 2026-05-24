@@ -1,5 +1,4 @@
 import {
-  buildSearchGrid,
   getRegionConfig,
   resolveRegionId,
   type ScrapeRegionId,
@@ -28,50 +27,36 @@ export const DEFAULT_BRANCH: ScrapeBranchId = "makelaardij";
 export type BranchConfig = {
   id: ScrapeBranchId;
   name: string;
-  /** Google Places nearby `type` waarden voor de types-fase. */
-  googleNearbyTypes: string[];
 };
 
 export const BRANCHES: Record<ScrapeBranchId, BranchConfig> = {
   makelaardij: {
     id: "makelaardij",
     name: "Makelaardij",
-    googleNearbyTypes: ["real_estate_agency"],
   },
   installatie: {
     id: "installatie",
     name: "Installatie & techniek",
-    googleNearbyTypes: [
-      "electrician",
-      "plumber",
-      "general_contractor",
-      "roofing_contractor",
-    ],
   },
   vastgoedbeheer: {
     id: "vastgoedbeheer",
     name: "Vastgoedbeheer",
-    googleNearbyTypes: ["real_estate_agency", "accounting"],
   },
   accountants: {
     id: "accountants",
     name: "Accountants & boekhouding",
-    googleNearbyTypes: ["accounting", "finance"],
   },
   recruitment: {
     id: "recruitment",
     name: "Recruitment & detachering",
-    googleNearbyTypes: ["employment_agency"],
   },
   verzekering: {
     id: "verzekering",
     name: "Verzekeringsadvies",
-    googleNearbyTypes: ["insurance_agency"],
   },
   "lenjerii-hotel": {
     id: "lenjerii-hotel",
     name: "Lenjerii hotel",
-    googleNearbyTypes: ["lodging", "restaurant", "spa"],
   },
 };
 
@@ -371,7 +356,6 @@ export function getBrowserLeadSearchQueries(
 
 export type ScrapeRegionConfig = ProvinceConfig & {
   branchId: ScrapeBranchId;
-  nearbyTypes: string[];
   country: "nl" | "ro";
   language: string;
   regionCode: string;
@@ -386,7 +370,6 @@ export function getScrapeProvinceConfig(
   const base = getRegionConfig(branchId, regionId);
   if (!branch || !base) return undefined;
 
-  const searchGrid = buildSearchGrid(base);
   const country = base.country ?? (branchId === "lenjerii-hotel" ? "ro" : "nl");
   const textQueries =
     branchId === "makelaardij"
@@ -412,119 +395,11 @@ export function getScrapeProvinceConfig(
     name: `${base.name} · ${branch.name}`,
     focusCity: undefined,
     enabled: true,
-    searchGrid,
     textQueries,
-    nearbyTypes: branch.googleNearbyTypes,
     country,
     language: country === "ro" ? "ro" : "nl",
     regionCode: country,
   };
-}
-
-export function isInstallatieCandidate(place: {
-  name?: string;
-  types?: string[];
-}): boolean {
-  const types = (place.types ?? []).join(" ").toLowerCase();
-  const name = (place.name ?? "").toLowerCase();
-  const installTypes = [
-    "electrician",
-    "plumber",
-    "general_contractor",
-    "roofing_contractor",
-    "home_goods_store",
-  ];
-  if (installTypes.some((t) => types.includes(t))) return true;
-  return (
-    name.includes("elektr") ||
-    name.includes("loodgieter") ||
-    name.includes("installat") ||
-    name.includes("sanitair") ||
-    name.includes("verwarm") ||
-    name.includes("cv ") ||
-    name.includes(" cv") ||
-    name.includes("aannemer") ||
-    name.includes("dakdek") ||
-    name.includes("zonnepanel") ||
-    name.includes("airco") ||
-    name.includes("klimaat") ||
-    name.includes("monteur") ||
-    name.includes("technisch")
-  );
-}
-
-export function isMakelaardijCandidate(place: {
-  name?: string;
-  types?: string[];
-}): boolean {
-  const types = (place.types ?? []).join(" ").toLowerCase();
-  const name = (place.name ?? "").toLowerCase();
-  if (types.includes("real_estate")) return true;
-  return (
-    name.includes("makelaar") ||
-    name.includes("makelaardij") ||
-    name.includes("vastgoed") ||
-    name.includes(" nvm") ||
-    name.startsWith("nvm ")
-  );
-}
-
-export function classifyLenjeriiSegment(place: {
-  name?: string;
-  types?: string[];
-}): LenjeriiSegment | null {
-  const types = (place.types ?? []).join(" ").toLowerCase();
-  const name = (place.name ?? "").toLowerCase();
-
-  if (
-    types.includes("spa") ||
-    name.includes(" spa") ||
-    name.startsWith("spa ") ||
-    name.includes("wellness")
-  ) {
-    return "spa";
-  }
-  if (
-    types.includes("restaurant") ||
-    types.includes("meal") ||
-    types.includes("food") ||
-    types.includes("cafe") ||
-    name.includes("restaurant") ||
-    name.includes("restaur")
-  ) {
-    return "restaurant";
-  }
-  if (
-    name.includes("pensiune") ||
-    name.includes("pension") ||
-    name.includes("cazare") ||
-    name.includes("guest house") ||
-    name.includes("guesthouse") ||
-    types.includes("guest_house") ||
-    types.includes("hostel")
-  ) {
-    return "pension";
-  }
-  if (
-    types.includes("lodging") ||
-    types.includes("hotel") ||
-    name.includes("hotel") ||
-    name.includes("motel") ||
-    name.includes("resort")
-  ) {
-    return "hotel";
-  }
-  return null;
-}
-
-export function placeMatchesBranch(
-  branchId: ScrapeBranchId,
-  place: { name?: string; types?: string[] },
-): boolean {
-  if (branchId === "makelaardij") return isMakelaardijCandidate(place);
-  if (branchId === "installatie") return isInstallatieCandidate(place);
-  if (branchId === "lenjerii-hotel") return classifyLenjeriiSegment(place) != null;
-  return true;
 }
 
 export { resolveRegionId };

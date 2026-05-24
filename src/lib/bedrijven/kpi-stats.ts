@@ -1,11 +1,6 @@
 import { listReportSummaries } from "./business-report-storage";
 import { prisma } from "@/lib/db/prisma";
 import {
-  ensureUsageBackfill,
-  getGooglePlacesCostSummary,
-  type GooglePlacesCostSummary,
-} from "./google-places-usage";
-import {
   hasAutoMailerContact,
   hasCallListContact,
 } from "./contact-utils";
@@ -17,7 +12,7 @@ import {
 import { loadAllBusinesses } from "./load-all-businesses";
 import type { Bedrijf } from "./types";
 import { PROVINCE_IDS, type ProvinceId } from "./provinces";
-import { loadBedrijvenCache, loadScrapeProgress } from "./scraper";
+import { loadBedrijvenCache } from "./scraper";
 
 /** Verwachte omzet per geslaagde deal (EUR). */
 export const DEAL_VALUE_EUR = 3000;
@@ -71,7 +66,6 @@ export type AdminKpiStats = {
   revenueWonEur: number;
   outreach: OutreachKpi;
   provinces: ProvinceKpiRow[];
-  googlePlaces: GooglePlacesCostSummary;
   updatedAt: string;
 };
 
@@ -180,7 +174,6 @@ function mergeAdminKpiStats(parts: AdminKpiStats[]): AdminKpiStats {
       noOutreachChannel: sum((s) => s.outreach.noOutreachChannel),
     },
     provinces: mergeProvinceRows(parts.flatMap((s) => s.provinces)),
-    googlePlaces: first.googlePlaces,
     updatedAt: new Date().toISOString(),
   };
 }
@@ -280,19 +273,6 @@ export async function getAdminKpiStats(
     },
   });
 
-  const enrichedByProvince: Partial<Record<ProvinceId, number>> = {};
-  for (const id of PROVINCE_IDS) {
-    const progress = await loadScrapeProgress(branchId, id);
-    if (progress.enrichedPlaceIds.length > 0) {
-      enrichedByProvince[id] = progress.enrichedPlaceIds.length;
-    } else {
-      const cache = await loadBedrijvenCache(branchId, id);
-      if (cache?.count) enrichedByProvince[id] = cache.count;
-    }
-  }
-  await ensureUsageBackfill(enrichedByProvince);
-  const googlePlaces = await getGooglePlacesCostSummary();
-
   return {
     dealValueEur: DEAL_VALUE_EUR,
     totalBusinesses: businesses.length,
@@ -308,7 +288,6 @@ export async function getAdminKpiStats(
     revenueWonEur: successfulDeals * DEAL_VALUE_EUR,
     outreach,
     provinces: provinces.sort((a, b) => b.businessCount - a.businessCount),
-    googlePlaces,
     updatedAt: new Date().toISOString(),
   };
 }

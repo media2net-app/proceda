@@ -289,12 +289,6 @@ model BrowserScrapeProgress {
   @@id([branchId, regionId])
 }
 
-model GooglePlacesUsage {
-  provinceId String @id
-  calls      Int    @default(0)
-  updatedAt  DateTime @updatedAt
-}
-
 model AnalyticsSession {
   sessionId     String   @id
   visitorId     String

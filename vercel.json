@@ -1,8 +1,1 @@
-{
-  "crons": [
-    {
-      "path": "/api/admin/outreach/autopilot/tick?cron=1",
-      "schedule": "*/2 * * * *"
-    }
-  ]
-}
+{}

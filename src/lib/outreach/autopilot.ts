@@ -53,6 +53,7 @@ import {
   createLogLine,
   createScrapeLeadLogLine,
   createScrapeLeadScanLogLine,
+  createScrapeStepLogLine,
   formatTickSummaryToLog,
   parseActivityLog,
 } from "@/lib/outreach/autopilot-log";
@@ -632,6 +633,11 @@ export async function runAutopilotTick(
       ]);
       const scrape = await scrapeBedrijvenBatch(scrapeBranch, provinceId as ProvinceId, {
         turbo: scrapeOnly,
+        onScrapeLog: async (message, detail) => {
+          await appendAutopilotLog(branchId, [
+            createScrapeStepLogLine(message, detail),
+          ]);
+        },
         onLeadScan: async (website) => {
           await appendAutopilotLog(branchId, [createScrapeLeadScanLogLine(website)]);
         },
@@ -645,6 +651,11 @@ export async function runAutopilotTick(
         batchAdded: scrape.batchAdded,
         remaining: scrape.remaining,
         done: scrape.done,
+        discoveryInProgress: scrape.discoveryInProgress,
+        queriesDone: scrape.queriesDone,
+        queriesTotal: scrape.queriesTotal,
+        queueSize: scrape.queueSize,
+        urlsAddedThisBatch: scrape.urlsAddedThisBatch,
         leadLog: scrape.leadLog,
       };
       let nextProvince = provinceId;

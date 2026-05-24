@@ -7,6 +7,10 @@ import {
   getActiveDataSource,
 } from "@/lib/bedrijven/scraper";
 import { getScrapeProvinceConfig } from "@/lib/bedrijven/branches";
+import {
+  isLocalScrapeEnvironment,
+  LOCAL_SCRAPE_ONLY_MESSAGE,
+} from "@/lib/bedrijven/local-scrape-only";
 
 function mapError(message: string) {
   if (message.startsWith("RATE_LIMIT_COOLDOWN:")) {
@@ -20,6 +24,13 @@ function mapError(message: string) {
 }
 
 export async function POST(request: Request) {
+  if (!isLocalScrapeEnvironment()) {
+    return NextResponse.json(
+      { error: "LOCAL_SCRAPE_ONLY", message: LOCAL_SCRAPE_ONLY_MESSAGE },
+      { status: 503 },
+    );
+  }
+
   try {
     let branchId = resolveBranchId(null);
     let provinceId = resolveProvinceId(null);

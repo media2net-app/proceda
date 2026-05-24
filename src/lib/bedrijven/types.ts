@@ -93,6 +93,8 @@ export type ScrapeBatchLeadLog = {
 export type ScrapeBatchOptions = {
   /** Meer queries/sites per tick (autopilot scrape-modus). */
   turbo?: boolean;
+  /** Live log per scrape-stap (query, URL +1, queue, enz.). */
+  onScrapeLog?: (message: string, detail?: string) => void | Promise<void>;
   /** Called when a website enrich starts (live autopilot log). */
   onLeadScan?: (website: string) => void | Promise<void>;
   /** Called after each website in the enrich loop (live autopilot log). */
@@ -107,5 +109,11 @@ export type ScrapeBatchResult = {
   remaining: number;
   discoveryComplete: boolean;
   done: boolean;
+  /** Nog URLs ontdekken — geen fout, volgende tick gaat door. */
+  discoveryInProgress?: boolean;
+  queriesDone?: number;
+  queriesTotal?: number;
+  queueSize?: number;
+  urlsAddedThisBatch?: number;
   leadLog: ScrapeBatchLeadLog[];
 };

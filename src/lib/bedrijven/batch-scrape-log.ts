@@ -2,8 +2,8 @@ import fs from "fs/promises";
 import path from "path";
 import type { ScrapeBranchId } from "./branches";
 import { getRegionConfig, getRegionIdsForBranch } from "./regions";
-import { loadScrapeProgress } from "./scraper";
-import type { ScrapeProgress } from "./types";
+import type { ScrapeRegionId } from "./regions";
+import { getScrapeStatus } from "./scraper";
 
 const DATA_ROOT = path.join(process.cwd(), "data", "bedrijven");
 const MAX_LOG_LINES = 50;
@@ -58,32 +58,48 @@ function parseLogRunning(logLines: string[]): boolean {
   return true;
 }
 
-function pendingCount(progress: ScrapeProgress): number {
-  const enriched = new Set(progress.enrichedPlaceIds);
-  return progress.placeQueue.filter((p) => !enriched.has(p.place_id)).length;
-}
+type ActiveScrapeRegion = {
+  regionId: ScrapeRegionId;
+  active: boolean;
+  discoveryComplete: boolean;
+  remaining: number;
+  queueTotal: number;
+  phase: string;
+  percent: number | null;
+  totalEnriched: number;
+  updatedAt: string;
+};
 
-async function findActiveProgress(
+async function findActiveRegion(
   branchId: ScrapeBranchId,
-): Promise<ScrapeProgress | null> {
+): Promise<ActiveScrapeRegion | null> {
   const regionIds = getRegionIdsForBranch(branchId);
-  let best: ScrapeProgress | null = null;
+  let best: ActiveScrapeRegion | null = null;
   let bestTime = 0;
 
   for (const regionId of regionIds) {
-    const progress = await loadScrapeProgress(branchId, regionId);
-    const pending = pendingCount(progress);
+    const status = await getScrapeStatus(branchId, regionId);
     const active =
-      progress.active ||
-      (!progress.discoveryComplete && progress.placeQueue.length > 0) ||
-      pending > 0;
+      status.active ||
+      (!status.discoveryComplete && status.queueTotal > 0) ||
+      status.remaining > 0;
 
-    if (!active && progress.discoveryComplete && pending === 0) continue;
+    if (!active && status.discoveryComplete && status.remaining === 0) continue;
 
-    const t = new Date(progress.updatedAt).getTime();
+    const t = new Date(status.updatedAt).getTime();
     if (t >= bestTime) {
       bestTime = t;
-      best = progress;
+      best = {
+        regionId,
+        active: status.active,
+        discoveryComplete: status.discoveryComplete,
+        remaining: status.remaining,
+        queueTotal: status.queueTotal,
+        phase: status.phase,
+        percent: status.percent ?? null,
+        totalEnriched: status.totalEnriched,
+        updatedAt: status.updatedAt,
+      };
     }
   }
 
@@ -125,7 +141,7 @@ export async function getBatchScrapeLogStatus(
 ): Promise<BatchScrapeLogStatus> {
   const logLines = await readLogTail(branchId);
   const logRunning = parseLogRunning(logLines);
-  const activeProgress = await findActiveProgress(branchId);
+  const activeRegion = await findActiveRegion(branchId);
   const stats = await countBranchStats(branchId);
   const regionsTotal = getRegionIdsForBranch(branchId).length;
 
@@ -136,22 +152,22 @@ export async function getBatchScrapeLogStatus(
   let pending: number | null = null;
   let enriched: number | null = null;
 
-  if (activeProgress) {
-    currentRegionId = activeProgress.province;
-    const cfg = getRegionConfig(branchId, activeProgress.province);
-    currentRegionName = cfg?.name ?? activeProgress.province;
-    phase = activeProgress.phase ?? "idle";
-    percent = activeProgress.percent ?? null;
-    pending = pendingCount(activeProgress);
-    enriched = activeProgress.enrichedPlaceIds.length;
+  if (activeRegion) {
+    currentRegionId = activeRegion.regionId;
+    const cfg = getRegionConfig(branchId, activeRegion.regionId);
+    currentRegionName = cfg?.name ?? activeRegion.regionId;
+    phase = activeRegion.phase ?? "idle";
+    percent = activeRegion.percent ?? null;
+    pending = activeRegion.remaining;
+    enriched = activeRegion.totalEnriched;
   }
 
   const running =
     logRunning ||
-    (activeProgress != null &&
-      (activeProgress.active ||
-        !activeProgress.discoveryComplete ||
-        pendingCount(activeProgress) > 0));
+    (activeRegion != null &&
+      (activeRegion.active ||
+        !activeRegion.discoveryComplete ||
+        activeRegion.remaining > 0));
 
   return {
     branch: branchId,

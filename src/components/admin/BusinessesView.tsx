@@ -333,9 +333,6 @@ export function BusinessesView() {
             t("rateLimitCooldown", { seconds: String(data.waitSeconds) }),
           );
         }
-        if (data.error?.includes("GOOGLE_API_KEY_MISSING")) {
-          throw new Error(t("googleRequired"));
-        }
         throw new Error(data.message ?? data.error ?? t("scrapeError"));
       }
       if (data.batchAdded != null && data.batchAdded > 0) {
