@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useMailSync } from "@/context/MailSyncContext";
 import type { InboxMessage } from "@/lib/mail/types";
+import { filterInboxForDisplay } from "@/lib/mail/inbox-bounce-filter";
 
 type MailDirectionFilter = "inbound" | "outbound";
 
@@ -19,7 +20,10 @@ export function InboxPanel({
   const [readUids, setReadUids] = useState<Set<number>>(() => new Set());
 
   const directionMessages = useMemo(
-    () => mail.messages.filter((m) => m.direction === direction),
+    () =>
+      filterInboxForDisplay(mail.messages).filter(
+        (m) => m.direction === direction,
+      ),
     [mail.messages, direction],
   );
 

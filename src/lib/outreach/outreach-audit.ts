@@ -2,6 +2,11 @@ import "server-only";
 
 import type { Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/db/prisma";
+import {
+  ADMIN_VERTICAL_ALL,
+  OUTREACH_BRANCH_IDS,
+  type AdminVerticalScope,
+} from "@/lib/bedrijven/outreach-branches";
 
 export type OutreachAuditAction =
   | "mail_sent"
@@ -47,9 +52,18 @@ export async function listOutreachAuditLog(limit = 50) {
   }));
 }
 
-export async function listSuppressedLeads(branchId: string, limit = 50) {
+export async function listSuppressedLeads(
+  scope: AdminVerticalScope,
+  limit = 50,
+) {
   const rows = await prisma.mailOutreach.findMany({
-    where: { doNotMail: true, business: { branchId } },
+    where: {
+      doNotMail: true,
+      business:
+        scope === ADMIN_VERTICAL_ALL
+          ? { branchId: { in: [...OUTREACH_BRANCH_IDS] } }
+          : { branchId: scope },
+    },
     include: { business: { select: { name: true, email: true } } },
     orderBy: { updatedAt: "desc" },
     take: limit,

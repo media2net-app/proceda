@@ -1,4 +1,3 @@
-import { loadDemoReadyAudit } from "@/lib/bedrijven/demo-ready-audit";
 import {
   DEFAULT_BRANCH,
   type ScrapeBranchId,
@@ -14,17 +13,11 @@ import {
   demoHomepagePublicPath,
 } from "@/lib/bedrijven/demo-slug";
 import type { Bedrijf } from "@/lib/bedrijven/types";
-import { buildFollowUpProposalDraft } from "./demo-outreach-followup-draft";
 import { buildMinimalReportForMail } from "./demo-outreach-draft";
 import { buildFollowupMailPreviewForLead } from "./followup-mail-preview";
+import { buildOutreachFollowUpDraft } from "./outreach-draft";
 import { resolveAppBaseUrl } from "./app-url";
 import type { MailAttachment } from "./smtp-client";
-import {
-  dashboardScreenshotCidSrc,
-  dashboardScreenshotExists,
-  demoDashboardScreenshotAbsoluteUrl,
-  readDashboardScreenshotAttachment,
-} from "@/lib/demo-app/dashboard-email-screenshot";
 import { getRecordByBusinessId } from "./storage";
 import type { BusinessReport } from "@/lib/bedrijven/business-report-types";
 import type { MailOutreachRecord } from "./types";
@@ -54,27 +47,23 @@ export async function resolveFollowupMailForBusiness(
   const branchId: ScrapeBranchId =
     storedFirst?.branchId ?? DEFAULT_BRANCH;
 
-  const audit = await loadDemoReadyAudit(branchId);
-  const auditRow = audit?.results.find(
-    (r) => r.businessId === businessId && r.demoReady,
-  );
-  if (!auditRow) return null;
-
   const businesses = await loadAllBusinesses(branchId);
   const stored = businesses.find((b) => b.id === businessId) ?? storedFirst;
+  if (!stored && !recipientOverride) return null;
+
   const business: Bedrijf = stored
-    ? { ...stored, website: stored.website || auditRow.website }
+    ? { ...stored, branchId: stored.branchId ?? branchId }
     : {
-        id: auditRow.businessId,
-        name: auditRow.name,
-        website: auditRow.website,
+        id: businessId,
+        name: businessNameOverride?.trim() || businessId,
+        website: "",
         email: recipientOverride,
         address: "",
         city: "",
         province: "",
         category: "services",
         subcategory: "real_estate_agency",
-        placeId: auditRow.businessId,
+        placeId: businessId,
         source: "google",
         branchId,
       };
@@ -91,22 +80,13 @@ export async function resolveFollowupMailForBusiness(
 
   const demoSlug = businessIdToDemoSlug(businessId);
   const base = resolveAppBaseUrl(request);
-  const hasScreenshot = await dashboardScreenshotExists(demoSlug);
-  const screenshotAttachment = hasScreenshot
-    ? await readDashboardScreenshotAttachment(demoSlug)
-    : null;
-  const dashboardScreenshotUrl = screenshotAttachment
-    ? dashboardScreenshotCidSrc()
-    : hasScreenshot
-      ? demoDashboardScreenshotAbsoluteUrl(base, demoSlug)
-      : null;
 
-  const draft = buildFollowUpProposalDraft(displayName);
   const report = buildMinimalReportForMail({
     business,
-    proposalEmailDraft: draft,
+    proposalEmailDraft: buildOutreachFollowUpDraft(branchId, displayName),
     demoAppUrl: demoAppPublicPath(demoSlug, locale),
     demoHomepageUrl: demoHomepagePublicPath(demoSlug, locale),
+    branchId,
   });
 
   const { subject, plainBody, htmlBody, demoUrl } =
@@ -115,7 +95,7 @@ export async function resolveFollowupMailForBusiness(
       token: record.token,
       locale,
       baseUrl: base,
-      dashboardScreenshotUrl,
+      dashboardScreenshotUrl: null,
     });
 
   return {
@@ -126,6 +106,5 @@ export async function resolveFollowupMailForBusiness(
     htmlBody,
     demoUrl,
     record,
-    attachments: screenshotAttachment ? [screenshotAttachment] : undefined,
   };
 }

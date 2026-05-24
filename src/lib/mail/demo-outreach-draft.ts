@@ -1,18 +1,14 @@
+import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
+import { DEFAULT_BRANCH } from "@/lib/bedrijven/branches";
 import type { Bedrijf } from "@/lib/bedrijven/types";
 import type { BusinessReport } from "@/lib/bedrijven/business-report-types";
+import { branchReportMeta } from "./branch-outreach-copy";
+import { makelaardijOutreachBody } from "./branch-outreach-bodies";
+import { composeOutreachDraft } from "./proceda-outreach-shared";
 
 /** Standaard outreach-mail voor makelaars met demo-dashboard (zonder AI-rapport). */
 export function buildMakelaarDemoProposalDraft(businessName: string): string {
-  return `Beste ${businessName},
-
-Wij zijn Proceda. Wij bouwen maatwerk webapplicaties voor bedrijven en integreren AI om repetitieve bedrijfsprocessen te automatiseren — van leadopvolging en dossierbeheer tot communicatie met kopers en verkopers.
-
-Concreet voor ${businessName}: we hebben een concept voorbereid in uw huisstijl — een makelaarsdashboard met uw logo en kleuren, met KPI's, woningaanbod en leads in één maatwerk portaal. Daarbij hoort een AI-medewerker die processen automatiseert, marktprognoses maakt, uw concurrentie analyseert en prognoses voor uw kantoor kan genereren.
-
-In deze e-mail vindt u een visuele preview van dat dashboard. Tijdens een vrijblijvend gesprek van 30 minuten laten we alles live zien — zonder verplichtingen.
-
-Met vriendelijke groet,
-Proceda`;
+  return composeOutreachDraft(businessName, makelaardijOutreachBody(businessName));
 }
 
 export function buildMinimalReportForMail(params: {
@@ -20,8 +16,11 @@ export function buildMinimalReportForMail(params: {
   proposalEmailDraft: string;
   demoAppUrl: string;
   demoHomepageUrl?: string | null;
+  branchId?: ScrapeBranchId;
 }): BusinessReport {
   const { business, proposalEmailDraft, demoAppUrl, demoHomepageUrl } = params;
+  const branchId = params.branchId ?? business.branchId ?? DEFAULT_BRANCH;
+  const meta = branchReportMeta(branchId);
   const now = new Date().toISOString();
 
   return {
@@ -39,18 +38,18 @@ export function buildMinimalReportForMail(params: {
     modernityScore: 0,
     overallScore: 0,
     leadQuality: "warm",
-    primaryAppType: "crm-dashboard",
-    detectedServices: ["makelaardij", "woningaanbod"],
-    servicesSummary: "Makelaardij en woningaanbod",
+    primaryAppType: meta.primaryAppType,
+    detectedServices: meta.detectedServices,
+    servicesSummary: meta.servicesSummary,
     extractedEmail: business.email,
     demoAppUrl,
     demoHomepageUrl: demoHomepageUrl ?? undefined,
     ai: {
       companySummary: `Maatwerk webapp-concept voor ${business.name} met AI voor procesautomatisering.`,
-      servicesOffered: "Makelaardij",
+      servicesOffered: meta.servicesOffered,
       webApplicationIdeas: [
-        "Maatwerk makelaarsportaal met dashboard, leads en woningaanbod.",
-        "AI-automatisering voor leadopvolging, dossiers en communicatie.",
+        `Maatwerk portaal voor ${meta.servicesOffered} met dashboard en AI.`,
+        "AI-automatisering voor opvolging, dossiers en communicatie.",
       ],
       automationOpportunities: [
         "Automatische opvolging van leads en bezichtigingen.",

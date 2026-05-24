@@ -42,7 +42,7 @@ export type MailTemplatePreview = {
   demoAppUrl?: string;
   dashboardScreenshotUrl?: string | null;
   logoPath?: string | null;
-  source?: "demo" | "report";
+  source?: "demo" | "report" | "outreach";
   token: string;
   status: MailLeadStatus;
   sentAt?: string;
@@ -71,8 +71,8 @@ export type MailTemplatePreview = {
 export type MailKpiStats = {
   /** Aantal met status concept (te versturen). */
   readyToSend: number;
-  /** Alle demo-klaare makelaars in de verzendlijst. */
-  demoReadyPool: number;
+  /** Alle leads met e-mail in de verzendlijst. */
+  emailPool: number;
   sent: number;
   booked: number;
   conversionSentToBooked: number;

@@ -55,9 +55,139 @@ function scoreEmailCandidate(email: string, bonus: number): number {
   return score;
 }
 
+type ScoredEmail = { email: string; score: number };
+
+function decodeCloudflareEmail(encoded: string): string | undefined {
+  const hex = encoded.trim();
+  if (hex.length < 4 || hex.length % 2 !== 0) return undefined;
+  const key = parseInt(hex.slice(0, 2), 16);
+  if (Number.isNaN(key)) return undefined;
+  let out = "";
+  for (let i = 2; i < hex.length; i += 2) {
+    const code = parseInt(hex.slice(i, i + 2), 16);
+    if (Number.isNaN(code)) return undefined;
+    out += String.fromCharCode(code ^ key);
+  }
+  return normalizeEmail(out);
+}
+
+function collectCloudflareEmails(html: string): ScoredEmail[] {
+  const scored: ScoredEmail[] = [];
+  const re = /data-cfemail=["']([a-f0-9]+)["']/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html)) !== null) {
+    const email = decodeCloudflareEmail(m[1]!);
+    if (email) scored.push({ email, score: scoreEmailCandidate(email, 22) });
+  }
+  return scored;
+}
+
+function collectMetaAndStructuredEmails(
+  $: ReturnType<typeof cheerio.load>,
+): ScoredEmail[] {
+  const scored: ScoredEmail[] = [];
+
+  const metaTexts = [
+    $('meta[property="og:description"]').attr("content"),
+    $('meta[name="description"]').attr("content"),
+    $('meta[name="twitter:description"]').attr("content"),
+    $('meta[property="og:email"]').attr("content"),
+    $('meta[name="email"]').attr("content"),
+  ];
+  for (const text of metaTexts) {
+    if (!text) continue;
+    const matches = text.match(
+      /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+    );
+    for (const raw of matches ?? []) {
+      const email = normalizeEmail(raw);
+      if (email) scored.push({ email, score: scoreEmailCandidate(email, 18) });
+    }
+  }
+
+  $('script[type="application/ld+json"]').each((_, el) => {
+    const raw = $(el).text().trim();
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      const nodes = Array.isArray(parsed) ? parsed : [parsed];
+      for (const node of nodes) {
+        collectJsonLdEmails(node, scored);
+      }
+    } catch {
+      const matches = raw.match(
+        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+      );
+      for (const m of matches ?? []) {
+        const email = normalizeEmail(m);
+        if (email) scored.push({ email, score: scoreEmailCandidate(email, 14) });
+      }
+    }
+  });
+
+  return scored;
+}
+
+function collectJsonLdEmails(node: unknown, scored: ScoredEmail[]) {
+  if (!node || typeof node !== "object") return;
+  if (Array.isArray(node)) {
+    for (const item of node) collectJsonLdEmails(item, scored);
+    return;
+  }
+  const record = node as Record<string, unknown>;
+  for (const key of ["email", "contactEmail", "emailAddress"]) {
+    const val = record[key];
+    if (typeof val === "string") {
+      const email = normalizeEmail(val);
+      if (email) scored.push({ email, score: scoreEmailCandidate(email, 20) });
+    }
+  }
+  for (const val of Object.values(record)) {
+    if (val && typeof val === "object") collectJsonLdEmails(val, scored);
+  }
+}
+
+function collectRawHtmlEmails(
+  html: string,
+  preferredDomain?: string,
+): ScoredEmail[] {
+  const scored: ScoredEmail[] = [];
+  const matches = html.match(
+    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+  );
+  for (const raw of matches ?? []) {
+    const email = normalizeEmail(raw);
+    if (!email) continue;
+    let bonus = 6;
+    const domain = email.split("@")[1];
+    if (preferredDomain && domain === preferredDomain) bonus += 20;
+    scored.push({ email, score: scoreEmailCandidate(email, bonus) });
+  }
+  return scored;
+}
+
+function pickBestEmail(
+  scored: ScoredEmail[],
+  preferredDomain?: string,
+): string | undefined {
+  if (scored.length === 0) return undefined;
+  const sorted = [...scored].sort((a, b) => b.score - a.score);
+  if (preferredDomain) {
+    const onDomain = sorted.filter((s) => s.email.split("@")[1] === preferredDomain);
+    if (onDomain.length > 0) return onDomain[0]!.email;
+  }
+  const seen = new Set<string>();
+  for (const { email } of sorted) {
+    if (seen.has(email)) continue;
+    seen.add(email);
+    return email;
+  }
+  return undefined;
+}
+
 function collectCandidates(html: string, boostFooter = false): string[] {
   const $ = cheerio.load(html);
-  const scored: { email: string; score: number }[] = [];
+  const scored: ScoredEmail[] = [];
 
   const addFromScope = (scope: ReturnType<typeof $>, bonus: number) => {
     scope.find('a[href^="mailto:"]').each((_, el) => {
@@ -86,22 +216,30 @@ function collectCandidates(html: string, boostFooter = false): string[] {
   addFromScope($("body"), 0);
   addFromScope($("header"), 3);
 
-  scored.sort((a, b) => b.score - a.score);
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const { email } of scored) {
-    if (seen.has(email)) continue;
-    seen.add(email);
-    out.push(email);
-  }
-  return out;
+  return scored.map((s) => s.email);
 }
 
-/** Parse HTML from homepage/footer (Puppeteer of fetch). */
-export function extractEmailFromHtml(html: string): string | undefined {
+/** Parse HTML from homepage/footer/meta/JSON-LD (fetch of Puppeteer). */
+export function extractEmailFromHtml(
+  html: string,
+  options?: { siteUrl?: string },
+): string | undefined {
   if (!html || html.length < 50) return undefined;
-  const candidates = collectCandidates(html, true);
-  return candidates[0];
+  const preferredDomain = options?.siteUrl
+    ? apexDomainFromHost(new URL(options.siteUrl).hostname) ?? undefined
+    : undefined;
+
+  const $ = cheerio.load(html);
+  const scored: ScoredEmail[] = [];
+
+  for (const email of collectCandidates(html, true)) {
+    scored.push({ email, score: scoreEmailCandidate(email, 10) });
+  }
+  scored.push(...collectMetaAndStructuredEmails($));
+  scored.push(...collectCloudflareEmails(html));
+  scored.push(...collectRawHtmlEmails(html, preferredDomain));
+
+  return pickBestEmail(scored, preferredDomain);
 }
 
 function normalizeSiteUrl(base: string, href: string): string | undefined {
@@ -175,9 +313,30 @@ const COMMON_CONTACT_PATHS = [
   "/klantenservice",
 ];
 
+const FETCH_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  Accept: "text/html",
+};
+
+async function fetchPageHtml(url: string, timeoutMs = 10_000): Promise<string | undefined> {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(timeoutMs),
+      headers: FETCH_HEADERS,
+      redirect: "follow",
+    });
+    if (!res.ok) return undefined;
+    return (await res.text()).slice(0, 200_000);
+  } catch {
+    return undefined;
+  }
+}
+
 /** Fetch homepage + contactpagina's (enrich tijdens Places-scrape). */
 export async function extractEmailFromWebsite(
   websiteUrl: string,
+  homepageHtml?: string,
 ): Promise<string | undefined> {
   const base = websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`;
   let origin: string;
@@ -185,6 +344,24 @@ export async function extractEmailFromWebsite(
     origin = new URL(base).origin;
   } catch {
     return undefined;
+  }
+
+  const visited = new Set<string>();
+  const tryHtml = (html: string, pageUrl: string) =>
+    extractEmailFromHtml(html, { siteUrl: pageUrl });
+
+  if (homepageHtml && homepageHtml.length > 50) {
+    visited.add(base);
+    const fromHome = tryHtml(homepageHtml, base);
+    if (fromHome) return fromHome;
+    for (const contactUrl of findContactPageUrls(homepageHtml, base)) {
+      if (visited.has(contactUrl)) continue;
+      visited.add(contactUrl);
+      const html = await fetchPageHtml(contactUrl, 8000);
+      if (!html) continue;
+      const email = tryHtml(html, contactUrl);
+      if (email) return email;
+    }
   }
 
   const urls = [base];
@@ -196,51 +373,23 @@ export async function extractEmailFromWebsite(
     }
   }
 
-  const visited = new Set<string>();
-
   for (const url of urls) {
     if (visited.has(url)) continue;
     visited.add(url);
 
-    try {
-      const res = await fetch(url, {
-        signal: AbortSignal.timeout(10000),
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          Accept: "text/html",
-        },
-        redirect: "follow",
-      });
-      if (!res.ok) continue;
-      const html = (await res.text()).slice(0, 150_000);
-      const email = extractEmailFromHtml(html);
-      if (email) return email;
+    const html = url === base && homepageHtml ? homepageHtml : await fetchPageHtml(url);
+    if (!html) continue;
 
-      const contactUrls = findContactPageUrls(html, url);
-      for (const contactUrl of contactUrls) {
-        if (visited.has(contactUrl)) continue;
-        visited.add(contactUrl);
-        try {
-          const res2 = await fetch(contactUrl, {
-            signal: AbortSignal.timeout(8000),
-            headers: {
-              "User-Agent":
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-              Accept: "text/html",
-            },
-            redirect: "follow",
-          });
-          if (!res2.ok) continue;
-          const html2 = (await res2.text()).slice(0, 150_000);
-          const email2 = extractEmailFromHtml(html2);
-          if (email2) return email2;
-        } catch {
-          // volgende contact-url
-        }
-      }
-    } catch {
-      // try next url
+    const email = tryHtml(html, url);
+    if (email) return email;
+
+    for (const contactUrl of findContactPageUrls(html, url)) {
+      if (visited.has(contactUrl)) continue;
+      visited.add(contactUrl);
+      const html2 = await fetchPageHtml(contactUrl, 8000);
+      if (!html2) continue;
+      const email2 = tryHtml(html2, contactUrl);
+      if (email2) return email2;
     }
   }
 

@@ -119,8 +119,8 @@ export async function runBatchOutreachSend(
   options: BatchSendOptions,
 ): Promise<BatchSendResult> {
   const locale = options.locale ?? "nl";
-  const limit = Math.min(Math.max(options.limit ?? 50, 1), 100);
-  const delayMs = Math.max(options.delayMs ?? 2500, 500);
+  const limit = Math.min(Math.max(options.limit ?? 50, 1), 200);
+  const delayMs = Math.max(options.delayMs ?? 3000, 500);
   const maxPerDomain = Math.max(options.maxPerDomain ?? 2, 1);
   const dryRun = !!options.dryRun;
   const abTest = options.abTest !== false;

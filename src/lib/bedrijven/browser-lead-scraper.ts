@@ -11,25 +11,45 @@ import {
   type ScrapeBranchId,
 } from "./branches";
 import type { ScrapeRegionId } from "./regions";
-import { getProvince, type ProvinceConfig } from "./provinces";
+import { getProvince, PROVINCE_IDS, type ProvinceConfig } from "./provinces";
 import {
   extractEmailFromHtml,
   extractEmailFromWebsite,
+  guessInfoEmailFromWebsite,
+  isLikelyGuessedEmail,
   normalizeEmail,
 } from "./contact-utils";
 import { normalizeWebsiteUrl } from "./capture-website-preview";
 import { launchPreviewBrowser, newPreviewPage } from "./capture-website-preview";
 import { defaultOutreachSubcategory } from "@/lib/mail/outreach-draft";
-import type { Bedrijf, BedrijvenCache, ScrapeBatchResult } from "./types";
+import type {
+  Bedrijf,
+  BedrijvenCache,
+  ScrapeBatchLeadLog,
+  ScrapeBatchOptions,
+  ScrapeBatchResult,
+} from "./types";
 import { loadBedrijvenCacheFromDb, saveBedrijvenCacheToDb } from "./business-db";
 import { upsertBusinessesBatch } from "./business-db";
 
 const DATA_ROOT = path.join(process.cwd(), "data", "bedrijven");
 const META_PATH = path.join(process.cwd(), "data", "bedrijven-meta.json");
 const MIN_BATCH_INTERVAL_MS = 5_000;
+const MIN_BATCH_INTERVAL_TURBO_MS = 1_500;
 const QUERIES_PER_BATCH = 2;
 const WEBSITES_PER_BATCH = 10;
 const SEARCH_DELAY_MS = 2_500;
+const ENRICH_CONCURRENCY = 2;
+const ENRICH_CHUNK_DELAY_MS = 600;
+
+/** Autopilot scrape_only — hogere batch + parallelle verrijking (geen e-maildrempel). */
+const TURBO = {
+  queriesPerBatch: 8,
+  websitesPerBatch: 36,
+  searchDelayMs: 800,
+  enrichConcurrency: 8,
+  enrichChunkDelayMs: 120,
+} as const;
 
 const BLOCKED_HOST_PATTERNS = [
   /google\./i,
@@ -77,6 +97,29 @@ function cachePath(branchId: ScrapeBranchId, regionId: ScrapeRegionId) {
 
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+/** Beperkt parallelisme (geen dependency op p-limit). */
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  if (items.length === 0) return [];
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    for (;;) {
+      const i = nextIndex++;
+      if (i >= items.length) return;
+      results[i] = await fn(items[i]!, i);
+    }
+  }
+
+  const workers = Math.min(Math.max(1, concurrency), items.length);
+  await Promise.all(Array.from({ length: workers }, () => worker()));
+  return results;
 }
 
 function hostBlocked(hostname: string): boolean {
@@ -166,6 +209,7 @@ async function saveCache(cache: BedrijvenCache) {
 async function canScrapeBatch(
   branchId: ScrapeBranchId,
   regionId: ScrapeRegionId,
+  minIntervalMs = MIN_BATCH_INTERVAL_MS,
 ): Promise<{ allowed: boolean; waitSeconds?: number }> {
   try {
     const raw = await fs.readFile(META_PATH, "utf-8");
@@ -178,10 +222,10 @@ async function canScrapeBatch(
       return { allowed: true };
     }
     const elapsed = Date.now() - new Date(meta.lastAttemptAt).getTime();
-    if (elapsed >= MIN_BATCH_INTERVAL_MS) return { allowed: true };
+    if (elapsed >= minIntervalMs) return { allowed: true };
     return {
       allowed: false,
-      waitSeconds: Math.ceil((MIN_BATCH_INTERVAL_MS - elapsed) / 1000),
+      waitSeconds: Math.ceil((minIntervalMs - elapsed) / 1000),
     };
   } catch {
     return { allowed: true };
@@ -373,10 +417,21 @@ function cityHintFromQuery(query: string): string {
   return parts.length > 1 ? (parts[parts.length - 1] ?? "") : "";
 }
 
+async function reportLead(
+  options: ScrapeBatchOptions | undefined,
+  leadLog: ScrapeBatchLeadLog[],
+  entry: ScrapeBatchLeadLog,
+) {
+  leadLog.push(entry);
+  await options?.onLead?.(entry);
+}
+
 export async function scrapeBedrijvenBatchBrowser(
   branchId: ScrapeBranchId = "installatie",
   regionId?: ScrapeRegionId,
+  options?: ScrapeBatchOptions,
 ): Promise<ScrapeBatchResult> {
+  const leadLog: ScrapeBatchLeadLog[] = [];
   const resolvedRegion = regionId ?? resolveRegionId(branchId, null);
   const provinceConfig = getProvince(resolvedRegion as import("./provinces").ProvinceId);
   const province =
@@ -388,10 +443,21 @@ export async function scrapeBedrijvenBatchBrowser(
     throw new Error(`UNKNOWN_BRANCH_OR_PROVINCE:${branchId}/${resolvedRegion}`);
   }
 
-  const gate = await canScrapeBatch(branchId, resolvedRegion);
+  const turbo = options?.turbo === true;
+  const gate = await canScrapeBatch(
+    branchId,
+    resolvedRegion,
+    turbo ? MIN_BATCH_INTERVAL_TURBO_MS : MIN_BATCH_INTERVAL_MS,
+  );
   if (!gate.allowed) {
     throw new Error(`RATE_LIMIT_COOLDOWN:${gate.waitSeconds ?? 5}`);
   }
+
+  const queriesPerBatch = turbo ? TURBO.queriesPerBatch : QUERIES_PER_BATCH;
+  const websitesPerBatch = turbo ? TURBO.websitesPerBatch : WEBSITES_PER_BATCH;
+  const searchDelayMs = turbo ? TURBO.searchDelayMs : SEARCH_DELAY_MS;
+  const enrichConcurrency = turbo ? TURBO.enrichConcurrency : ENRICH_CONCURRENCY;
+  const enrichChunkDelayMs = turbo ? TURBO.enrichChunkDelayMs : ENRICH_CHUNK_DELAY_MS;
 
   await writeMeta(branchId, resolvedRegion);
 
@@ -403,7 +469,7 @@ export async function scrapeBedrijvenBatchBrowser(
 
   const enrichedHosts = new Set(progress.enrichedHosts);
 
-  for (let i = 0; i < QUERIES_PER_BATCH; i++) {
+  for (let i = 0; i < queriesPerBatch; i++) {
     if (progress.queryIndex >= progress.queries.length) {
       progress.discoveryComplete = true;
       break;
@@ -426,7 +492,7 @@ export async function scrapeBedrijvenBatchBrowser(
     }
     appendLog(progress, `+${hits.length} URLs (queue: ${progress.urlQueue.length})`);
     await saveProgress(progress);
-    await sleep(SEARCH_DELAY_MS);
+    await sleep(searchDelayMs);
   }
 
   if (progress.queryIndex >= progress.queries.length) {
@@ -469,6 +535,7 @@ export async function scrapeBedrijvenBatchBrowser(
       remaining: 0,
       discoveryComplete: true,
       done: true,
+      leadLog,
     };
   }
 
@@ -482,37 +549,106 @@ export async function scrapeBedrijvenBatchBrowser(
   }
 
   progress.phase = "enriching";
-  const toProcess = pendingUrls.slice(0, WEBSITES_PER_BATCH);
-  appendLog(progress, `Websites scrapen: ${toProcess.length}…`);
+  const toProcess = pendingUrls.slice(0, websitesPerBatch);
+  appendLog(
+    progress,
+    `Websites scrapen: ${toProcess.length} (parallel ×${enrichConcurrency})…`,
+  );
   await saveProgress(progress);
 
+  const queryHint =
+    progress.queries[Math.max(0, progress.queryIndex - 1)] ?? province.name;
+  const enrichCtx = {
+    branchId,
+    regionId: resolvedRegion,
+    provinceName: province.name,
+    cityHint: cityHintFromQuery(queryHint),
+  };
+
   const added: Bedrijf[] = [];
-  for (const url of toProcess) {
-    const queryHint =
-      progress.queries[Math.max(0, progress.queryIndex - 1)] ?? province.name;
-    const hit: SearchHit = { url };
-    const bedrijf = await enrichWebsiteToBedrijf(hit, {
-      branchId,
-      regionId: resolvedRegion,
-      provinceName: province.name,
-      cityHint: cityHintFromQuery(queryHint),
-    });
-    try {
-      const host = new URL(url).hostname;
-      progress.enrichedHosts.push(host);
-      enrichedHosts.add(host);
-      progress.urlQueue = progress.urlQueue.filter((u) => {
+
+  type EnrichOutcome =
+    | { url: string; host?: string; bedrijf?: Bedrijf; lead: ScrapeBatchLeadLog }
+    | { url: string; failed: true };
+
+  for (let offset = 0; offset < toProcess.length; offset += enrichConcurrency) {
+    const chunk = toProcess.slice(offset, offset + enrichConcurrency);
+    const outcomes = await mapWithConcurrency(chunk, enrichConcurrency, async (url) => {
+      await options?.onLeadScan?.(url);
+      const hit: SearchHit = { url };
+      try {
+        const bedrijf = await enrichWebsiteToBedrijf(hit, enrichCtx);
+        let host: string | undefined;
         try {
-          return new URL(u).hostname !== host;
+          host = new URL(url).hostname;
         } catch {
-          return u !== url;
+          /* skip */
         }
-      });
-    } catch {
-      /* skip */
+
+        if (bedrijf) {
+          const guessed = isLikelyGuessedEmail(
+            bedrijf.email,
+            bedrijf.website ?? url,
+          );
+          return {
+            url,
+            host,
+            bedrijf,
+            lead: {
+              website: bedrijf.website ?? url,
+              name: bedrijf.name,
+              email: bedrijf.email,
+              status: "added" as const,
+              detail: guessed
+                ? "e-mail afgeleid van domein (handmatig verifiëren)"
+                : undefined,
+            },
+          };
+        }
+
+        return {
+          url,
+          host,
+          lead: {
+            website: url,
+            name: hit.title,
+            status: "no_email" as const,
+          },
+        };
+      } catch {
+        return { url, failed: true as const };
+      }
+    });
+
+    for (const outcome of outcomes) {
+      if ("failed" in outcome && outcome.failed) {
+        await reportLead(options, leadLog, {
+          website: outcome.url,
+          status: "failed",
+        });
+        continue;
+      }
+      if (!("lead" in outcome)) continue;
+
+      if (outcome.host) {
+        progress.enrichedHosts.push(outcome.host);
+        enrichedHosts.add(outcome.host);
+        progress.urlQueue = progress.urlQueue.filter((u) => {
+          try {
+            return new URL(u).hostname !== outcome.host;
+          } catch {
+            return u !== outcome.url;
+          }
+        });
+      }
+
+      await reportLead(options, leadLog, outcome.lead);
+      if (outcome.bedrijf) added.push(outcome.bedrijf);
     }
-    if (bedrijf) added.push(bedrijf);
-    await sleep(800);
+
+    if (offset + enrichConcurrency < toProcess.length) {
+      await sleep(enrichChunkDelayMs);
+    }
   }
 
   const existingCache = await loadCache(branchId, resolvedRegion);
@@ -555,5 +691,67 @@ export async function scrapeBedrijvenBatchBrowser(
     remaining,
     discoveryComplete: progress.discoveryComplete,
     done,
+    leadLog,
   };
+}
+
+/** Provincie volledig gescraped: alle queries + queue leeg. */
+export async function isProvinceBrowserScrapeExhausted(
+  branchId: ScrapeBranchId,
+  regionId: ScrapeRegionId,
+): Promise<boolean> {
+  try {
+    const raw = await fs.readFile(progressPath(branchId, regionId), "utf-8");
+    const progress = JSON.parse(raw) as BrowserScrapeProgress;
+    if (!progress.discoveryComplete) return false;
+    const enriched = new Set(progress.enrichedHosts ?? []);
+    const pending = (progress.urlQueue ?? []).filter((url) => {
+      try {
+        return !enriched.has(new URL(url).hostname);
+      } catch {
+        return false;
+      }
+    });
+    return pending.length === 0;
+  } catch {
+    return false;
+  }
+}
+
+/** Verwijder browser-scrape voortgang zodat alle provincies opnieuw doorlopen kunnen worden. */
+export async function resetBranchBrowserScrapeProgress(
+  branchId: ScrapeBranchId,
+): Promise<number> {
+  let removed = 0;
+  const dir = path.join(DATA_ROOT, branchId);
+  try {
+    const files = await fs.readdir(dir);
+    for (const file of files) {
+      if (!file.endsWith("-browser-progress.json")) continue;
+      await fs.unlink(path.join(dir, file));
+      removed++;
+    }
+  } catch {
+    /* branch-dir bestaat nog niet */
+  }
+  return removed;
+}
+
+/** Alle NL-provincies uitgeput → verticale heeft geen nieuwe browser-leads meer. */
+export async function isBranchBrowserScrapeExhausted(
+  branchId: ScrapeBranchId,
+): Promise<boolean> {
+  let anyStarted = false;
+  for (const provinceId of PROVINCE_IDS) {
+    try {
+      await fs.access(progressPath(branchId, provinceId));
+      anyStarted = true;
+    } catch {
+      return false;
+    }
+    if (!(await isProvinceBrowserScrapeExhausted(branchId, provinceId))) {
+      return false;
+    }
+  }
+  return anyStarted;
 }

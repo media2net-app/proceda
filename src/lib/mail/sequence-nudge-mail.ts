@@ -13,19 +13,19 @@ export function buildSequenceNudgeMail(params: {
 
   const plainBody = `Beste ${businessName},
 
-Een korte reminder: u kunt nog steeds een vrijblijvende demo van 30 minuten plannen. We laten dan uw maatwerk dashboard live zien.
+Een korte reminder: je kunt nog steeds een vrijblijvende demo van 30 minuten plannen. We laten dan je maatwerk dashboard live zien.
 
 Plan hier: ${demoUrl}
 
-Geen interesse? Antwoord met "stop" — dan mailen we u niet meer.
+Geen interesse? Antwoord met "stop" — dan mailen we je niet meer.
 
 Met vriendelijke groet,
 Proceda`;
 
   const htmlBody = `<p>Beste ${escapeHtml(businessName)},</p>
-<p>Een korte reminder: u kunt nog steeds een vrijblijvende demo van 30 minuten plannen. We laten dan uw maatwerk dashboard live zien.</p>
+<p>Een korte reminder: je kunt nog steeds een vrijblijvende demo van 30 minuten plannen. We laten dan je maatwerk dashboard live zien.</p>
 <p><a href="${escapeAttr(demoUrl)}" style="display:inline-block;background:#7F56D9;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;">Plan demo (30 min)</a></p>
-<p style="color:#667085;font-size:13px;">Geen interesse? Antwoord met &quot;stop&quot; — dan mailen we u niet meer.</p>
+<p style="color:#667085;font-size:13px;">Geen interesse? Antwoord met &quot;stop&quot; — dan mailen we je niet meer.</p>
 <p>Met vriendelijke groet,<br/>Proceda</p>`;
 
   return { subject, plainBody, htmlBody };

@@ -2,11 +2,20 @@ import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
 import { normalizeEmail } from "@/lib/bedrijven/contact-utils";
-import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
-import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
+import {
+  ADMIN_VERTICAL_ALL,
+  type AdminVerticalScope,
+  outreachBranchesForScope,
+} from "@/lib/bedrijven/outreach-branches";
+import {
+  loadAllBusinesses,
+  loadOutreachPipelineBusinesses,
+} from "@/lib/bedrijven/load-all-businesses";
 import { loadDemoClickStatsByTokens } from "@/lib/mail/demo-click-stats";
 import { listDemoOutreachTemplates } from "@/lib/mail/list-demo-outreach";
 import { loadInboxCache } from "@/lib/mail/inbox-storage";
+import { filterInboxForDisplay } from "@/lib/mail/inbox-bounce-filter";
+import type { MailTemplatePreview } from "@/lib/mail/types";
 
 export type ActionQueueItem = {
   id: string;
@@ -22,7 +31,7 @@ export type ActionQueueItem = {
 };
 
 export type OutreachActionQueue = {
-  branchId: ScrapeBranchId;
+  branchId: AdminVerticalScope;
   updatedAt: string;
   items: ActionQueueItem[];
   counts: Record<ActionQueueItem["type"], number>;
@@ -37,12 +46,34 @@ function extractEmailFromHeader(from: string): string | null {
   return normalizeEmail(raw) ?? null;
 }
 
+async function loadPreviewsForScope(
+  scope: AdminVerticalScope,
+  locale: string,
+): Promise<MailTemplatePreview[]> {
+  const branches = outreachBranchesForScope(scope);
+  const batches = await Promise.all(
+    branches.map((b) => listDemoOutreachTemplates(locale, undefined, b)),
+  );
+  if (scope === ADMIN_VERTICAL_ALL) {
+    const byBusiness = new Map<string, MailTemplatePreview>();
+    for (const batch of batches) {
+      for (const p of batch) byBusiness.set(p.businessId, p);
+    }
+    return [...byBusiness.values()];
+  }
+  return batches[0] ?? [];
+}
+
 export async function getOutreachActionQueue(
-  branchId: ScrapeBranchId,
+  scope: AdminVerticalScope,
   locale = "nl",
 ): Promise<OutreachActionQueue> {
-  const previews = await listDemoOutreachTemplates(locale, undefined, branchId);
-  const businesses = await loadAllBusinesses(branchId);
+  const branchSet = new Set<string>(outreachBranchesForScope(scope));
+  const previews = await loadPreviewsForScope(scope, locale);
+  const businesses =
+    scope === ADMIN_VERTICAL_ALL
+      ? await loadOutreachPipelineBusinesses()
+      : await loadAllBusinesses(scope);
   const byId = new Map(businesses.map((b) => [b.id, b]));
   const tokens = previews.map((p) => p.token);
   const clickByToken = await loadDemoClickStatsByTokens(tokens);
@@ -113,14 +144,17 @@ export async function getOutreachActionQueue(
     }
   }
 
-  const inbox = await loadInboxCache();
+  const inbox = filterInboxForDisplay(
+    (await loadInboxCache()).messages,
+  );
   const emailToBusiness = new Map<string, string>();
   for (const b of businesses) {
+    if (b.branchId && !branchSet.has(b.branchId)) continue;
     const em = b.email ? normalizeEmail(b.email) : null;
     if (em) emailToBusiness.set(em, b.id);
   }
 
-  for (const msg of inbox.messages) {
+  for (const msg of inbox) {
     if (msg.direction !== "inbound") continue;
     const fromEmail = extractEmailFromHeader(msg.from);
     if (!fromEmail) continue;
@@ -151,13 +185,16 @@ export async function getOutreachActionQueue(
       status: "scheduled",
       source: "auto_mail",
     },
-    take: 20,
+    take: 50,
   });
 
   for (const apt of recentAppointments) {
     if (!apt.businessId) continue;
     const biz = byId.get(apt.businessId);
-    if (!biz || (biz.branchId && biz.branchId !== branchId)) continue;
+    if (!biz) continue;
+    if (biz.branchId && !branchSet.has(biz.branchId)) {
+      continue;
+    }
     items.push({
       id: `postcall-${apt.id}`,
       type: "post_call",
@@ -182,7 +219,7 @@ export async function getOutreachActionQueue(
   };
 
   return {
-    branchId,
+    branchId: scope,
     updatedAt: new Date().toISOString(),
     items: items.slice(0, 50),
     counts,

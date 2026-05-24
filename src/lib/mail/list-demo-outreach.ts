@@ -1,94 +1,49 @@
-import { loadDemoReadyAudit } from "@/lib/bedrijven/demo-ready-audit";
 import { normalizeEmail, isLikelyGuessedEmail } from "@/lib/bedrijven/contact-utils";
 import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
 import {
   DEFAULT_BRANCH,
   type ScrapeBranchId,
 } from "@/lib/bedrijven/branches";
-import { businessIdToSlug } from "@/lib/bedrijven/slug";
-import {
-  businessIdToDemoSlug,
-  demoAppPublicPath,
-  demoHomepagePublicPath,
-} from "@/lib/bedrijven/demo-slug";
-import {
-  getDemoBrandEntry,
-  refreshDemoBrandCache,
-} from "@/lib/demo-homepage/demo-brand-registry";
-import {
-  dashboardScreenshotExists,
-  demoDashboardScreenshotAbsoluteUrl,
-} from "@/lib/demo-app/dashboard-email-screenshot";
+import { businessIdToSlug, slugToBusinessId } from "@/lib/bedrijven/slug";
 import type { Bedrijf } from "@/lib/bedrijven/types";
-import type { DemoReadyAuditRow } from "@/lib/bedrijven/demo-ready-audit";
-import { buildMinimalReportForMail } from "./demo-outreach-draft";
-import { buildFollowupMailPreviewForLead } from "./followup-mail-preview";
 import {
   buildOutreachMailSubject,
-  buildOutreachProposalDraft,
-  defaultOutreachSubcategory,
 } from "./outreach-draft";
-import { buildDemoBookingUrl, buildMailHtml } from "./templates";
+import { buildDemoBookingUrl } from "./templates";
 import { buildOutreachUtmParams } from "./outreach-utm";
 import { buildSendBatchId } from "./send-batch";
 import { loadDemoClickStatsByTokens } from "./demo-click-stats";
 import { ensureMailRecordsBatch, listMailRecords } from "./storage";
 import type { MailTemplatePreview } from "./types";
 import { resolveAppBaseUrl } from "./app-url";
-import { assessOutreachSendReadiness } from "@/lib/outreach/outreach-send-readiness";
+import { deriveListSendReadiness } from "./demo-outreach-list-readiness";
+import { buildDemoOutreachPreview } from "./build-demo-outreach-preview";
 
-function businessFromAuditRow(
-  row: DemoReadyAuditRow,
+type PreparedLead = {
+  business: Bedrijf;
+  email: string;
+};
+
+/** Alle bedrijven met e-mail in de verticale → mail-concept (geen demo-ready / huisstijl). */
+async function prepareOutreachLeads(
   branchId: ScrapeBranchId,
-): Bedrijf {
-  return {
-    id: row.businessId,
-    name: row.name,
-    website: row.website,
-    address: "",
-    city: "",
-    province: "",
-    category: "services",
-    subcategory: defaultOutreachSubcategory(branchId),
-    placeId: row.businessId,
-    source: "google",
-    branchId,
-  };
-}
-
-export async function listDemoOutreachTemplates(
-  locale: string,
-  request?: Request,
-  branchId: ScrapeBranchId = DEFAULT_BRANCH,
-): Promise<MailTemplatePreview[]> {
-  const audit = await loadDemoReadyAudit(branchId);
-  if (!audit) return [];
-
-  await refreshDemoBrandCache(branchId);
-
+): Promise<{
+  prepared: PreparedLead[];
+  recordByBiz: Map<string, Awaited<ReturnType<typeof listMailRecords>>[number]>;
+}> {
   const businesses = await loadAllBusinesses(branchId);
-  const byId = new Map(businesses.map((b) => [b.id, b]));
   const records = await listMailRecords();
   const recordByBiz = new Map(records.map((r) => [r.businessId, r]));
-  const baseUrl = resolveAppBaseUrl(request);
 
-  const targets = audit.results.filter((r) => r.demoReady);
-  const prepared: {
-    row: DemoReadyAuditRow;
-    business: Bedrijf;
-    email: string;
-  }[] = [];
+  const prepared: PreparedLead[] = [];
 
-  for (const row of targets) {
-    const stored = byId.get(row.businessId);
-    const business: Bedrijf = stored
-      ? { ...stored, website: stored.website || row.website }
-      : businessFromAuditRow(row, branchId);
-
-    const email = normalizeEmail(stored?.email);
+  for (const business of businesses) {
+    const email = normalizeEmail(business.email);
     if (!email) continue;
-    business.email = email;
-    prepared.push({ row, business, email });
+    prepared.push({
+      business: { ...business, email, branchId: business.branchId ?? branchId },
+      email,
+    });
   }
 
   const missingRecords = prepared.filter(
@@ -104,23 +59,23 @@ export async function listDemoOutreachTemplates(
     for (const [id, rec] of batch) recordByBiz.set(id, rec);
   }
 
+  return { prepared, recordByBiz };
+}
+
+/** Lichte verzendlijst (metadata); HTML via getDemoOutreachPreviewBySlug. */
+export async function listDemoOutreachTemplates(
+  locale: string,
+  request?: Request,
+  branchId: ScrapeBranchId = DEFAULT_BRANCH,
+): Promise<MailTemplatePreview[]> {
+  const { prepared, recordByBiz } = await prepareOutreachLeads(branchId);
+  const baseUrl = resolveAppBaseUrl(request);
   const out: MailTemplatePreview[] = [];
 
-  for (const { row, business, email } of prepared) {
-    const demoSlug = businessIdToDemoSlug(row.businessId);
-    const brand = getDemoBrandEntry(demoSlug);
-    const demoAppPath = demoAppPublicPath(demoSlug, locale);
-    const demoHomePath = demoHomepagePublicPath(demoSlug, locale);
-    const draft = buildOutreachProposalDraft(branchId, business.name);
+  for (const { business, email } of prepared) {
+    const record = recordByBiz.get(business.id);
+    if (!record) continue;
 
-    const report = buildMinimalReportForMail({
-      business,
-      proposalEmailDraft: draft,
-      demoAppUrl: demoAppPath,
-      demoHomepageUrl: demoHomePath,
-    });
-
-    const record = recordByBiz.get(business.id)!;
     const sendBatchPreview = buildSendBatchId(branchId);
     const utm = buildOutreachUtmParams({
       branchId,
@@ -128,21 +83,12 @@ export async function listDemoOutreachTemplates(
       mailKind: "initial",
     });
     const demoUrl = buildDemoBookingUrl(baseUrl, locale, record.token, utm);
-    const hasScreenshot = await dashboardScreenshotExists(demoSlug);
-    const dashboardScreenshotUrl = hasScreenshot
-      ? demoDashboardScreenshotAbsoluteUrl(baseUrl, demoSlug)
-      : null;
-
-    const mailBuilt = buildMailHtml({
-      business,
-      report,
-      demoUrl,
-      locale,
-      baseUrl,
-      dashboardScreenshotUrl,
-    });
     const subject = buildOutreachMailSubject(branchId, business.name);
-    const { plainBody, htmlBody } = mailBuilt;
+    const { sendReady, sendBlockers } = deriveListSendReadiness(
+      business,
+      email,
+      record.status,
+    );
 
     out.push({
       businessId: business.id,
@@ -150,16 +96,12 @@ export async function listDemoOutreachTemplates(
       businessName: business.name,
       city: business.city || "—",
       email,
-      leadQuality: report.leadQuality,
-      overallScore: report.overallScore,
       subject,
-      plainBody,
-      htmlBody,
+      plainBody: "",
+      htmlBody: "",
       demoUrl,
-      demoAppUrl: demoAppPath,
-      dashboardScreenshotUrl,
-      logoPath: brand?.logoPath ?? null,
-      source: "demo",
+      logoPath: null,
+      source: "outreach",
       token: record.token,
       status: record.status,
       sentAt: record.sentAt,
@@ -167,26 +109,12 @@ export async function listDemoOutreachTemplates(
       sendBatch: record.sendBatch,
       pipelineStatus: record.pipelineStatus,
       emailGuessed: isLikelyGuessedEmail(email, business.website),
+      sendReady,
+      sendBlockers,
     });
   }
 
   out.sort((a, b) => a.businessName.localeCompare(b.businessName, "nl"));
-
-  await Promise.all(
-    out.map(async (row) => {
-      if (row.status !== "draft") {
-        row.sendReady = true;
-        return;
-      }
-      const readiness = await assessOutreachSendReadiness(
-        row.businessId,
-        branchId,
-        "initial",
-      );
-      row.sendReady = readiness.ready;
-      row.sendBlockers = readiness.blockers;
-    }),
-  );
 
   const clickByToken = await loadDemoClickStatsByTokens(
     out.map((row) => row.token),
@@ -201,28 +129,44 @@ export async function listDemoOutreachTemplates(
     row.demoLastClickAt = clicks.lastClickedAt ?? undefined;
   }
 
-  for (const row of out) {
-    if (row.status !== "sent" || row.followupSentAt || !row.demoVisited) continue;
-    const prep = prepared.find((p) => p.business.id === row.businessId);
-    if (!prep) continue;
-    const record = recordByBiz.get(row.businessId)!;
-    const demoSlug = businessIdToDemoSlug(row.businessId);
-    const hasScreenshot = await dashboardScreenshotExists(demoSlug);
-    const dashboardScreenshotUrl = hasScreenshot
-      ? demoDashboardScreenshotAbsoluteUrl(baseUrl, demoSlug)
-      : null;
-    const followup = buildFollowupMailPreviewForLead({
-      business: prep.business,
-      token: record.token,
-      locale,
-      baseUrl,
-      dashboardScreenshotUrl,
-    });
-    row.followupSubject = followup.subject;
-    row.followupPlainBody = followup.plainBody;
-    row.followupHtmlBody = followup.htmlBody;
-    row.mailVariant = "followup";
+  return out;
+}
+
+/** Volledige HTML-preview voor één lead (admin detail-paneel). */
+export async function getDemoOutreachPreviewBySlug(
+  locale: string,
+  request: Request | undefined,
+  branchId: ScrapeBranchId,
+  slug: string,
+  options?: { includeFollowup?: boolean },
+): Promise<MailTemplatePreview | null> {
+  const businessId = slugToBusinessId(slug);
+  const ctx = await prepareOutreachLeads(branchId);
+  const prep = ctx.prepared.find((p) => p.business.id === businessId);
+  if (!prep) return null;
+
+  const record = ctx.recordByBiz.get(businessId);
+  if (!record) return null;
+
+  const preview = await buildDemoOutreachPreview(
+    locale,
+    request,
+    branchId,
+    prep.business,
+    prep.email,
+    record,
+    options,
+  );
+
+  const clicks = await loadDemoClickStatsByTokens([record.token]);
+  const click = clicks.get(record.token);
+  if (click) {
+    preview.demoVisited = true;
+    preview.demoClickCount = click.clickCount;
+    preview.demoSessionCount = click.sessionCount;
+    preview.demoFirstClickAt = click.firstClickedAt ?? undefined;
+    preview.demoLastClickAt = click.lastClickedAt ?? undefined;
   }
 
-  return out;
+  return preview;
 }

@@ -7,7 +7,7 @@ import { setMailDoNotMail } from "@/lib/mail/storage";
 import { logOutreachAudit } from "@/lib/outreach/outreach-audit";
 
 const BOUNCE_SUBJECT =
-  /undeliver|delivery status|mail delivery failed|returned mail|failure notice|niet afgeleverd|permanent error|mailer-daemon|postmaster/i;
+  /undeliver|delivery status|mail delivery failed|returned mail|failure notice|niet afgeleverd|permanent error|mailer-daemon|postmaster|returned to sender/i;
 
 function extractEmails(text: string): string[] {
   const matches = text.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi) ?? [];

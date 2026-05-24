@@ -26,6 +26,10 @@ function DashboardShell({ children }: Props) {
   const { active: autopilotActive } = useAutopilot();
 
   useEffect(() => {
+    if (autopilotActive) setSidebarOpen(false);
+  }, [autopilotActive]);
+
+  useEffect(() => {
     if (!sidebarOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -36,18 +40,26 @@ function DashboardShell({ children }: Props) {
 
   return (
     <div
-      className={`admin-shell min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#F9FAFB] text-[#101828] ${isDark ? "dark-mode" : ""}`}
+      className={`admin-shell min-h-screen min-h-[100dvh] overflow-x-hidden bg-[#F9FAFB] text-[#101828] ${isDark ? "dark-mode" : ""} ${autopilotActive ? "autopilot-log-open" : ""}`}
     >
-      <DashboardSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <DashboardSidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        forceCollapse={autopilotActive}
+      />
 
-      <div className={`md:pl-64 ${autopilotActive ? "pb-[min(40dvh,16rem)] lg:pb-0 lg:pr-[22rem]" : ""}`}>
-        <header className="admin-header safe-top sticky top-0 z-10 border-b border-[#EAECF0] bg-white/95 px-4 py-3 backdrop-blur-sm sm:px-6">
+      <div
+        className={`relative z-50 transition-[padding] duration-300 ${autopilotActive ? "md:pl-0" : "md:pl-64"} ${autopilotActive ? "pb-[min(40dvh,16rem)] lg:pb-0 lg:pr-[22rem]" : ""}`}
+      >
+        <header
+          className={`admin-header safe-top sticky top-0 border-b border-[#EAECF0] bg-white/95 px-4 py-3 backdrop-blur-sm sm:px-6 ${sidebarOpen ? "z-[60]" : "z-[50]"}`}
+        >
           <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-4">
             <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
-                className="touch-target-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#667085] hover:bg-[#F2F4F7] hover:text-[#101828] md:hidden"
+                className={`touch-target-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#667085] hover:bg-[#F2F4F7] hover:text-[#101828] ${autopilotActive ? "flex" : "md:hidden"}`}
                 aria-label={t("openMenu")}
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

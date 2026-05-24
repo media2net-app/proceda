@@ -1,17 +1,16 @@
-import { loadDemoReadyAudit } from "@/lib/bedrijven/demo-ready-audit";
-import {
-  DEFAULT_BRANCH,
-  type ScrapeBranchId,
-} from "@/lib/bedrijven/branches";
-import { normalizeEmail } from "@/lib/bedrijven/contact-utils";
-import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
-import { findBusinessById } from "@/lib/bedrijven/load-all-businesses";
 import { demoAppPublicPath, demoHomepagePublicPath } from "@/lib/bedrijven/demo-slug";
 import { businessIdToDemoSlug } from "@/lib/bedrijven/demo-slug";
+import { normalizeEmail } from "@/lib/bedrijven/contact-utils";
+import {
+  findBusinessById,
+  loadAllBusinesses,
+} from "@/lib/bedrijven/load-all-businesses";
+import {
+  DEFAULT_BRANCH,
+  type ScrapeBranchId as BranchId,
+} from "@/lib/bedrijven/branches";
 import type { Bedrijf } from "@/lib/bedrijven/types";
 import { buildMinimalReportForMail } from "./demo-outreach-draft";
-import { loadBusinessReport } from "@/lib/bedrijven/business-report-storage";
-import { enrichBusinessReport } from "@/lib/bedrijven/enrich-report";
 import {
   buildOutreachMailSubject,
   buildOutreachProposalDraft,
@@ -22,12 +21,6 @@ import { buildDemoBookingUrl, buildMailHtml } from "./templates";
 import { buildOutreachUtmParams } from "./outreach-utm";
 import { buildSendBatchId } from "./send-batch";
 import type { MailAttachment } from "./smtp-client";
-import {
-  dashboardScreenshotCidSrc,
-  dashboardScreenshotExists,
-  demoDashboardScreenshotAbsoluteUrl,
-  readDashboardScreenshotAttachment,
-} from "@/lib/demo-app/dashboard-email-screenshot";
 import { ensureMailRecord } from "./storage";
 import type { BusinessReport } from "@/lib/bedrijven/business-report-types";
 import type { MailOutreachRecord } from "./types";
@@ -51,30 +44,25 @@ export async function resolveOutreachMailForBusiness(
   attachments?: MailAttachment[];
 } | null> {
   const storedFirst = await findBusinessById(businessId);
-  const branchId: ScrapeBranchId =
-    storedFirst?.branchId ?? DEFAULT_BRANCH;
-
-  const audit = await loadDemoReadyAudit(branchId);
-  const auditRow = audit?.results.find(
-    (r) => r.businessId === businessId && r.demoReady,
-  );
-  if (!auditRow) return null;
+  const branchId: BranchId = storedFirst?.branchId ?? DEFAULT_BRANCH;
 
   const businesses = await loadAllBusinesses(branchId);
   const stored = businesses.find((b) => b.id === businessId) ?? storedFirst;
+  if (!stored && !recipientOverride) return null;
+
   const business: Bedrijf = stored
-    ? { ...stored, website: stored.website || auditRow.website }
+    ? { ...stored, branchId: stored.branchId ?? branchId }
     : {
-        id: auditRow.businessId,
-        name: auditRow.name,
-        website: auditRow.website,
+        id: businessId,
+        name: businessNameOverride?.trim() || businessId,
+        website: "",
         email: recipientOverride,
         address: "",
         city: "",
         province: "",
         category: "services",
         subcategory: defaultOutreachSubcategory(branchId),
-        placeId: auditRow.businessId,
+        placeId: businessId,
         source: "google",
         branchId,
       };
@@ -90,18 +78,17 @@ export async function resolveOutreachMailForBusiness(
   business.name = displayName;
 
   const demoSlug = businessIdToDemoSlug(businessId);
-  const storedReport = await loadBusinessReport(businessId);
-  const report =
-    storedReport?.demoAppUrl && storedReport.ai?.proposalEmailDraft
-      ? enrichBusinessReport(storedReport, business)
-      : buildMinimalReportForMail({
-          business,
-          proposalEmailDraft: buildOutreachProposalDraft(branchId, displayName),
-          demoAppUrl: demoAppPublicPath(demoSlug, locale),
-          demoHomepageUrl: demoHomepagePublicPath(demoSlug, locale),
-        });
+  const report = buildMinimalReportForMail({
+    business,
+    proposalEmailDraft: buildOutreachProposalDraft(branchId, displayName),
+    demoAppUrl: demoAppPublicPath(demoSlug, locale),
+    demoHomepageUrl: demoHomepagePublicPath(demoSlug, locale),
+    branchId,
+  });
 
   const record = await ensureMailRecord(businessId, email);
+  if (record.status !== "draft") return null;
+
   const sendBatch = buildSendBatchId(branchId);
   const subjectAb = options?.subjectAb;
   const utm = buildOutreachUtmParams({
@@ -118,15 +105,6 @@ export async function resolveOutreachMailForBusiness(
   );
 
   const base = resolveAppBaseUrl(request);
-  const hasScreenshot = await dashboardScreenshotExists(demoSlug);
-  const screenshotAttachment = hasScreenshot
-    ? await readDashboardScreenshotAttachment(demoSlug)
-    : null;
-  const dashboardScreenshotUrl = screenshotAttachment
-    ? dashboardScreenshotCidSrc()
-    : hasScreenshot
-      ? demoDashboardScreenshotAbsoluteUrl(base, demoSlug)
-      : null;
 
   const mailBuilt = buildMailHtml({
     business,
@@ -134,7 +112,7 @@ export async function resolveOutreachMailForBusiness(
     demoUrl,
     locale,
     baseUrl: base,
-    dashboardScreenshotUrl,
+    dashboardScreenshotUrl: null,
   });
   const subject = buildOutreachMailSubject(
     branchId,
@@ -152,6 +130,5 @@ export async function resolveOutreachMailForBusiness(
     htmlBody,
     demoUrl,
     record,
-    attachments: screenshotAttachment ? [screenshotAttachment] : undefined,
   };
 }

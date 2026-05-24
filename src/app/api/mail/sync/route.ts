@@ -6,6 +6,7 @@ import {
   saveSyncError,
   inboxStats,
 } from "@/lib/mail/inbox-storage";
+import { filterInboxForDisplay } from "@/lib/mail/inbox-bounce-filter";
 import { verifyImapConnection } from "@/lib/mail/imap-client";
 import { syncBouncesFromInbox } from "@/lib/mail/sync-bounces-from-inbox";
 
@@ -23,9 +24,10 @@ export async function POST() {
     });
     const stats = inboxStats(messages);
     const bounceSync = await syncBouncesFromInbox();
+    const visibleMessages = filterInboxForDisplay(cache.messages);
 
     return NextResponse.json({
-      messages: cache.messages,
+      messages: visibleMessages,
       syncedAt: cache.syncedAt,
       stats,
       connected: true,

@@ -18,7 +18,10 @@ import {
   isOutreachBranchId,
   type OutreachBranchId,
 } from "@/lib/bedrijven/outreach-branches";
-import { useAdminVertical } from "@/context/AdminVerticalContext";
+import {
+  ADMIN_VERTICAL_ALL,
+  useAdminVertical,
+} from "@/context/AdminVerticalContext";
 import {
   getRegionConfig,
   getRegionIdsForBranch,
@@ -185,9 +188,13 @@ export function BusinessesView() {
   const [legacyBranchOverride, setLegacyBranchOverride] =
     useState<ScrapeBranchId | null>(null);
 
-  const branch: ScrapeBranchId =
+  const branch: ScrapeBranchId | typeof ADMIN_VERTICAL_ALL =
     legacyBranchOverride ??
-    (isOutreachBranchId(vertical) ? vertical : DEFAULT_BRANCH);
+    (vertical === ADMIN_VERTICAL_ALL
+      ? ADMIN_VERTICAL_ALL
+      : isOutreachBranchId(vertical)
+        ? vertical
+        : DEFAULT_BRANCH);
 
   useEffect(() => {
     setLegacyBranchOverride(null);
@@ -208,13 +215,16 @@ export function BusinessesView() {
   );
   const [withWebsiteOnly, setWithWebsiteOnly] = useState(false);
 
-  const regionIds = getRegionIdsForBranch(branch);
+  const regionBranch: ScrapeBranchId =
+    branch === ADMIN_VERTICAL_ALL ? DEFAULT_BRANCH : branch;
+  const regionIds = getRegionIdsForBranch(regionBranch);
   const isLenjerii = branch === "lenjerii-hotel";
   const isAllProvinces = province === "all";
   const provinceConfig = isAllProvinces
     ? null
     : getRegionConfig(branch, province);
-  const branchName = BRANCHES[branch].name;
+  const branchName =
+    branch === ADMIN_VERTICAL_ALL ? verticalLabel : BRANCHES[branch].name;
   const mapCenter: [number, number] = isAllProvinces
     ? isLenjerii
       ? ROMANIA_MAP_CENTER
@@ -423,14 +433,16 @@ export function BusinessesView() {
             {t("title")} · {branchName}
           </h1>
           <p className="mt-1 text-sm text-[#667085]">{t("subtitle")}</p>
-          {isOutreachBranchId(vertical) && !legacyBranchOverride ? (
+          {(vertical === ADMIN_VERTICAL_ALL || isOutreachBranchId(vertical)) &&
+          !legacyBranchOverride ? (
             <p className="mt-1 text-xs text-[#6941C6]">
               {t("branchFromSidebar", { name: verticalLabel })}
             </p>
           ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {isOutreachBranchId(vertical) && !legacyBranchOverride ? (
+          {(vertical === ADMIN_VERTICAL_ALL || isOutreachBranchId(vertical)) &&
+          !legacyBranchOverride ? (
             <span className="rounded-lg border border-[#D6BBFB] bg-[#F9F5FF] px-3 py-2 text-sm font-semibold text-[#6941C6]">
               {verticalLabel}
             </span>

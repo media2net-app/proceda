@@ -269,6 +269,30 @@
   color: var(--admin-accent);
 }
 
+/* Outbound mail HTML preview — always light (like real email clients) */
+.admin-shell.dark-mode .admin-mail-html-preview {
+  color-scheme: light;
+  background-color: #f9fafb !important;
+}
+
+.admin-shell.dark-mode .admin-mail-html-preview.bg-white {
+  background-color: #ffffff !important;
+}
+
+.admin-shell.dark-mode .admin-mail-html-preview:hover {
+  background-color: #f9fafb !important;
+}
+
+.admin-shell.dark-mode .admin-mail-html-preview.bg-white:hover {
+  background-color: #ffffff !important;
+}
+
+/* Global table row hover must not affect embedded outreach email markup */
+.admin-shell.dark-mode .admin-mail-html-preview tbody tr:hover,
+.admin-shell.dark-mode .admin-mail-html-preview tr:hover {
+  background-color: revert !important;
+}
+
 /* ——— Live view globe panel gradient ——— */
 .admin-shell.dark-mode .from-\[\#F9F5FF\],
 .admin-shell.dark-mode .via-white,
@@ -295,4 +319,210 @@
 
 .admin-shell.dark-mode .hover\:bg-\[\#6941C6\]:hover:not(.admin-theme-toggle) {
   background-color: #6941c6 !important;
+}
+
+/* ——— Vertical hub cards ——— */
+.admin-shell.dark-mode .admin-vertical-heading,
+.admin-shell.dark-mode .admin-vertical-title,
+.admin-shell.dark-mode .admin-vertical-stat-value {
+  color: var(--admin-text) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-muted,
+.admin-shell.dark-mode .admin-vertical-stat-label {
+  color: var(--admin-text-muted) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-card {
+  background-color: var(--admin-bg-surface) !important;
+  border-color: var(--admin-border) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-card--active {
+  background-color: var(--admin-purple-tint) !important;
+  border-color: var(--admin-accent) !important;
+  box-shadow: 0 0 0 1px rgba(158, 119, 237, 0.35) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-card--planned {
+  background-color: var(--admin-bg-muted) !important;
+  border-color: var(--admin-border) !important;
+  border-style: dashed !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-progress-track {
+  background-color: var(--admin-border) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-badge-muted {
+  background-color: var(--admin-bg-hover) !important;
+  color: var(--admin-text-muted) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-badge-next {
+  background-color: #132f4c !important;
+  color: #79c0ff !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-badge-pilot {
+  background-color: #3d2814 !important;
+  color: #fbbf24 !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-select {
+  border: 1px solid var(--admin-border) !important;
+  background-color: var(--admin-bg-elevated) !important;
+  color: var(--admin-text-secondary) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-select:hover {
+  background-color: var(--admin-bg-hover) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-select--active {
+  border-color: transparent !important;
+  background-color: #7f56d9 !important;
+  color: #fff !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-links {
+  border-color: var(--admin-border) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-link {
+  border: 1px solid var(--admin-border) !important;
+  background-color: var(--admin-bg-elevated) !important;
+  color: var(--admin-text-secondary) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-link--primary {
+  border-color: var(--admin-accent-border) !important;
+  color: var(--admin-accent) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-link:hover {
+  background-color: var(--admin-accent-surface) !important;
+}
+
+.admin-shell.dark-mode .admin-vertical-planned-hint {
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text-faint) !important;
+}
+
+.admin-shell.dark-mode .admin-nav-expand {
+  background-color: var(--admin-bg-surface) !important;
+  border-color: var(--admin-border) !important;
+  color: var(--admin-text-secondary) !important;
+}
+
+.admin-shell.dark-mode .admin-nav-expand:hover {
+  background-color: var(--admin-bg-hover) !important;
+}
+
+/* Light-mode vertical hub tokens (also used when theme toggle off) */
+.admin-vertical-card {
+  border-color: #eaecf0;
+  background-color: #fff;
+}
+
+.admin-vertical-card--active {
+  border-color: #7f56d9;
+  background-color: #f9f5ff;
+  box-shadow: 0 0 0 1px rgb(127 86 217 / 0.2);
+}
+
+.admin-vertical-card--planned {
+  border-style: dashed;
+  border-color: #d0d5dd;
+  background-color: #fafafa;
+}
+
+.admin-vertical-heading {
+  color: #101828;
+}
+
+.admin-vertical-title {
+  color: #101828;
+}
+
+.admin-vertical-stat-value {
+  color: #101828;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.admin-vertical-stat-label {
+  color: #667085;
+  font-size: 10px;
+}
+
+.admin-vertical-muted {
+  color: #667085;
+}
+
+.admin-vertical-progress-track {
+  background-color: #eaecf0;
+}
+
+.admin-vertical-badge-muted {
+  background-color: #f2f4f7;
+  color: #667085;
+}
+
+.admin-vertical-badge-next {
+  background-color: #eff8ff;
+  color: #175cd3;
+}
+
+.admin-vertical-badge-pilot {
+  background-color: #fffaeb;
+  color: #b54708;
+}
+
+.admin-vertical-select {
+  border: 1px solid #d0d5dd;
+  background-color: #fff;
+  color: #344054;
+}
+
+.admin-vertical-select:hover {
+  background-color: #f9fafb;
+}
+
+.admin-vertical-select--active {
+  border-color: transparent;
+  background-color: #7f56d9;
+  color: #fff;
+}
+
+.admin-vertical-links {
+  border-color: rgb(234 236 240 / 0.8);
+}
+
+.admin-vertical-link {
+  border-radius: 0.375rem;
+  border: 1px solid #d0d5dd;
+  background-color: #fff;
+  padding: 0.125rem 0.5rem;
+  font-size: 10px;
+  font-weight: 600;
+  color: #475467;
+}
+
+.admin-vertical-link--primary {
+  border-color: #e9d7fe;
+  color: #6941c6;
+}
+
+.admin-vertical-link:hover {
+  background-color: #f9fafb;
+}
+
+.admin-vertical-link--primary:hover {
+  background-color: #f4ebff;
+}
+
+.admin-vertical-planned-hint {
+  border-color: #e4e7ec;
+  color: #98a2b3;
 }

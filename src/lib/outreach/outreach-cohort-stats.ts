@@ -1,7 +1,11 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
-import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
+import {
+  ADMIN_VERTICAL_ALL,
+  type AdminVerticalScope,
+  OUTREACH_BRANCH_IDS,
+} from "@/lib/bedrijven/outreach-branches";
 import { loadDemoClickStatsByTokens } from "@/lib/mail/demo-click-stats";
 
 export type CohortRow = {
@@ -17,12 +21,15 @@ export type CohortRow = {
 };
 
 export async function getOutreachCohortStats(
-  branchId: ScrapeBranchId,
+  scope: AdminVerticalScope,
 ): Promise<CohortRow[]> {
   const rows = await prisma.mailOutreach.findMany({
     where: {
       sendBatch: { not: null },
-      business: { branchId },
+      business:
+        scope === ADMIN_VERTICAL_ALL
+          ? { branchId: { in: [...OUTREACH_BRANCH_IDS] } }
+          : { branchId: scope },
     },
     select: {
       sendBatch: true,

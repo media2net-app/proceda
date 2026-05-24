@@ -378,6 +378,8 @@ model WaitlistEntry {
 model OutreachAutopilot {
   branchId         String    @id
   active           Boolean   @default(false)
+  /// "full" | "scrape_only"
+  mode             String    @default("full")
   startedAt        DateTime?
   stoppedAt        DateTime?
   lastTickAt       DateTime?

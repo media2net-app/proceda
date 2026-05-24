@@ -1,8 +1,14 @@
 import "server-only";
 
-import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
+import {
+  ADMIN_VERTICAL_ALL,
+  type AdminVerticalScope,
+  outreachBranchesForScope,
+} from "@/lib/bedrijven/outreach-branches";
 import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
+import { loadOutreachPipelineBusinesses } from "@/lib/bedrijven/load-all-businesses";
 import { listDemoOutreachTemplates } from "@/lib/mail/list-demo-outreach";
+import type { MailTemplatePreview } from "@/lib/mail/types";
 
 export type CallListEntry = {
   businessId: string;
@@ -19,17 +25,38 @@ export type CallListEntry = {
 };
 
 export type OutreachCallList = {
-  branchId: ScrapeBranchId;
+  branchId: AdminVerticalScope;
   updatedAt: string;
   entries: CallListEntry[];
 };
 
+async function loadPreviewsForScope(
+  scope: AdminVerticalScope,
+  locale: string,
+): Promise<MailTemplatePreview[]> {
+  const branches = outreachBranchesForScope(scope);
+  const batches = await Promise.all(
+    branches.map((b) => listDemoOutreachTemplates(locale, undefined, b)),
+  );
+  if (scope === ADMIN_VERTICAL_ALL) {
+    const byBusiness = new Map<string, MailTemplatePreview>();
+    for (const batch of batches) {
+      for (const p of batch) byBusiness.set(p.businessId, p);
+    }
+    return [...byBusiness.values()];
+  }
+  return batches[0] ?? [];
+}
+
 export async function getOutreachCallList(
-  branchId: ScrapeBranchId,
+  scope: AdminVerticalScope,
   locale = "nl",
 ): Promise<OutreachCallList> {
-  const previews = await listDemoOutreachTemplates(locale, undefined, branchId);
-  const businesses = await loadAllBusinesses(branchId);
+  const previews = await loadPreviewsForScope(scope, locale);
+  const businesses =
+    scope === ADMIN_VERTICAL_ALL
+      ? await loadOutreachPipelineBusinesses()
+      : await loadAllBusinesses(scope);
   const byId = new Map(businesses.map((b) => [b.id, b]));
 
   const entries: CallListEntry[] = [];
@@ -68,7 +95,7 @@ export async function getOutreachCallList(
   });
 
   return {
-    branchId,
+    branchId: scope,
     updatedAt: new Date().toISOString(),
     entries,
   };

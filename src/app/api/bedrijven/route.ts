@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
+import {
+  loadAllBusinesses,
+  loadOutreachPipelineBusinesses,
+} from "@/lib/bedrijven/load-all-businesses";
+import { ADMIN_VERTICAL_ALL } from "@/lib/bedrijven/outreach-branches";
 import {
   getActiveDataSource,
   getScrapeStatus,
@@ -10,16 +14,28 @@ import {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const branchId = resolveBranchId(searchParams.get("branch"));
+  const branchParam = searchParams.get("branch");
+  const branchId =
+    branchParam === ADMIN_VERTICAL_ALL
+      ? ADMIN_VERTICAL_ALL
+      : resolveBranchId(branchParam);
   const provinceParam = searchParams.get("province")?.trim() ?? "all";
   const configuredSource = getActiveDataSource();
 
   if (provinceParam === "all") {
-    const businesses = await loadAllBusinesses(branchId);
+    const businesses =
+      branchId === ADMIN_VERTICAL_ALL
+        ? await loadOutreachPipelineBusinesses()
+        : await loadAllBusinesses(branchId);
     return NextResponse.json({
       branch: branchId,
       province: "all",
-      provinceName: branchId === "lenjerii-hotel" ? "România" : "Nederland",
+      provinceName:
+        branchId === ADMIN_VERTICAL_ALL
+          ? "Alle branches"
+          : branchId === "lenjerii-hotel"
+            ? "România"
+            : "Nederland",
       scrapedAt: new Date().toISOString(),
       count: businesses.length,
       dataSource: configuredSource,

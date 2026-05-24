@@ -229,9 +229,10 @@ export async function stopProvinceScrape(
 export async function scrapeBedrijvenBatch(
   branchId: ScrapeBranchId = DEFAULT_BRANCH,
   regionId?: ScrapeRegionId,
+  options?: import("./types").ScrapeBatchOptions,
 ): Promise<ScrapeBatchResult> {
   if (resolveScrapeProvider() === "browser") {
-    return scrapeBedrijvenBatchBrowser(branchId, regionId);
+    return scrapeBedrijvenBatchBrowser(branchId, regionId, options);
   }
 
   const resolvedRegion = regionId ?? resolveRegionId(branchId, null);
@@ -338,6 +339,7 @@ export async function scrapeBedrijvenBatch(
       remaining: 0,
       discoveryComplete: true,
       done: true,
+      leadLog: [],
     };
   }
 
@@ -413,6 +415,7 @@ export async function scrapeBedrijvenBatch(
     remaining: pending.length,
     discoveryComplete: progress.discoveryComplete,
     done,
+    leadLog: [],
   };
 }
 

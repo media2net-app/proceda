@@ -1,82 +1,112 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { BRANCHES } from "@/lib/bedrijven/branches";
-import { useAdminVertical } from "@/context/AdminVerticalContext";
 import {
-  PLANNED_OUTREACH_VERTICALS,
+  ADMIN_VERTICAL_ALL,
+  useAdminVertical,
   type OutreachBranchId,
-} from "@/lib/bedrijven/outreach-branches";
+} from "@/context/AdminVerticalContext";
 
-export function AdminVerticalSelector({ compact = false }: { compact?: boolean }) {
+export function AdminVerticalSelector() {
   const t = useTranslations("adminVertical");
   const { vertical, setVertical, outreachBranchIds } = useAdminVertical();
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const label =
+    vertical === ADMIN_VERTICAL_ALL
+      ? t("allBranches")
+      : (BRANCHES[vertical as OutreachBranchId]?.name ?? vertical);
 
   return (
-    <div className={compact ? "" : "px-3 pb-2"}>
-      {!compact && (
-        <p className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-wide text-[#98A2B3]">
-          {t("label")}
-        </p>
-      )}
-      <div
-        className={`flex gap-1 ${compact ? "flex-row flex-wrap" : "flex-col"}`}
-        role="group"
-        aria-label={t("label")}
+    <div ref={rootRef} className="relative">
+      <p className="mb-1 px-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#98A2B3]">
+        {t("label")}
+      </p>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 rounded-lg border border-[#D0D5DD] bg-white px-2.5 py-1.5 text-left text-xs font-semibold text-[#344054] shadow-xs hover:bg-[#F9FAFB]"
+        aria-expanded={open}
+        aria-haspopup="listbox"
       >
-        {outreachBranchIds.map((id) => {
-          const active = vertical === id;
-          const label = BRANCHES[id as OutreachBranchId]?.name ?? id;
-          return (
+        <span className="truncate">{label}</span>
+        <svg
+          className={`h-4 w-4 shrink-0 text-[#98A2B3] transition ${open ? "rotate-180" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+          aria-hidden
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+
+      {open ? (
+        <ul
+          role="listbox"
+          className="absolute left-0 right-0 z-50 mt-1 max-h-56 overflow-y-auto rounded-lg border border-[#EAECF0] bg-white py-1 shadow-lg"
+        >
+          <li>
             <button
-              key={id}
               type="button"
-              onClick={() => setVertical(id)}
-              className={`rounded-lg px-3 py-2 text-left text-sm font-semibold transition ${
-                active
-                  ? "bg-[#7F56D9] text-white shadow-xs"
-                  : "bg-[#F2F4F7] text-[#475467] hover:bg-[#EAECF0] hover:text-[#101828]"
-              } ${compact ? "min-w-[120px] flex-1" : "w-full"}`}
+              role="option"
+              aria-selected={vertical === ADMIN_VERTICAL_ALL}
+              onClick={() => {
+                setVertical(ADMIN_VERTICAL_ALL);
+                setOpen(false);
+              }}
+              className={`w-full px-2.5 py-1.5 text-left text-xs font-semibold ${
+                vertical === ADMIN_VERTICAL_ALL
+                  ? "bg-[#F9F5FF] text-[#6941C6]"
+                  : "text-[#344054] hover:bg-[#F9FAFB]"
+              }`}
             >
-              {label}
-              {id === "installatie" && (
-                <span
-                  className={`ml-1.5 text-[10px] font-medium ${
-                    active ? "text-[#E9D7FE]" : "text-[#98A2B3]"
+              {t("allBranches")}
+            </button>
+          </li>
+          {outreachBranchIds.map((id) => {
+            const active = vertical === id;
+            const name = BRANCHES[id as OutreachBranchId]?.name ?? id;
+            return (
+              <li key={id}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={active}
+                  onClick={() => {
+                    setVertical(id);
+                    setOpen(false);
+                  }}
+                  className={`flex w-full items-center justify-between gap-2 px-2.5 py-1.5 text-left text-xs font-medium ${
+                    active
+                      ? "bg-[#F9F5FF] font-semibold text-[#6941C6]"
+                      : "text-[#344054] hover:bg-[#F9FAFB]"
                   }`}
                 >
-                  {t("pilot")}
-                </span>
-              )}
-            </button>
-          );
-        })}
-
-        {!compact && (
-          <p className="mt-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[#D0D5DD]">
-            {t("plannedLabel")}
-          </p>
-        )}
-
-        {PLANNED_OUTREACH_VERTICALS.map((item) => (
-          <div
-            key={item.id}
-            role="presentation"
-            aria-disabled="true"
-            title={t("plannedHint")}
-            className={`cursor-default select-none rounded-lg border border-dashed border-[#EAECF0] px-3 py-2 text-sm font-medium text-[#D0D5DD] ${
-              compact ? "min-w-[120px] flex-1" : "w-full"
-            }`}
-          >
-            {item.name}
-            {!compact && (
-              <span className="ml-1.5 text-[10px] text-[#E4E7EC]">
-                {t("plannedBadge")}
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
+                  <span className="truncate">{name}</span>
+                  {id === "installatie" ? (
+                    <span className="shrink-0 text-[9px] text-[#98A2B3]">
+                      {t("pilot")}
+                    </span>
+                  ) : null}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
     </div>
   );
 }

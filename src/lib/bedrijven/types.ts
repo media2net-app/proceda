@@ -79,6 +79,26 @@ export type BedrijvenCache = {
   businesses: Bedrijf[];
 };
 
+export type ScrapeBatchLeadLogStatus = "added" | "no_email" | "failed";
+
+/** Per-website result from a browser scrape batch (for autopilot terminal). */
+export type ScrapeBatchLeadLog = {
+  website: string;
+  name?: string;
+  email?: string;
+  status: ScrapeBatchLeadLogStatus;
+  detail?: string;
+};
+
+export type ScrapeBatchOptions = {
+  /** Meer queries/sites per tick (autopilot scrape-modus). */
+  turbo?: boolean;
+  /** Called when a website enrich starts (live autopilot log). */
+  onLeadScan?: (website: string) => void | Promise<void>;
+  /** Called after each website in the enrich loop (live autopilot log). */
+  onLead?: (entry: ScrapeBatchLeadLog) => void | Promise<void>;
+};
+
 export type ScrapeBatchResult = {
   cache: BedrijvenCache;
   batchAdded: number;
@@ -87,4 +107,5 @@ export type ScrapeBatchResult = {
   remaining: number;
   discoveryComplete: boolean;
   done: boolean;
+  leadLog: ScrapeBatchLeadLog[];
 };

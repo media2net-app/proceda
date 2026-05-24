@@ -10,6 +10,10 @@ import {
   hasCallListContact,
 } from "./contact-utils";
 import { DEFAULT_BRANCH, type ScrapeBranchId } from "./branches";
+import {
+  OUTREACH_BRANCH_IDS,
+  type AdminVerticalScope,
+} from "./outreach-branches";
 import { loadAllBusinesses } from "./load-all-businesses";
 import type { Bedrijf } from "./types";
 import { PROVINCE_IDS, type ProvinceId } from "./provinces";
@@ -107,6 +111,90 @@ function countOutreach(businesses: Bedrijf[]): Omit<OutreachKpi, "autoMailerHot"
 
 function pipelineEur(hot: number, warm: number): number {
   return (hot + warm) * DEAL_VALUE_EUR;
+}
+
+function mergeProvinceRows(rows: ProvinceKpiRow[]): ProvinceKpiRow[] {
+  const byId = new Map<string, ProvinceKpiRow>();
+  for (const p of rows) {
+    const cur = byId.get(p.id);
+    if (!cur) {
+      byId.set(p.id, { ...p });
+      continue;
+    }
+    byId.set(p.id, {
+      ...cur,
+      businessCount: cur.businessCount + p.businessCount,
+      withWebsite: cur.withWebsite + p.withWebsite,
+      withEmail: cur.withEmail + p.withEmail,
+      withPhone: cur.withPhone + p.withPhone,
+      autoMailerQualified: cur.autoMailerQualified + p.autoMailerQualified,
+      callListQualified: cur.callListQualified + p.callListQualified,
+      reports: cur.reports + p.reports,
+      hotLeads: cur.hotLeads + p.hotLeads,
+      warmLeads: cur.warmLeads + p.warmLeads,
+      coldLeads: cur.coldLeads + p.coldLeads,
+      pipelineEur: cur.pipelineEur + p.pipelineEur,
+    });
+  }
+  return [...byId.values()].sort((a, b) => b.businessCount - a.businessCount);
+}
+
+function mergeAdminKpiStats(parts: AdminKpiStats[]): AdminKpiStats {
+  const first = parts[0]!;
+  const sum = (fn: (s: AdminKpiStats) => number) =>
+    parts.reduce((acc, s) => acc + fn(s), 0);
+
+  const hotLeads = sum((s) => s.hotLeads);
+  const warmLeads = sum((s) => s.warmLeads);
+
+  return {
+    dealValueEur: first.dealValueEur,
+    totalBusinesses: sum((s) => s.totalBusinesses),
+    withWebsite: sum((s) => s.withWebsite),
+    reportsReady: sum((s) => s.reportsReady),
+    hotLeads,
+    warmLeads,
+    coldLeads: sum((s) => s.coldLeads),
+    avgLeadScore:
+      sum((s) => s.reportsReady) > 0
+        ? Math.round(
+            parts.reduce(
+              (acc, s) => acc + s.avgLeadScore * s.reportsReady,
+              0,
+            ) / sum((s) => s.reportsReady),
+          )
+        : 0,
+    revenueHotEur: hotLeads * DEAL_VALUE_EUR,
+    revenuePipelineEur: pipelineEur(hotLeads, warmLeads),
+    successfulDeals: sum((s) => s.successfulDeals),
+    revenueWonEur: sum((s) => s.revenueWonEur),
+    outreach: {
+      withEmail: sum((s) => s.outreach.withEmail),
+      withPhone: sum((s) => s.outreach.withPhone),
+      withWebsiteAndEmail: sum((s) => s.outreach.withWebsiteAndEmail),
+      withWebsiteAndPhone: sum((s) => s.outreach.withWebsiteAndPhone),
+      autoMailerQualified: sum((s) => s.outreach.autoMailerQualified),
+      callListQualified: sum((s) => s.outreach.callListQualified),
+      autoMailerHot: sum((s) => s.outreach.autoMailerHot),
+      callListHot: sum((s) => s.outreach.callListHot),
+      noOutreachChannel: sum((s) => s.outreach.noOutreachChannel),
+    },
+    provinces: mergeProvinceRows(parts.flatMap((s) => s.provinces)),
+    googlePlaces: first.googlePlaces,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export async function getAdminKpiStatsForScope(
+  scope: AdminVerticalScope,
+): Promise<AdminKpiStats> {
+  if (scope === "all") {
+    const parts = await Promise.all(
+      OUTREACH_BRANCH_IDS.map((id) => getAdminKpiStats(id)),
+    );
+    return mergeAdminKpiStats(parts);
+  }
+  return getAdminKpiStats(scope);
 }
 
 export async function getAdminKpiStats(

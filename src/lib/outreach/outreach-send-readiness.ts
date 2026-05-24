@@ -1,20 +1,12 @@
 import "server-only";
 
-import fs from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/db/prisma";
 import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
-import { loadDemoReadyAudit } from "@/lib/bedrijven/demo-ready-audit";
-import { loadBusinessReport } from "@/lib/bedrijven/business-report-storage";
 import { findBusinessById } from "@/lib/bedrijven/load-all-businesses";
 import {
   isLikelyGuessedEmail,
   normalizeEmail,
 } from "@/lib/bedrijven/contact-utils";
-import { businessIdToDemoSlug } from "@/lib/bedrijven/demo-slug";
-import type { ProcedaAiAnalysis } from "@/lib/bedrijven/business-report-types";
-import { refreshDemoBrandCache, getDemoBrandEntry } from "@/lib/demo-homepage/demo-brand-registry";
-import { dashboardScreenshotExists } from "@/lib/demo-app/dashboard-email-screenshot";
 
 export type OutreachMailKind = "initial" | "followup" | "sequence_nudge";
 
@@ -33,37 +25,11 @@ export type OutreachSendReadiness = {
   blockers: string[];
 };
 
-const MIN_PROPOSAL_CHARS = 120;
-
-async function logoAssetExists(logoPath: string | null | undefined): Promise<boolean> {
-  if (!logoPath?.trim()) return false;
-  if (logoPath.startsWith("http://") || logoPath.startsWith("https://")) {
-    return true;
-  }
-  const rel = logoPath.startsWith("/") ? logoPath.slice(1) : logoPath;
-  try {
-    await fs.access(path.join(process.cwd(), "public", rel));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function proposalFromReport(ai: unknown): string | null {
-  if (!ai || typeof ai !== "object") return null;
-  const draft = (ai as ProcedaAiAnalysis).proposalEmailDraft;
-  return typeof draft === "string" && draft.trim().length >= MIN_PROPOSAL_CHARS
-    ? draft.trim()
-    : null;
-}
-
 export async function assessOutreachSendReadiness(
   businessId: string,
   branchId: ScrapeBranchId,
   kind: OutreachMailKind = "initial",
 ): Promise<OutreachSendReadiness> {
-  await refreshDemoBrandCache(branchId);
-
   const checks: ReadinessCheck[] = [];
   const blockers: string[] = [];
 
@@ -72,16 +38,10 @@ export async function assessOutreachSendReadiness(
     if (!ok && blocker) blockers.push(blocker);
   };
 
-  const [business, mailRow, report, audit] = await Promise.all([
+  const [business, mailRow] = await Promise.all([
     findBusinessById(businessId),
     prisma.mailOutreach.findUnique({ where: { businessId } }),
-    loadBusinessReport(businessId),
-    loadDemoReadyAudit(branchId),
   ]);
-
-  const auditRow = audit?.results.find((r) => r.businessId === businessId);
-  const demoSlug = businessIdToDemoSlug(businessId);
-  const brand = getDemoBrandEntry(demoSlug);
 
   const email =
     normalizeEmail(mailRow?.recipientEmail ?? undefined) ??
@@ -89,24 +49,6 @@ export async function assessOutreachSendReadiness(
     undefined;
 
   if (kind === "initial" || kind === "followup") {
-    push(
-      "audit_demo_ready",
-      !!auditRow?.demoReady,
-      "Demo-ready audit",
-      "AUDIT_NOT_DEMO_READY",
-    );
-    push(
-      "audit_brand",
-      !!(auditRow?.hasLogo && auditRow?.hasColors),
-      "Logo + huisstijlkleuren (audit)",
-      "AUDIT_BRAND_INCOMPLETE",
-    );
-    push(
-      "demo_brand_logo",
-      !!(brand?.logoOk && (await logoAssetExists(brand.logoPath))),
-      "Logo in demo-brand registry",
-      "LOGO_MISSING",
-    );
     push(
       "branch",
       business?.branchId === branchId,
@@ -120,28 +62,10 @@ export async function assessOutreachSendReadiness(
       "EMAIL_NOT_VERIFIED",
     );
     push(
-      "report",
-      !!report,
-      "Persoonlijk rapport opgeslagen",
-      "REPORT_MISSING",
-    );
-    push(
-      "proposal",
-      !!report && !!proposalFromReport(report.ai),
-      "Persoonlijk voorstel (AI-tekst in rapport)",
-      "PROPOSAL_MISSING",
-    );
-    push(
-      "demo_urls",
-      !!(report?.demoAppUrl?.trim()),
-      "Demo-app URL in rapport",
-      "DEMO_APP_MISSING",
-    );
-    push(
-      "dashboard_screenshot",
-      await dashboardScreenshotExists(demoSlug),
-      "Dashboard-screenshot voor in mail",
-      "DASHBOARD_SCREENSHOT_MISSING",
+      "mail_record",
+      !!mailRow,
+      "Mail-concept in database",
+      "MAIL_RECORD_NOT_FOUND",
     );
   }
 
@@ -221,17 +145,12 @@ export async function assertOutreachSendReady(
   return result;
 }
 
+/** @deprecated Gebruik sendReady op lijst-items uit listDemoOutreachTemplates. */
 export async function countSendReadyDrafts(
   branchId: ScrapeBranchId,
   locale: string,
 ): Promise<number> {
   const { listDemoOutreachTemplates } = await import("@/lib/mail/list-demo-outreach");
   const previews = await listDemoOutreachTemplates(locale, undefined, branchId);
-  let n = 0;
-  for (const p of previews) {
-    if (p.status !== "draft" || !p.email?.trim()) continue;
-    const r = await assessOutreachSendReadiness(p.businessId, branchId, "initial");
-    if (r.ready) n++;
-  }
-  return n;
+  return previews.filter((p) => p.status === "draft" && p.sendReady).length;
 }

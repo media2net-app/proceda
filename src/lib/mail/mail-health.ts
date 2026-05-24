@@ -4,6 +4,11 @@ import { promises as dns } from "node:dns";
 import { prisma } from "@/lib/db/prisma";
 import { getMailConfig, isMailConfigured } from "@/lib/mail/email-config";
 import { listRecentBounces } from "@/lib/mail/sync-bounces-from-inbox";
+import {
+  ADMIN_VERTICAL_ALL,
+  type AdminVerticalScope,
+  OUTREACH_BRANCH_IDS,
+} from "@/lib/bedrijven/outreach-branches";
 
 export type MailHealthReport = {
   configured: boolean;
@@ -39,13 +44,13 @@ async function txtRecords(host: string): Promise<string[]> {
 }
 
 export async function getMailHealthReport(
-  branchId: string,
+  scope: AdminVerticalScope,
 ): Promise<MailHealthReport> {
   const config = getMailConfig();
   const fromDomain = config ? mailDomain(config.from) : null;
   const dailyCap = Math.max(
     10,
-    Number.parseInt(process.env.OUTREACH_DAILY_SEND_CAP ?? "100", 10) || 100,
+    Number.parseInt(process.env.OUTREACH_DAILY_SEND_CAP ?? "1000", 10) || 1000,
   );
 
   const startOfDay = new Date();
@@ -59,7 +64,13 @@ export async function getMailHealthReport(
       where: { createdAt: { gte: new Date(Date.now() - 30 * 86400000) } },
     }),
     prisma.mailOutreach.count({
-      where: { doNotMail: true, business: { branchId } },
+      where: {
+        doNotMail: true,
+        business:
+          scope === ADMIN_VERTICAL_ALL
+            ? { branchId: { in: [...OUTREACH_BRANCH_IDS] } }
+            : { branchId: scope },
+      },
     }),
   ]);
 

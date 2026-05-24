@@ -11,7 +11,15 @@ import {
 } from "./provinces";
 
 /** Verticale markt voor scrape + rapportage (landelijk per regio). */
-export const BRANCH_IDS = ["makelaardij", "installatie", "lenjerii-hotel"] as const;
+export const BRANCH_IDS = [
+  "makelaardij",
+  "installatie",
+  "vastgoedbeheer",
+  "accountants",
+  "recruitment",
+  "verzekering",
+  "lenjerii-hotel",
+] as const;
 
 export type ScrapeBranchId = (typeof BRANCH_IDS)[number];
 
@@ -39,6 +47,26 @@ export const BRANCHES: Record<ScrapeBranchId, BranchConfig> = {
       "general_contractor",
       "roofing_contractor",
     ],
+  },
+  vastgoedbeheer: {
+    id: "vastgoedbeheer",
+    name: "Vastgoedbeheer",
+    googleNearbyTypes: ["real_estate_agency", "accounting"],
+  },
+  accountants: {
+    id: "accountants",
+    name: "Accountants & boekhouding",
+    googleNearbyTypes: ["accounting", "finance"],
+  },
+  recruitment: {
+    id: "recruitment",
+    name: "Recruitment & detachering",
+    googleNearbyTypes: ["employment_agency"],
+  },
+  verzekering: {
+    id: "verzekering",
+    name: "Verzekeringsadvies",
+    googleNearbyTypes: ["insurance_agency"],
   },
   "lenjerii-hotel": {
     id: "lenjerii-hotel",
@@ -200,6 +228,95 @@ export function buildMakelaardijTextQueries(province: ProvinceConfig): string[] 
   return [...new Set(queries)];
 }
 
+export function buildVastgoedbeheerTextQueries(province: ProvinceConfig): string[] {
+  const cities = PROVINCE_CITIES[province.id as ProvinceId] ?? [];
+  const terms = [
+    "vastgoedbeheer",
+    "vastgoed beheer",
+    "VvE beheer",
+    "verhuurbeheer",
+    "woningbeheer",
+    "beheer maatschappij",
+    "property management",
+    "vastgoedadministratie",
+  ];
+  const queries: string[] = [];
+  for (const city of cities) {
+    for (const term of terms) {
+      queries.push(`${term} ${city}`);
+    }
+  }
+  for (const term of terms) {
+    queries.push(`${term} ${province.name}`);
+  }
+  return [...new Set(queries)];
+}
+
+export function buildAccountantsTextQueries(province: ProvinceConfig): string[] {
+  const cities = PROVINCE_CITIES[province.id as ProvinceId] ?? [];
+  const terms = [
+    "accountant",
+    "accountantskantoor",
+    "boekhouder",
+    "administratiekantoor",
+    "belastingadviseur",
+    "salarisadministratie",
+  ];
+  const queries: string[] = [];
+  for (const city of cities) {
+    for (const term of terms) {
+      queries.push(`${term} ${city}`);
+    }
+  }
+  for (const term of terms) {
+    queries.push(`${term} ${province.name}`);
+  }
+  return [...new Set(queries)];
+}
+
+export function buildRecruitmentTextQueries(province: ProvinceConfig): string[] {
+  const cities = PROVINCE_CITIES[province.id as ProvinceId] ?? [];
+  const terms = [
+    "recruitmentbureau",
+    "uitzendbureau",
+    "detachering",
+    "werving en selectie",
+    "personeelsbureau",
+    "recruiter",
+  ];
+  const queries: string[] = [];
+  for (const city of cities) {
+    for (const term of terms) {
+      queries.push(`${term} ${city}`);
+    }
+  }
+  for (const term of terms) {
+    queries.push(`${term} ${province.name}`);
+  }
+  return [...new Set(queries)];
+}
+
+export function buildVerzekeringTextQueries(province: ProvinceConfig): string[] {
+  const cities = PROVINCE_CITIES[province.id as ProvinceId] ?? [];
+  const terms = [
+    "verzekeringsadviseur",
+    "assurantiekantoor",
+    "verzekeringskantoor",
+    "schadeverzekering",
+    "advies verzekering",
+  ];
+  const queries: string[] = [];
+  for (const city of cities) {
+    for (const term of terms) {
+      queries.push(`${term} ${city}`);
+    }
+  }
+  for (const term of terms) {
+    queries.push(`${term} ${province.name}`);
+  }
+  return [...new Set(queries)];
+}
+
 export function buildInstallatieTextQueries(province: ProvinceConfig): string[] {
   const cities = PROVINCE_CITIES[province.id as ProvinceId] ?? [];
   const trades = [
@@ -210,6 +327,7 @@ export function buildInstallatieTextQueries(province: ProvinceConfig): string[] 
     "verwarming",
     "sanitair",
     "aannemer",
+    "bouwbedrijf",
     "dakdekker",
     "zonnepanelen installateur",
   ];
@@ -232,6 +350,18 @@ export function getBrowserLeadSearchQueries(
 ): string[] {
   if (branchId === "installatie") {
     return buildInstallatieTextQueries(province);
+  }
+  if (branchId === "vastgoedbeheer") {
+    return buildVastgoedbeheerTextQueries(province);
+  }
+  if (branchId === "accountants") {
+    return buildAccountantsTextQueries(province);
+  }
+  if (branchId === "recruitment") {
+    return buildRecruitmentTextQueries(province);
+  }
+  if (branchId === "verzekering") {
+    return buildVerzekeringTextQueries(province);
   }
   if (branchId === "makelaardij") {
     return buildMakelaardijTextQueries(province);
@@ -263,9 +393,17 @@ export function getScrapeProvinceConfig(
       ? buildMakelaardijTextQueries(base as ProvinceConfig)
       : branchId === "installatie"
         ? buildInstallatieTextQueries(base as ProvinceConfig)
-        : branchId === "lenjerii-hotel"
-          ? buildLenjeriiTextQueries(base.name, regionId)
-          : base.textQueries;
+        : branchId === "vastgoedbeheer"
+          ? buildVastgoedbeheerTextQueries(base as ProvinceConfig)
+          : branchId === "accountants"
+            ? buildAccountantsTextQueries(base as ProvinceConfig)
+            : branchId === "recruitment"
+              ? buildRecruitmentTextQueries(base as ProvinceConfig)
+              : branchId === "verzekering"
+                ? buildVerzekeringTextQueries(base as ProvinceConfig)
+                : branchId === "lenjerii-hotel"
+                  ? buildLenjeriiTextQueries(base.name, regionId)
+                  : base.textQueries;
 
   return {
     ...base,

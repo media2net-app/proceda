@@ -4,8 +4,10 @@ import {
   demoAppPublicPath,
   demoHomepagePublicPath,
 } from "@/lib/bedrijven/demo-slug";
-import { buildFollowUpProposalDraft } from "./demo-outreach-followup-draft";
 import { buildMinimalReportForMail } from "./demo-outreach-draft";
+import { buildOutreachFollowUpDraft } from "./outreach-draft";
+import { buildOutreachMailSubject } from "./outreach-draft";
+import { resolveOutreachBranchId } from "@/lib/bedrijven/outreach-branches";
 import { buildDemoBookingUrl, buildMailHtml } from "./templates";
 import { buildOutreachUtmParams } from "./outreach-utm";
 
@@ -18,13 +20,15 @@ export function buildFollowupMailPreviewForLead(params: {
   dashboardScreenshotUrl?: string | null;
 }): { subject: string; plainBody: string; htmlBody: string; demoUrl: string } {
   const { business, token, locale, baseUrl } = params;
+  const branchId = resolveOutreachBranchId(business.branchId ?? null);
   const demoSlug = businessIdToDemoSlug(business.id);
-  const draft = buildFollowUpProposalDraft(business.name);
+  const draft = buildOutreachFollowUpDraft(branchId, business.name);
   const report = buildMinimalReportForMail({
     business,
     proposalEmailDraft: draft,
     demoAppUrl: demoAppPublicPath(demoSlug, locale),
     demoHomepageUrl: demoHomepagePublicPath(demoSlug, locale),
+    branchId,
   });
   const utm = buildOutreachUtmParams({
     branchId: business.branchId ?? "makelaardij",
@@ -32,7 +36,7 @@ export function buildFollowupMailPreviewForLead(params: {
     mailKind: "followup",
   });
   const demoUrl = buildDemoBookingUrl(baseUrl, locale, token, utm);
-  const { subject, plainBody, htmlBody } = buildMailHtml({
+  const built = buildMailHtml({
     business,
     report,
     demoUrl,
@@ -41,5 +45,6 @@ export function buildFollowupMailPreviewForLead(params: {
     dashboardScreenshotUrl: params.dashboardScreenshotUrl ?? null,
     variant: "followup",
   });
-  return { subject, plainBody, htmlBody, demoUrl };
+  const subject = buildOutreachMailSubject(branchId, business.name, "followup");
+  return { subject, plainBody: built.plainBody, htmlBody: built.htmlBody, demoUrl };
 }

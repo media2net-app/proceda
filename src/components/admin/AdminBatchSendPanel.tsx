@@ -16,8 +16,8 @@ export function AdminBatchSendPanel() {
   const t = useTranslations("adminBatchSend");
   const locale = useLocale();
   const { vertical } = useAdminVertical();
-  const [limit, setLimit] = useState(50);
-  const [delayMs, setDelayMs] = useState(2500);
+  const [limit, setLimit] = useState(200);
+  const [delayMs, setDelayMs] = useState(3000);
   const [maxPerDomain, setMaxPerDomain] = useState(2);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<BatchResult | null>(null);
@@ -68,6 +68,7 @@ export function AdminBatchSendPanel() {
             <option value={10}>10</option>
             <option value={50}>50</option>
             <option value={100}>100</option>
+            <option value={200}>200</option>
           </select>
         </label>
         <label className="text-xs text-[#667085]">

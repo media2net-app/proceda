@@ -1,25 +1,19 @@
 import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
 import { DEFAULT_BRANCH } from "@/lib/bedrijven/branches";
-import { buildMakelaarDemoProposalDraft } from "./demo-outreach-draft";
 import {
-  buildInstallatieDemoProposalDraft,
-  buildInstallatieMailSubject,
-} from "./installatie-outreach-draft";
-import {
-  buildInstallatieSubjectAb,
-  buildMakelaarSubjectAb,
-  type OutreachSubjectAb,
-} from "./subject-variants";
-import { buildMailSubject, type MailTemplateVariant } from "./templates";
+  buildBranchFollowUpDraft,
+  buildBranchFollowUpSubject,
+  buildBranchMailSubject,
+  buildBranchProposalDraft,
+} from "./branch-outreach-copy";
+import type { MailTemplateVariant } from "./templates";
+import type { OutreachSubjectAb } from "./subject-variants";
 
 export function buildOutreachProposalDraft(
   branchId: ScrapeBranchId,
   businessName: string,
 ): string {
-  if (branchId === "installatie") {
-    return buildInstallatieDemoProposalDraft(businessName);
-  }
-  return buildMakelaarDemoProposalDraft(businessName);
+  return buildBranchProposalDraft(branchId, businessName);
 }
 
 export function buildOutreachMailSubject(
@@ -29,24 +23,26 @@ export function buildOutreachMailSubject(
   subjectAb?: OutreachSubjectAb,
 ): string {
   if (variant === "followup") {
-    return buildMailSubject(businessName, "followup");
+    return buildBranchFollowUpSubject(branchId, businessName);
   }
-  if (subjectAb) {
-    if (branchId === "installatie") {
-      return buildInstallatieSubjectAb(businessName, subjectAb);
-    }
-    return buildMakelaarSubjectAb(businessName, subjectAb);
-  }
-  if (branchId === "installatie") {
-    return buildInstallatieMailSubject(businessName);
-  }
-  return buildMailSubject(businessName, "initial");
+  return buildBranchMailSubject(branchId, businessName, subjectAb);
+}
+
+export function buildOutreachFollowUpDraft(
+  branchId: ScrapeBranchId,
+  businessName: string,
+): string {
+  return buildBranchFollowUpDraft(branchId, businessName);
 }
 
 export function defaultOutreachSubcategory(
   branchId: ScrapeBranchId,
 ): string {
   if (branchId === "installatie") return "technical_services";
+  if (branchId === "vastgoedbeheer") return "property_management";
+  if (branchId === "accountants") return "accounting";
+  if (branchId === "recruitment") return "recruitment";
+  if (branchId === "verzekering") return "insurance";
   return "real_estate_agency";
 }
 

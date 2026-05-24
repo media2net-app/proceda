@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { resolveOutreachBranchId } from "@/lib/bedrijven/outreach-branches";
+import { parseAdminVerticalScope } from "@/lib/bedrijven/outreach-branches";
 import {
   listOutreachAuditLog,
   listSuppressedLeads,
@@ -9,16 +9,16 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const branchId = resolveOutreachBranchId(searchParams.get("branch"));
+  const scope = parseAdminVerticalScope(searchParams.get("branch"));
   const view = searchParams.get("view") ?? "audit";
 
   try {
     if (view === "suppression") {
-      const leads = await listSuppressedLeads(branchId);
-      return NextResponse.json({ branchId, leads });
+      const leads = await listSuppressedLeads(scope);
+      return NextResponse.json({ branchId: scope, leads });
     }
     const entries = await listOutreachAuditLog(50);
-    return NextResponse.json({ branchId, entries });
+    return NextResponse.json({ branchId: scope, entries });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed";
     console.error("[admin/outreach/compliance]", e);

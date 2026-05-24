@@ -1,7 +1,11 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
-import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
+import {
+  ADMIN_VERTICAL_ALL,
+  type AdminVerticalScope,
+  OUTREACH_BRANCH_IDS,
+} from "@/lib/bedrijven/outreach-branches";
 
 export type UtmCampaignRow = {
   utmCampaign: string;
@@ -11,7 +15,7 @@ export type UtmCampaignRow = {
 };
 
 export async function getOutreachUtmStats(
-  branchId: ScrapeBranchId,
+  scope: AdminVerticalScope,
 ): Promise<{ rows: UtmCampaignRow[]; updatedAt: string }> {
   const sessions = await prisma.analyticsSession.findMany({
     where: {
@@ -25,10 +29,15 @@ export async function getOutreachUtmStats(
     },
   });
 
-  const tokensInBranch = new Set(
+  const tokensInScope = new Set(
     (
       await prisma.mailOutreach.findMany({
-        where: { business: { branchId } },
+        where: {
+          business:
+            scope === ADMIN_VERTICAL_ALL
+              ? { branchId: { in: [...OUTREACH_BRANCH_IDS] } }
+              : { branchId: scope },
+        },
         select: { token: true },
       })
     ).map((r) => r.token),
@@ -40,7 +49,7 @@ export async function getOutreachUtmStats(
   >();
 
   for (const s of sessions) {
-    if (!s.mailToken || !tokensInBranch.has(s.mailToken)) continue;
+    if (!s.mailToken || !tokensInScope.has(s.mailToken)) continue;
     const key = s.utmCampaign!;
     let g = byCampaign.get(key);
     if (!g) {

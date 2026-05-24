@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import type { InboxMessage, MailInboxCache } from "./types";
+import { filterInboxForDisplay } from "./inbox-bounce-filter";
 
 const SYNC_ID = "default";
 
@@ -101,13 +102,14 @@ export async function saveSyncError(error: string): Promise<void> {
 }
 
 export function inboxStats(messages: InboxMessage[]) {
+  const visible = filterInboxForDisplay(messages);
   let inbound = 0;
   let outbound = 0;
   let unread = 0;
-  for (const m of messages) {
+  for (const m of visible) {
     if (m.direction === "inbound") inbound++;
     else outbound++;
     if (!m.seen && m.direction === "inbound") unread++;
   }
-  return { total: messages.length, inbound, outbound, unread };
+  return { total: visible.length, inbound, outbound, unread };
 }

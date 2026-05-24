@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { resolveOutreachBranchId } from "@/lib/bedrijven/outreach-branches";
 import {
+  ensurePipelineAutopilotRunning,
   listActiveAutopilotBranches,
   runAutopilotTick,
 } from "@/lib/outreach/autopilot";
@@ -27,15 +28,23 @@ export async function POST(request: Request) {
   const locale = searchParams.get("locale") ?? "nl";
 
   try {
+  let pipelineResume: Awaited<ReturnType<typeof ensurePipelineAutopilotRunning>> | undefined;
+  if (isCron) {
+    pipelineResume = await ensurePipelineAutopilotRunning();
+  }
+
     const branchParam = searchParams.get("branch");
     const branches = branchParam
       ? [resolveOutreachBranchId(branchParam)]
-      : isCron
-        ? await listActiveAutopilotBranches()
-        : [resolveOutreachBranchId(branchParam)];
+      : await listActiveAutopilotBranches();
 
     if (branches.length === 0) {
-      return NextResponse.json({ ok: true, ticks: [], message: "NO_ACTIVE_AUTOPILOT" });
+      return NextResponse.json({
+        ok: true,
+        ticks: [],
+        message: "NO_ACTIVE_AUTOPILOT",
+        pipeline: pipelineResume,
+      });
     }
 
     const ticks: { branchId: string; summary?: unknown; error?: string }[] = [];
@@ -54,7 +63,7 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ ok: true, ticks });
+    return NextResponse.json({ ok: true, ticks, pipeline: pipelineResume });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Failed";
     console.error("[admin/outreach/autopilot/tick]", e);

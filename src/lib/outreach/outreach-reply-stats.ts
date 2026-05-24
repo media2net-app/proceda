@@ -1,13 +1,18 @@
 import "server-only";
 
 import { normalizeEmail } from "@/lib/bedrijven/contact-utils";
-import { loadAllBusinesses } from "@/lib/bedrijven/load-all-businesses";
+import {
+  ADMIN_VERTICAL_ALL,
+  type AdminVerticalScope,
+  outreachBranchesForScope,
+} from "@/lib/bedrijven/outreach-branches";
 import { loadInboxCache } from "@/lib/mail/inbox-storage";
+import { filterInboxForDisplay } from "@/lib/mail/inbox-bounce-filter";
 import { listDemoOutreachTemplates } from "@/lib/mail/list-demo-outreach";
-import type { ScrapeBranchId } from "@/lib/bedrijven/branches";
+import type { MailTemplatePreview } from "@/lib/mail/types";
 
 export type OutreachReplyStats = {
-  branchId: ScrapeBranchId;
+  branchId: AdminVerticalScope;
   sent: number;
   replies: number;
   replyRate: number;
@@ -22,16 +27,33 @@ function extractEmailFromHeader(from: string): string | null {
   return normalizeEmail(raw) ?? null;
 }
 
+async function loadPreviewsForScope(
+  scope: AdminVerticalScope,
+  locale: string,
+): Promise<MailTemplatePreview[]> {
+  const branches = outreachBranchesForScope(scope);
+  const batches = await Promise.all(
+    branches.map((b) => listDemoOutreachTemplates(locale, undefined, b)),
+  );
+  if (scope === ADMIN_VERTICAL_ALL) {
+    const byBusiness = new Map<string, MailTemplatePreview>();
+    for (const batch of batches) {
+      for (const p of batch) byBusiness.set(p.businessId, p);
+    }
+    return [...byBusiness.values()];
+  }
+  return batches[0] ?? [];
+}
+
 export async function getOutreachReplyStats(
-  branchId: ScrapeBranchId,
+  scope: AdminVerticalScope,
   locale = "nl",
 ): Promise<OutreachReplyStats> {
-  const previews = await listDemoOutreachTemplates(locale, undefined, branchId);
+  const previews = await loadPreviewsForScope(scope, locale);
   const sent = previews.filter(
     (p) => p.status === "sent" || p.status === "booked",
   ).length;
 
-  const businesses = await loadAllBusinesses(branchId);
   const emailToSentAt = new Map<string, Date>();
   for (const p of previews) {
     if (p.status !== "sent" && p.status !== "booked") continue;
@@ -40,11 +62,11 @@ export async function getOutreachReplyStats(
     emailToSentAt.set(em, new Date(p.sentAt));
   }
 
-  const inbox = await loadInboxCache();
+  const inbox = filterInboxForDisplay((await loadInboxCache()).messages);
   const repliedEmails = new Set<string>();
   const responseHours: number[] = [];
 
-  for (const msg of inbox.messages) {
+  for (const msg of inbox) {
     if (msg.direction !== "inbound") continue;
     const fromEmail = extractEmailFromHeader(msg.from);
     if (!fromEmail || !emailToSentAt.has(fromEmail)) continue;
@@ -68,7 +90,7 @@ export async function getOutreachReplyStats(
       : null;
 
   return {
-    branchId,
+    branchId: scope,
     sent,
     replies,
     replyRate,

@@ -1,10 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useAdminVertical } from "@/context/AdminVerticalContext";
 import { useMailSync } from "@/context/MailSyncContext";
 import { InboxPanel } from "./InboxPanel";
+import { MailBranchPicker } from "./MailBranchPicker";
+import { MailListPagination } from "./MailListPagination";
+import { useMailAdminUrl } from "./use-mail-admin-url";
+import {
+  clampMailListPage,
+  MAIL_LIST_PAGE_SIZE,
+} from "@/lib/mail/mail-admin-url";
 import { AdminLeadTimeline } from "./AdminLeadTimeline";
 import { AdminLeadInboxThread } from "./AdminLeadInboxThread";
 import type {
@@ -22,18 +30,17 @@ type StatusFilter =
   | "followup";
 
 function isFollowupPoolLead(x: MailTemplatePreview): boolean {
-  return (
-    x.status === "sent" &&
-    !!x.demoVisited &&
-    !x.followupSentAt &&
-    !!x.followupHtmlBody
-  );
+  return x.status === "sent" && !!x.demoVisited && !x.followupSentAt;
 }
 
 export function MailView() {
   const t = useTranslations("adminMail");
   const locale = useLocale();
-  const { vertical, verticalLabel } = useAdminVertical();
+  const { vertical, verticalLabel, isAllBranches, outreachBranch } =
+    useAdminVertical();
+  const mailBranch = outreachBranch ?? "makelaardij";
+  const { page: urlPage, setUrl } = useMailAdminUrl();
+  const skipPageReset = useRef(true);
 
   const [templates, setTemplates] = useState<MailTemplatePreview[]>([]);
   const [stats, setStats] = useState<MailKpiStats | null>(null);
@@ -47,6 +54,10 @@ export function MailView() {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sendingSlug, setSendingSlug] = useState<string | null>(null);
+  const [previewDetail, setPreviewDetail] = useState<MailTemplatePreview | null>(
+    null,
+  );
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [testEmail, setTestEmail] = useState("info@media2net.nl");
   const [testCompany, setTestCompany] = useState("Test company");
 
@@ -64,8 +75,11 @@ export function MailView() {
     setError(null);
     try {
       const res = await fetch(
-        `/api/mail?locale=${locale}&branch=${encodeURIComponent(vertical)}`,
+        `/api/mail?locale=${locale}&branch=${encodeURIComponent(mailBranch)}`,
       );
+      if (!res.ok) {
+        throw new Error(t("loadError"));
+      }
       const data = (await res.json()) as {
         templates: MailTemplatePreview[];
         stats: MailKpiStats;
@@ -73,21 +87,54 @@ export function MailView() {
       const list = data.templates ?? [];
       setTemplates(list);
       setStats(data.stats ?? null);
-      setSelectedSlug((prev) => {
-        if (prev && list.some((x) => x.slug === prev)) return prev;
-        return list[0]?.slug ?? null;
-      });
+      setPreviewDetail(null);
+      setSelectedSlug(null);
     } catch {
       setError(t("loadError"));
     } finally {
       setLoading(false);
     }
-  }, [locale, vertical, t]);
+  }, [locale, mailBranch, t]);
 
   useEffect(() => {
     loadAccount();
     load();
   }, [load, loadAccount]);
+
+  useEffect(() => {
+    if (!isAllBranches && outreachBranch) {
+      setUrl({ branch: outreachBranch });
+    }
+  }, [isAllBranches, outreachBranch, setUrl]);
+
+  useEffect(() => {
+    if (!selectedSlug || tab !== "outreach") {
+      setPreviewDetail(null);
+      return;
+    }
+    let cancelled = false;
+    const params = new URLSearchParams({
+      locale,
+      branch: mailBranch,
+      slug: selectedSlug,
+    });
+    if (statusFilter === "followup") params.set("followup", "1");
+
+    setPreviewLoading(true);
+    fetch(`/api/mail/preview?${params.toString()}`)
+      .then(async (res) => {
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { preview: MailTemplatePreview };
+        if (!cancelled) setPreviewDetail(data.preview ?? null);
+      })
+      .finally(() => {
+        if (!cancelled) setPreviewLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedSlug, statusFilter, tab, locale, mailBranch]);
 
   const followupPool = useMemo(
     () => templates.filter(isFollowupPoolLead),
@@ -101,6 +148,14 @@ export function MailView() {
       return followupPool[0]?.slug ?? null;
     });
   }, [statusFilter, followupPool]);
+
+  useEffect(() => {
+    if (skipPageReset.current) {
+      skipPageReset.current = false;
+      return;
+    }
+    setUrl({ page: 1 });
+  }, [search, statusFilter, mailBranch, setUrl]);
 
   const filtered = useMemo(() => {
     let list = templates;
@@ -125,34 +180,63 @@ export function MailView() {
     );
   }, [templates, search, statusFilter, followupPool]);
 
+  const currentPage = clampMailListPage(urlPage, filtered.length);
+
+  useEffect(() => {
+    if (urlPage !== currentPage) {
+      setUrl({ page: currentPage });
+    }
+  }, [urlPage, currentPage, setUrl]);
+
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * MAIL_LIST_PAGE_SIZE;
+    return filtered.slice(start, start + MAIL_LIST_PAGE_SIZE);
+  }, [filtered, currentPage]);
+
   const selected = useMemo(
-    () => filtered.find((x) => x.slug === selectedSlug) ?? filtered[0] ?? null,
-    [filtered, selectedSlug],
+    () => filtered.find((x) => x.slug === selectedSlug) ?? paginated[0] ?? null,
+    [filtered, paginated, selectedSlug],
   );
 
+  const goToPage = useCallback(
+    (nextPage: number) => {
+      setUrl({ page: nextPage });
+      const start = (nextPage - 1) * MAIL_LIST_PAGE_SIZE;
+      const first = filtered[start];
+      if (first) setSelectedSlug(first.slug);
+    },
+    [filtered, setUrl],
+  );
+
+  const displayLead = previewDetail ?? selected;
+
   const previewMail = useMemo(() => {
-    if (!selected) return null;
-    if (statusFilter === "followup" && selected.followupHtmlBody) {
+    if (!displayLead) return null;
+    if (
+      statusFilter === "followup" &&
+      (displayLead.followupHtmlBody || previewDetail?.followupHtmlBody)
+    ) {
       return {
-        subject: selected.followupSubject ?? selected.subject,
-        htmlBody: selected.followupHtmlBody,
-        plainBody: selected.followupPlainBody ?? selected.plainBody,
+        subject: displayLead.followupSubject ?? displayLead.subject,
+        htmlBody: displayLead.followupHtmlBody ?? "",
+        plainBody: displayLead.followupPlainBody ?? displayLead.plainBody,
         variant: "followup" as const,
       };
     }
     return {
-      subject: selected.subject,
-      htmlBody: selected.htmlBody,
-      plainBody: selected.plainBody,
+      subject: displayLead.subject,
+      htmlBody: displayLead.htmlBody,
+      plainBody: displayLead.plainBody,
       variant: "initial" as const,
     };
-  }, [selected, statusFilter]);
+  }, [displayLead, previewDetail, statusFilter]);
 
   async function copyHtml(item: MailTemplatePreview) {
+    const detail = item.slug === previewDetail?.slug ? previewDetail : item;
     const html =
-      statusFilter === "followup" && item.followupHtmlBody
-        ? item.followupHtmlBody
-        : item.htmlBody;
+      statusFilter === "followup" && detail.followupHtmlBody
+        ? detail.followupHtmlBody
+        : detail.htmlBody;
     await navigator.clipboard.writeText(html);
     setCopiedId(item.businessId);
     setTimeout(() => setCopiedId(null), 2000);
@@ -254,12 +338,22 @@ export function MailView() {
 
   return (
     <div className="max-w-full space-y-8 overflow-x-hidden">
-      <div>
-        <h1 className="text-2xl font-semibold text-[#101828]">
-          {t("title")} · {verticalLabel}
-        </h1>
-        <p className="mt-1 text-sm text-[#667085]">{t("subtitleDemo")}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-[#101828]">
+            {t("title")} · {verticalLabel}
+          </h1>
+          <p className="mt-1 text-sm text-[#667085]">{t("subtitleDemo")}</p>
+        </div>
+        <Link
+          href="/dashboard-admin/mail/sjablonen"
+          className="rounded-lg border border-[#D6BBFB] bg-[#F9F5FF] px-4 py-2 text-sm font-semibold text-[#6941C6] hover:bg-[#F4EBFF]"
+        >
+          {t("openTemplates")} →
+        </Link>
       </div>
+
+      <MailBranchPicker />
 
       <div
         className={`rounded-xl border p-4 text-sm ${
@@ -332,7 +426,7 @@ export function MailView() {
           <KpiCard
             label={t("kpiConcept")}
             value={stats.readyToSend}
-            sub={t("kpiConceptSub", { pool: stats.demoReadyPool })}
+            sub={t("kpiConceptSub", { pool: stats.emailPool })}
             accent
           />
           <KpiCard label={t("kpiSent")} value={stats.sent} />
@@ -418,7 +512,10 @@ export function MailView() {
                 <button
                   key={f}
                   type="button"
-                  onClick={() => setStatusFilter(f)}
+                  onClick={() => {
+                    setStatusFilter(f);
+                    setUrl({ page: 1 });
+                  }}
                   className={`filter-pill shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ${
                     statusFilter === f
                       ? "bg-[#7F56D9] text-white"
@@ -468,12 +565,13 @@ export function MailView() {
             </div>
           ) : (
             <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(280px,360px)_1fr] lg:items-start">
-              <ul
-                className={`scroll-touch max-h-[min(70dvh,520px)] space-y-2 overflow-y-auto rounded-xl border border-[#EAECF0] bg-white p-2 shadow-xs lg:max-h-[calc(100dvh-320px)] ${
-                  selected ? "hidden lg:block" : "block"
+              <div
+                className={`flex flex-col overflow-hidden rounded-xl border border-[#EAECF0] bg-white shadow-xs ${
+                  selected ? "hidden lg:flex" : "flex"
                 }`}
               >
-                {filtered.map((item) => {
+              <ul className="scroll-touch max-h-[min(70dvh,480px)] flex-1 space-y-2 overflow-y-auto p-2 lg:max-h-[calc(100dvh-360px)]">
+                {paginated.map((item) => {
                   const active = selected?.slug === item.slug;
                   return (
                     <li key={item.businessId}>
@@ -541,6 +639,12 @@ export function MailView() {
                   );
                 })}
               </ul>
+              <MailListPagination
+                page={currentPage}
+                totalItems={filtered.length}
+                onPageChange={goToPage}
+              />
+              </div>
 
               {selected ? (
                 <div className="min-w-0 rounded-xl border border-[#EAECF0] bg-white shadow-sm lg:sticky lg:top-24">
@@ -592,12 +696,12 @@ export function MailView() {
                             {t("demoNotClickedYet")}
                           </p>
                         ) : null}
-                        {selected.status === "draft" &&
-                        selected.sendReady === false &&
-                        selected.sendBlockers?.length ? (
+                        {displayLead.status === "draft" &&
+                        displayLead.sendReady === false &&
+                        displayLead.sendBlockers?.length ? (
                           <p className="mt-3 rounded-lg border border-[#FEDF89] bg-[#FFFAEB] px-3 py-2 text-xs text-[#B54708]">
                             {t("sendNotReadyHint", {
-                              blockers: selected.sendBlockers.join(" · "),
+                              blockers: displayLead.sendBlockers.join(" · "),
                             })}
                           </p>
                         ) : null}
@@ -618,17 +722,18 @@ export function MailView() {
                         >
                           {copiedId === selected.businessId ? t("copied") : t("copyHtml")}
                         </button>
-                        {selected.status === "draft" && selected.email && (
+                        {displayLead.status === "draft" && displayLead.email && (
                           <button
                             type="button"
                             disabled={
                               sendingSlug === selected.slug ||
                               !accountOk ||
-                              selected.sendReady === false
+                              previewLoading ||
+                              displayLead.sendReady === false
                             }
                             title={
-                              selected.sendReady === false
-                                ? selected.sendBlockers?.join(", ")
+                              displayLead.sendReady === false
+                                ? displayLead.sendBlockers?.join(", ")
                                 : undefined
                             }
                             onClick={() => sendMail(selected)}
@@ -662,12 +767,18 @@ export function MailView() {
                         ? t("followupPreviewHtml")
                         : t("previewHtml")}
                     </p>
-                    <div
-                      className="mt-3 overflow-hidden rounded-lg border border-[#EAECF0] bg-white"
-                      dangerouslySetInnerHTML={{
-                        __html: previewMail?.htmlBody ?? selected.htmlBody,
-                      }}
-                    />
+                    {previewLoading ? (
+                      <p className="mt-3 text-sm text-[#667085]">
+                        {t("previewLoading")}
+                      </p>
+                    ) : (
+                      <div
+                        className="admin-mail-html-preview mt-3 overflow-hidden rounded-lg border border-[#EAECF0] bg-white"
+                        dangerouslySetInnerHTML={{
+                          __html: previewMail?.htmlBody ?? "",
+                        }}
+                      />
+                    )}
                     <details className="mt-4">
                       <summary className="cursor-pointer text-xs font-semibold text-[#6941C6]">
                         {t("plainText")}

@@ -3,6 +3,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/db/prisma";
 import type { OutreachBranchId } from "@/lib/bedrijven/outreach-branches";
+import type { ScrapeBatchLeadLog } from "@/lib/bedrijven/types";
 import type { AutopilotTickSummary } from "@/lib/outreach/autopilot";
 
 export type AutopilotLogLevel = "info" | "run" | "ok" | "warn" | "error" | "skip";
@@ -30,6 +31,69 @@ export function createLogLine(
     message,
     detail,
   };
+}
+
+function websiteHost(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+export function createDemoProbeLogLine(row: {
+  name: string;
+  website: string;
+  demoReady: boolean;
+  error?: string | null;
+}): AutopilotLogLine {
+  if (row.demoReady) {
+    return createLogLine("ok", "demo-probe", row.name, row.website);
+  }
+  return createLogLine(
+    "skip",
+    "demo-probe",
+    row.name,
+    row.error ?? "geen logo + huisstijlkleuren",
+  );
+}
+
+export function createDemoGenerateLogLine(payload: {
+  name: string;
+  demoSlug: string;
+  homepage: boolean;
+}): AutopilotLogLine {
+  return createLogLine(
+    "ok",
+    "demo-build",
+    payload.name,
+    `/demos/${payload.demoSlug}${payload.homepage ? "" : " · homepage mislukt"}`,
+  );
+}
+
+export function createScrapeLeadLogLine(entry: ScrapeBatchLeadLog): AutopilotLogLine {
+  const host = websiteHost(entry.website);
+  if (entry.status === "added") {
+    const name = entry.name?.trim() || host;
+    const detailParts = [entry.website];
+    if (entry.email) detailParts.push(entry.email);
+    if (entry.detail) detailParts.push(entry.detail);
+    return createLogLine("ok", "lead", name, detailParts.join(" · "));
+  }
+  if (entry.status === "no_email") {
+    const name = entry.name?.trim();
+    return createLogLine(
+      "skip",
+      "lead",
+      name && name !== host ? `${name} · geen e-mail` : `${host} · geen e-mail`,
+      entry.website,
+    );
+  }
+  return createLogLine("warn", "lead", `${host} · niet bereikbaar`, entry.website);
+}
+
+export function createScrapeLeadScanLogLine(website: string): AutopilotLogLine {
+  return createLogLine("run", "lead", websiteHost(website), website);
 }
 
 export function parseActivityLog(raw: unknown): AutopilotLogLine[] {
@@ -69,20 +133,52 @@ export async function appendAutopilotLog(
 export function formatTickSummaryToLog(
   summary: AutopilotTickSummary,
   tickNum: number,
+  options?: { scrapeOnly?: boolean; demoPrep?: boolean },
 ): AutopilotLogLine[] {
+  const scrapeOnly = options?.scrapeOnly === true;
+  const demoPrep = options?.demoPrep === true;
   const lines: AutopilotLogLine[] = [
     createLogLine(
       "run",
       "tick",
       `── Tick #${tickNum} gestart ──`,
-      new Date(summary.at).toLocaleString("nl-NL"),
+      scrapeOnly
+        ? "scrape-only"
+        : new Date(summary.at).toLocaleString("nl-NL"),
     ),
   ];
 
   const pipeline = summary.steps.pipeline as
-    | { draftConcepts?: number; sendReady?: number }
+    | {
+        draftConcepts?: number;
+        sendReady?: number;
+        skipped?: boolean;
+        reason?: string;
+        advanced?: boolean;
+        to?: string | null;
+        completed?: boolean;
+      }
     | undefined;
-  if (pipeline) {
+  if (pipeline?.advanced) {
+    lines.push(
+      createLogLine(
+        "ok",
+        "pipeline",
+        pipeline.completed
+          ? "Pipeline voltooid"
+          : `Door naar ${pipeline.to ?? "volgende verticale"}`,
+        pipeline.reason === "scrape_exhausted"
+          ? "Geen nieuwe leads meer in deze verticale"
+          : pipeline.reason === "email_goal"
+            ? "E-maildoel bereikt"
+            : undefined,
+      ),
+    );
+  } else if (pipeline?.skipped && scrapeOnly) {
+    lines.push(
+      createLogLine("info", "pipeline", "Mail/follow-up overgeslagen (scrape-modus)"),
+    );
+  } else if (pipeline && !pipeline.skipped) {
     lines.push(
       createLogLine(
         "info",
@@ -92,6 +188,35 @@ export function formatTickSummaryToLog(
     );
   }
 
+  if (demoPrep) {
+    const probe = summary.steps.demoProbe as
+      | { probed?: number; newlyDemoReady?: number; demoReadyTotal?: number }
+      | undefined;
+    const gen = summary.steps.demoGenerate as
+      | { generated?: number; homepages?: number }
+      | undefined;
+    if (probe) {
+      lines.push(
+        createLogLine(
+          "ok",
+          "demo-probe",
+          `Geanalyseerd: ${probe.probed ?? 0} · +${probe.newlyDemoReady ?? 0} nieuw demo-klaar`,
+          `Totaal demo-klaar: ${probe.demoReadyTotal ?? 0}`,
+        ),
+      );
+    }
+    if (gen) {
+      lines.push(
+        createLogLine(
+          "ok",
+          "demo-build",
+          `Demos gebouwd: ${gen.generated ?? 0} · homepages: ${gen.homepages ?? 0}`,
+        ),
+      );
+    }
+  } else if (scrapeOnly) {
+    // Geen inbox/mail/sequence samenvatting in scrape-modus
+  } else {
   const inbox = summary.steps.inbox as Record<string, unknown> | undefined;
   if (inbox?.skipped) {
     lines.push(
@@ -179,6 +304,7 @@ export function formatTickSummaryToLog(
         `Eerste mails: ${batch.sent ?? 0} verstuurd · ${batch.failed ?? 0} mislukt`,
       ),
     );
+  }
   }
 
   const scrape = summary.steps.scrape as Record<string, unknown> | undefined;

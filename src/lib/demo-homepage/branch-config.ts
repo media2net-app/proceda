@@ -1,14 +1,29 @@
 import type { Bedrijf } from "@/lib/bedrijven/types";
 import type { DeepScrapeResult } from "@/lib/bedrijven/deep-scrape-types";
 
-/** Branche-variant voor één universele demo — alleen copy & placeholders verschillen. */
+/** Branche-variant voor één universele demo — copy & placeholders per outreach-verticale. */
 export type DemoBranch =
   | "makelaar"
+  | "installatie"
+  | "vastgoedbeheer"
+  | "accountants"
+  | "recruitment"
+  | "verzekering"
   | "auto"
   | "retail"
   | "horeca"
   | "health"
   | "services";
+
+/** Vaste koppeling NL outreach-verticale → demo-template. */
+export const SCRAPE_BRANCH_DEMO: Record<string, DemoBranch> = {
+  makelaardij: "makelaar",
+  installatie: "installatie",
+  vastgoedbeheer: "vastgoedbeheer",
+  accountants: "accountants",
+  recruitment: "recruitment",
+  verzekering: "verzekering",
+};
 
 export type BranchCopy = {
   navAanbod: string;
@@ -73,6 +88,196 @@ const BRANCH_COPY: Record<DemoBranch, BranchCopy> = {
       { title: "Woning kopen", desc: "Helder advies en begeleiding tot aan de overdracht." },
       { title: "Taxaties", desc: "Betrouwbare waardebepaling voor financiering of verkoop." },
       { title: "Advies & begeleiding", desc: "Persoonlijk, transparant en altijd bereikbaar." },
+    ],
+  },
+  installatie: {
+    navAanbod: "Diensten",
+    navDiensten: "Specialismen",
+    aanbodTitle: "Onze installatiediensten",
+    aanbodSubtitle:
+      "Van cv-onderhoud tot complete renovatie — helder overzicht met directe offerte-aanvraag.",
+    aanbodCta: "Offerte aanvragen →",
+    heroBadge: "Installatie · techniek & service",
+    heroCtaPrimary: "Bekijk diensten",
+    heroCtaSecondary: "Bel voor spoed",
+    stats: [
+      { value: "15+", label: "Vakgebieden" },
+      { value: "24/7", label: "Storingsdienst" },
+      { value: "4.9", label: "Klantscore" },
+      { value: "100%", label: "Gecertificeerd" },
+    ],
+    trustTitle: "Vakmanschap dat u merkt",
+    trustBody:
+      "Eerlijke prijzen, duidelijke planning en netjes opgeleverd werk — voor particulier en zakelijk.",
+    trustBadge: "Techniek",
+    ctaTitle: "Project of onderhoud gepland?",
+    ctaBody: "Vraag een vrijblijvende offerte of plan een inspectie in.",
+    ctaButton: "Contact opnemen",
+    defaultItemBadge: "Populair",
+    placeholderTitle: "Installatiepakket",
+    placeholderMeta: "Particulier · Zakelijk",
+    placeholderPrice: "Op maat",
+    heroImage:
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&q=80",
+    servicesTitle: "Specialismen",
+    servicesSubtitle: "Elektra, sanitair, cv, dak en meer — één aanspreekpunt.",
+    defaultServices: [
+      { title: "Elektra & verlichting", desc: "Veilige installaties en slimme oplossingen." },
+      { title: "Sanitair & cv", desc: "Onderhoud, vervanging en energiezuinige systemen." },
+      { title: "Renovatie", desc: "Complete badkamer- en keukenprojecten." },
+      { title: "Storing & service", desc: "Snel ter plaatse bij urgentie." },
+    ],
+  },
+  vastgoedbeheer: {
+    navAanbod: "Beheer",
+    navDiensten: "Diensten",
+    aanbodTitle: "Vastgoed in beheer",
+    aanbodSubtitle:
+      "VvE, verhuur en beheer met transparante rapportages en een vast aanspreekpunt.",
+    aanbodCta: "Bekijk diensten →",
+    heroBadge: "Vastgoedbeheer · VvE & verhuur",
+    heroCtaPrimary: "Plan overleg",
+    heroCtaSecondary: "Onze aanpak",
+    stats: [
+      { value: "500+", label: "Eenheden beheerd" },
+      { value: "VvE", label: "Specialist" },
+      { value: "24u", label: "Meldingen" },
+      { value: "100%", label: "Transparant" },
+    ],
+    trustTitle: "Beheer zonder verrassingen",
+    trustBody:
+      "Heldere jaarafrekeningen, onderhoudsplanning en communicatie die bewoners en eigenaren begrijpen.",
+    trustBadge: "Beheer",
+    ctaTitle: "VvE of portefeuille uitbesteden?",
+    ctaBody: "Plan een kennismaking — wij laten zien hoe overzichtelijk beheer kan zijn.",
+    ctaButton: "Kennismaken",
+    defaultItemBadge: "Actief",
+    placeholderTitle: "Complex / object",
+    placeholderMeta: "Regio",
+    placeholderPrice: "Beheer op maat",
+    heroImage:
+      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1600&q=80",
+    servicesTitle: "Beheerdiensten",
+    servicesSubtitle: "Van technisch beheer tot huurderscommunicatie.",
+    defaultServices: [
+      { title: "VvE-beheer", desc: "ALV, begroting en onderhoud geregeld." },
+      { title: "Verhuurbeheer", desc: "Screening, contracten en incasso." },
+      { title: "Technisch beheer", desc: "Inspecties, onderhoud en opvolging." },
+      { title: "Rapportage", desc: "Online inzicht voor eigenaren en bestuur." },
+    ],
+  },
+  accountants: {
+    navAanbod: "Diensten",
+    navDiensten: "Specialisaties",
+    aanbodTitle: "Administratie & advies",
+    aanbodSubtitle:
+      "Boekhouding, belasting en salaris — persoonlijk contact en moderne online inzichten.",
+    aanbodCta: "Meer informatie →",
+    heroBadge: "Accountancy · helder advies",
+    heroCtaPrimary: "Plan gesprek",
+    heroCtaSecondary: "Onze diensten",
+    stats: [
+      { value: "20+", label: "Jaar ervaring" },
+      { value: "MKB", label: "Specialist" },
+      { value: "100%", label: "Digitaal dossier" },
+      { value: "NL", label: "Landelijk" },
+    ],
+    trustTitle: "Cijfers die kloppen",
+    trustBody:
+      "Proactief meedenken over fiscale kansen en rust in uw administratie — jaarronde zonder stress.",
+    trustBadge: "Finance",
+    ctaTitle: "Administratie uit handen geven?",
+    ctaBody: "Vrijblijvend kennismaken en een passend pakket samenstellen.",
+    ctaButton: "Afspraak plannen",
+    defaultItemBadge: "Advies",
+    placeholderTitle: "Dienstpakket",
+    placeholderMeta: "ZZP · BV",
+    placeholderPrice: "Vanaf € — p/m",
+    heroImage:
+      "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1600&q=80",
+    servicesTitle: "Wat wij doen",
+    servicesSubtitle: "Van boekhouding tot jaarrekening en belastingaangifte.",
+    defaultServices: [
+      { title: "Boekhouding", desc: "Compleet bijgehouden administratie." },
+      { title: "Belastingadvies", desc: "Aangiften en fiscale planning." },
+      { title: "Salarisadministratie", desc: "Nauwkeurig en op tijd." },
+      { title: "Bedrijfsadvies", desc: "Groei, structuur en financiële inzichten." },
+    ],
+  },
+  recruitment: {
+    navAanbod: "Vacatures",
+    navDiensten: "Werkwijze",
+    aanbodTitle: "Open opdrachten",
+    aanbodSubtitle:
+      "Werving, selectie en detachering — snel de juiste match voor vaste en tijdelijke rollen.",
+    aanbodCta: "Bekijk vacature →",
+    heroBadge: "Recruitment · mensen eerst",
+    heroCtaPrimary: "Ik zoek talent",
+    heroCtaSecondary: "Ik zoek werk",
+    stats: [
+      { value: "48u", label: "Eerste shortlist" },
+      { value: "500+", label: "Plaatsingen" },
+      { value: "4.8", label: "Opdrachtgevers" },
+      { value: "NL", label: "Netwerk" },
+    ],
+    trustTitle: "Matches die blijven",
+    trustBody:
+      "Diep interviewen, duidelijke verwachtingen en begeleiding na plaatsing — voor kandidaat en opdrachtgever.",
+    trustBadge: "HR",
+    ctaTitle: "Vacature of CV delen?",
+    ctaBody: "Binnen één werkdag reactie van een vaste consultant.",
+    ctaButton: "Neem contact op",
+    defaultItemBadge: "Nieuw",
+    placeholderTitle: "Functie",
+    placeholderMeta: "Regio · Fulltime",
+    placeholderPrice: "Salaris in overleg",
+    heroImage:
+      "https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1600&q=80",
+    servicesTitle: "Onze diensten",
+    servicesSubtitle: "Werving & selectie, detachering en interim management.",
+    defaultServices: [
+      { title: "Werving & selectie", desc: "Van profiel tot contract." },
+      { title: "Detachering", desc: "Flexibel specialisten inzetten." },
+      { title: "Executive search", desc: "Leiderschap en specialistische rollen." },
+      { title: "Carrière-advies", desc: "CV, sollicitatie en arbeidsmarkt." },
+    ],
+  },
+  verzekering: {
+    navAanbod: "Verzekeringen",
+    navDiensten: "Advies",
+    aanbodTitle: "Oplossingen op maat",
+    aanbodSubtitle:
+      "Particulier en zakelijk — vergelijken, afsluiten en schade begeleiden met één vast contact.",
+    aanbodCta: "Bekijk pakket →",
+    heroBadge: "Verzekering · onafhankelijk advies",
+    heroCtaPrimary: "Vraag advies",
+    heroCtaSecondary: "Schade melden",
+    stats: [
+      { value: "30+", label: "Jaar advies" },
+      { value: "100%", label: "Onafhankelijk" },
+      { value: "24u", label: "Schademelding" },
+      { value: "4.9", label: "Klantwaardering" },
+    ],
+    trustTitle: "Dekking die past",
+    trustBody:
+      "Geen standaardpakketten — we leggen helder uit wat wel en niet verzekerd is, zonder kleine lettertjes.",
+    trustBadge: "Assurantie",
+    ctaTitle: "Polis vergelijken of vernieuwen?",
+    ctaBody: "Gratis inventarisatie van uw huidige dekking.",
+    ctaButton: "Bel mij terug",
+    defaultItemBadge: "Aanbevolen",
+    placeholderTitle: "Verzekeringspakket",
+    placeholderMeta: "Particulier · Zakelijk",
+    placeholderPrice: "Premie op maat",
+    heroImage:
+      "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1600&q=80",
+    servicesTitle: "Adviesgebieden",
+    servicesSubtitle: "Van aansprakelijkheid tot pensioen en schade.",
+    defaultServices: [
+      { title: "Particulier", desc: "Woon, auto, reis en aansprakelijkheid." },
+      { title: "Zakelijk", desc: "Bedrijfsrisico's en arbeidsongeschiktheid." },
+      { title: "Schadebegeleiding", desc: "Snel en duidelijk bij een melding." },
+      { title: "Periodieke check", desc: "Jaarlijks dekking en premie toetsen." },
     ],
   },
   auto: {
@@ -267,6 +472,11 @@ export function resolveDemoBranch(
   business: Bedrijf,
   deep: DeepScrapeResult,
 ): DemoBranch {
+  const fromBranch = business.branchId
+    ? SCRAPE_BRANCH_DEMO[business.branchId]
+    : undefined;
+  if (fromBranch) return fromBranch;
+
   const hay = [
     business.category,
     business.subcategory,
@@ -277,9 +487,6 @@ export function resolveDemoBranch(
     .join(" ")
     .toLowerCase();
 
-  if (business.branchId === "installatie") {
-    return "services";
-  }
   if (/makelaar|vastgoed|nvm|estate_agent|real_estate|woning/i.test(hay)) {
     return "makelaar";
   }
