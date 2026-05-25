@@ -1,5 +1,10 @@
-import MakelaarDashboardContent from "@/components/demo-app/MakelaarDashboardContent";
+import { DemoAppHomeRouter } from "@/components/demo-app/DemoAppHomeRouter";
 
-export default function DemoAppDashboardPage() {
-  return <MakelaarDashboardContent />;
+type PageProps = {
+  params: Promise<{ slug: string }>;
+};
+
+export default async function DemoAppDashboardPage({ params }: PageProps) {
+  const { slug } = await params;
+  return <DemoAppHomeRouter slug={slug} />;
 }

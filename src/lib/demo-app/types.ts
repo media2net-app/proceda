@@ -194,3 +194,126 @@ export type MakelaarPortalData = DemoDashboardData & {
   timeline: DemoTimelineEvent[];
   bidProperty: DemoBidProperty;
 };
+
+export type RecruitmentCandidateRow = {
+  id: string;
+  name: string;
+  sector: string;
+  status: string;
+  statusStyle: "new" | "active" | "placed" | "wait";
+  lastContact: string;
+  language: string;
+  growthScore: number;
+};
+
+export type RecruitmentVacancyRow = {
+  id: string;
+  title: string;
+  client: string;
+  sector: string;
+  location: string;
+  urgency: string;
+  candidates: number;
+  slaHours: number;
+};
+
+export type RecruitmentAiMatch = {
+  id: string;
+  candidateName: string;
+  vacancyTitle: string;
+  sector: string;
+  score: number;
+  reason: string;
+};
+
+export type RecruitmentFollowUp = {
+  id: string;
+  party: string;
+  type: "kandidaat" | "werkgever";
+  waitingSince: string;
+  action: string;
+  draftReady: boolean;
+};
+
+export type RecruitmentSkillScore = {
+  label: string;
+  score: number;
+  note?: string;
+};
+
+export type RecruitmentTimelineEntry = {
+  id: string;
+  at: string;
+  title: string;
+  detail: string;
+  aiGenerated?: boolean;
+};
+
+export type RecruitmentAiReasonStep = {
+  step: number;
+  title: string;
+  detail: string;
+};
+
+export type RecruitmentScoreFactor = {
+  label: string;
+  weight: number;
+  score: number;
+  explanation: string;
+};
+
+export type RecruitmentCandidateDetail = RecruitmentCandidateRow & {
+  email: string;
+  phone: string;
+  availability: string;
+  experienceYears: number;
+  aiSummary: string;
+  aiStrengths: string[];
+  aiRisks: string[];
+  skills: RecruitmentSkillScore[];
+  topMatchIds: string[];
+  timeline: RecruitmentTimelineEntry[];
+  consultantNote: string;
+};
+
+export type RecruitmentVacancyDetail = RecruitmentVacancyRow & {
+  description: string;
+  hoursPerWeek: string;
+  startDate: string;
+  aiIntakeSummary: string;
+  requirements: { id: string; label: string; required: boolean; met?: number }[];
+  shortlistCandidateIds: string[];
+  timeline: RecruitmentTimelineEntry[];
+};
+
+export type RecruitmentMatchDetail = RecruitmentAiMatch & {
+  candidateId: string;
+  vacancyId: string;
+  factors: RecruitmentScoreFactor[];
+  reasonSteps: RecruitmentAiReasonStep[];
+  motivationDraft: string;
+  consultantTip: string;
+  atsNote: string;
+};
+
+export type RecruitmentFollowUpDetail = RecruitmentFollowUp & {
+  subject: string;
+  draftBody: string;
+  aiPersonalization: string[];
+  slaDeadline: string;
+  relatedVacancyId?: string;
+  relatedCandidateId?: string;
+};
+
+export type RecruitmentPortalData = {
+  kpis: DemoKpi[];
+  aiInsight: DemoAiInsight;
+  candidates: RecruitmentCandidateRow[];
+  vacancies: RecruitmentVacancyRow[];
+  aiMatches: RecruitmentAiMatch[];
+  followUps: RecruitmentFollowUp[];
+  candidateDetails: Record<string, RecruitmentCandidateDetail>;
+  vacancyDetails: Record<string, RecruitmentVacancyDetail>;
+  matchDetails: Record<string, RecruitmentMatchDetail>;
+  followUpDetails: Record<string, RecruitmentFollowUpDetail>;
+};
