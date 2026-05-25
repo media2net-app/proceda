@@ -26,3 +26,14 @@ export function demoAppPublicPath(
 export function demoSlugFromBusinessId(businessId: string): string {
   return businessIdToDemoSlug(businessId);
 }
+
+/** Demo-URL-slug → businessId (browser/google/manual prefixes). */
+export function demoSlugToBusinessId(
+  slug: string,
+  entryBusinessId?: string | null,
+): string {
+  if (entryBusinessId?.trim()) return entryBusinessId;
+  if (slug.startsWith("browser-")) return `browser/${slug.slice("browser-".length)}`;
+  if (slug.startsWith("google-")) return `google/${slug.slice("google-".length)}`;
+  return `manual/${slug}`;
+}
