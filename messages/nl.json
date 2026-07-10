@@ -1,10 +1,357 @@
 {
   "nav": {
+    "agents": "Agents",
+    "skills": "Skills",
     "howItWorks": "Hoe het werkt",
     "services": "Diensten",
     "login": "Inloggen",
     "menu": "Menu",
-    "closeMenu": "Menu sluiten"
+    "closeMenu": "Menu sluiten",
+    "language": "Taal",
+    "devNotice": "Website is nog in ontwikkeling"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Agents & skills voor jouw operatie",
+      "headline": "Geen chatbot. Een operatielaag.",
+      "description": "Proceda verbindt je bestaande tools met gespecialiseerde AI-agents. Zij bereiden voor, vatten samen en zetten interne taken uit — jij keurt goed voordat er iets naar buiten gaat.",
+      "ctaBookCall": "Plan een gesprek"
+    },
+    "layers": {
+      "title": "Drie lagen, één command center",
+      "subtitle": "Connectors, agents en governance — georkestreerd, niet losgekoppeld.",
+      "connectorsTitle": "Connectors",
+      "connectorsDesc": "Gmail, Slack, PMS, CRM — je stack blijft leidend. Agents lezen en schrijven alleen waar jij toestaat.",
+      "agentsTitle": "Agents",
+      "agentsDesc": "Gespecialiseerde rollen met eigen skills, tools en overdracht. Geen generieke assistent die alles half doet.",
+      "governanceTitle": "Governance",
+      "governanceDesc": "Approval-first: externe mail, offertes en publicatie achter een quality gate. Volledige audit trail."
+    },
+    "agents": {
+      "title": "Agents",
+      "subtitle": "Elke agent één taak — met meetbare skills en duidelijke handoffs.",
+      "phase1": "Fase 1",
+      "phase2": "Fase 2",
+      "live": "Live",
+      "intakeName": "Intake & Projectstart",
+      "intakeHook": "Van aanvraag naar startklaar project — zonder ontbrekende input.",
+      "emailName": "E-mail & Communicatie",
+      "emailHook": "Triage, conceptantwoorden en goedkeuringen — jullie keuren alleen goed.",
+      "knowledgeName": "Knowledge",
+      "knowledgeHook": "Brongebonden antwoorden zonder de directie te onderbreken.",
+      "qaName": "Creative QA",
+      "qaHook": "Merkrichtlijnen, contrast en bestandsnamen — vóór export of publicatie."
+    },
+    "skills": {
+      "title": "Skills",
+      "subtitle": "Concrete vaardigheden per agent — zichtbaar in runs, success rate en doorlooptijd.",
+      "intakeItems": ["Brief parseren", "Project aanmaken", "Checklist valideren"],
+      "emailItems": ["E-mail triage", "Conceptantwoord", "Goedkeuringsflow"],
+      "knowledgeItems": ["Brand guide Q&A", "Briefing samenvatten", "Zoeken in projectdata"],
+      "qaItems": ["Merkcheck", "Contrast scan", "Export validatie"]
+    },
+    "how": {
+      "title": "Hoe het werkt",
+      "step1Title": "Koppel je stack",
+      "step1Desc": "We sluiten aan op de tools die je team al gebruikt — geen rip-and-replace.",
+      "step2Title": "Agents draaien skills",
+      "step2Desc": "Elke skill doet één ding: parsen, samenvatten, controleren — met metrics in het dashboard.",
+      "step3Title": "Jij houdt regie",
+      "step3Desc": "Intern werk gaat door. Externe acties wachten op jouw akkoord — altijd traceerbaar."
+    },
+    "cta": {
+      "title": "Klaar om te starten?",
+      "description": "Plan een kort gesprek — we laten zien hoe Proceda past bij jouw operatie."
+    },
+    "footer": "Proceda — proces + vooruitgang",
+    "orbai": {
+      "nav": {
+        "platform": "Platform",
+        "features": "Features",
+        "services": "Services",
+        "process": "Proces",
+        "contact": "Contact",
+        "projects": "Projecten",
+        "cta": "Plan een gesprek"
+      },
+      "logos": ["Gmail", "Slack", "Notion", "HubSpot", "PostgreSQL", "GitHub", "Linear", "Google Drive"],
+      "mockup": {
+        "title": "Command Center",
+        "subtitle": "Agents, runs en goedkeuringen in één overzicht."
+      },
+      "demo": {
+        "label": "Proceda in actie",
+        "title": "Zie het command center",
+        "subtitle": "Een korte rondleiding door agents, skills en approval-first governance — lokaal op jouw Mac Mini.",
+        "duration": "Plan een live walkthrough via een gesprek"
+      },
+      "platform": {
+        "label": "Platform",
+        "title": "De infrastructuur die agents nodig hebben om op jouw stack te draaien",
+        "subtitle": "Connectors, agents, governance en lokale deployment — georkestreerd in één operatielaag.",
+        "items": [
+          {
+            "id": "connectors",
+            "label": "Connectors",
+            "title": "Gekoppeld aan de tools die je team al gebruikt",
+            "description": "Gmail, Slack, PMS en CRM — je stack blijft leidend. Agents lezen en schrijven alleen waar jij toestaat.",
+            "cta": "Meer over connectors"
+          },
+          {
+            "id": "agents",
+            "label": "Agents",
+            "title": "Gespecialiseerde agents die werken als je beste teamleden",
+            "description": "Intake, E-mail, Knowledge en Creative QA — elke agent één taak, met meetbare skills en duidelijke handoffs.",
+            "cta": "Bekijk agents"
+          },
+          {
+            "id": "governance",
+            "label": "Governance",
+            "title": "Enterprise-grade regie over autonome systemen",
+            "description": "Approval-first: externe mail, offertes en publicatie achter een quality gate. Volledige audit trail per actie.",
+            "cta": "Meer over governance"
+          },
+          {
+            "id": "local",
+            "label": "Lokaal",
+            "title": "24/7 on-premise op een Mac Mini bij jou",
+            "description": "De volledige operatie draait lokaal bij de klant — geen cloud-lock-in, data blijft in je eigen netwerk.",
+            "cta": "Meer over lokaal"
+          }
+        ]
+      },
+      "capabilities": {
+        "label": "Capabilities",
+        "title": "Jouw operating system voor agents",
+        "subtitle": "Alles wat je nodig hebt om agents productief te maken — lokaal en onder jouw regie.",
+        "securityTitle": "Lokaal & enterprise-ready",
+        "securityDesc": "Mac Mini on-premise 24/7, GDPR, NDAs en approval-first governance — data verlaat je netwerk niet.",
+        "items": [
+          {
+            "title": "Skill-automatisering",
+            "description": "Skills parsen briefs, triëren mail en valideren export — intern automatisch, extern achter approval."
+          },
+          {
+            "title": "Real-time metrics",
+            "description": "Runs, success rate en doorlooptijd per agent — volledig zichtbaar in het command center.",
+            "badge": "Live"
+          },
+          {
+            "title": "Agent memory & context",
+            "description": "Brongebonden antwoorden uit projectdata, brand guides en briefings — zonder hallucinaties."
+          },
+          {
+            "title": "Approval flows",
+            "description": "Externe acties wachten op jouw akkoord — altijd traceerbaar, altijd reversible."
+          }
+        ]
+      },
+      "hero": {
+        "eyebrow": "AI-agents voor jouw operatie",
+        "title": "Zet AI-agents in over je hele operatie",
+        "subtitle": "Gespecialiseerde agents bereiden voor, vatten samen en zetten interne taken uit — jij keurt goed voordat er iets naar buiten gaat.",
+        "localBadge": "Hele operatie lokaal 24/7 op een Mac Mini bij jou op kantoor",
+        "ctaPrimary": "Plan een gesprek",
+        "ctaSecondary": "Bekijk platform",
+        "quote": "We koppelen je stack, begrijpen je processen en zetten agents in die voorbereiden, samenvatten en uitvoeren — jij keurt goed voordat er iets naar buiten gaat.",
+        "quoteAuthor": "Founder of Proceda"
+      },
+      "benefits": {
+        "label": "Voordelen",
+        "title": "Waarom Proceda",
+        "subtitle": "Een operatielaag met agents, skills en governance — geen generieke chatbot.",
+        "card1Title": "Real-time inzicht",
+        "card1Desc": "Volg runs, success rate en doorlooptijd per skill in je command center.",
+        "card2Title": "AI-gedreven operatie",
+        "card2Desc": "Agents bereiden voor, vatten samen en zetten interne taken uit — met approval-first governance.",
+        "card3Title": "Lokaal bij jou",
+        "card3Desc": "Agents, data en workflows draaien 24/7 on-premise op een Mac Mini op jouw locatie — niet in onze cloud.",
+        "tags": ["Lokaal 24/7", "Mac Mini on-premise", "Snellere innovatie", "Virtuele assistentie", "Data in huis", "Real-time inzicht", "Automatisering", "Data-gedreven beslissingen"]
+      },
+      "features": {
+        "label": "Features",
+        "title": "Alle features in één laag",
+        "subtitle": "Ontdek features die workflows vereenvoudigen en je operatie laten groeien.",
+        "cuttingEdgeTitle": "Gespecialiseerde agents",
+        "cuttingEdgeDesc": "Intake, E-mail, Knowledge en Creative QA — elke agent één taak, met meetbare skills.",
+        "workflowsTitle": "Geautomatiseerde workflows",
+        "workflowsDesc": "Skills parsen briefs, triëren mail en valideren export — intern automatisch, extern achter approval.",
+        "analyticsTitle": "Inzichtelijke analytics",
+        "analyticsDesc": "Runs, success rate en doorlooptijd per agent — volledige audit trail.",
+        "localTitle": "Lokaal op Mac Mini",
+        "localDesc": "De volledige operatie draait 24/7 op hardware bij de klant — geen vendor lock-in, geen data naar externe servers."
+      },
+      "local": {
+        "label": "Lokaal",
+        "title": "Op jouw Mac Mini, 24/7",
+        "subtitle": "Proceda draait niet in onze cloud. We installeren en beheren de volledige operatie on-premise op een Mac Mini bij jou op kantoor — altijd bereikbaar, altijd onder jouw regie.",
+        "points": [
+          "Mac Mini op jouw locatie, 24 uur per dag operationeel",
+          "Agents, connectors en data blijven in je eigen netwerk",
+          "Geen afhankelijkheid van externe AI-clouds voor je kernprocessen"
+        ],
+        "highlightTitle": "On-premise by design",
+        "highlightDesc": "Van intake tot goedkeuring: alles draait lokaal. Wij configureren, monitoren en updaten — jij behoudt fysieke en logische controle over je data.",
+        "highlightTag": "mac-mini.proceda.local · 24/7"
+      },
+      "services": {
+        "label": "Diensten",
+        "title": "Onze agent-gedreven diensten",
+        "subtitle": "Agents en skills die prestaties boosten in jouw operatie.",
+        "strategyTitle": "Intake & Projectstart",
+        "strategyDesc": "Van aanvraag naar startklaar project — brief parseren, project aanmaken, checklist valideren.",
+        "contentTitle": "Knowledge & Q&A",
+        "contentDesc": "Brand guide Q&A, briefing samenvatten en zoeken in projectdata — zonder de directie te onderbreken.",
+        "chatbotsTitle": "E-mail & Communicatie",
+        "chatbotsDesc": "E-mail triage, conceptantwoorden en goedkeuringsflow — jullie keuren alleen goed.",
+        "automationTitle": "Creative QA",
+        "automationDesc": "Merkcheck, contrast scan en export validatie — vóór publicatie."
+      },
+      "process": {
+        "label": "Proces",
+        "title": "Simpel & schaalbaar",
+        "subtitle": "Een transparant proces van koppeling tot governance.",
+        "step1Title": "Stack assessment",
+        "step1Desc": "We beginnen met je bestaande tools en workflows — waar leveren agents de meeste impact?",
+        "step2Title": "Deploy op jouw Mac Mini",
+        "step2Desc": "We installeren de volledige stack lokaal bij jou — agents draaien 24/7 on-premise met approval-first governance.",
+        "step3Title": "Doorlopende optimalisatie",
+        "step3Desc": "Na livegang meten we runs en verfijnen skills — altijd traceerbaar.",
+        "stat": "2 weken",
+        "statLabel": "Gemiddelde tijd tot eerste agent live"
+      },
+      "projects": {
+        "label": "Projecten",
+        "title": "Bewezen impact & resultaten",
+        "subtitle": "Projecten die onze expertise en impact in de praktijk laten zien.",
+        "statStack": "Stack componenten",
+        "statLang": "Primaire taal"
+      },
+      "customers": {
+        "label": "Klanten",
+        "title": "Wat onze klanten zeggen",
+        "subtitle": "Teams die Proceda vertrouwen om hun operatie slimmer te maken.",
+        "items": [
+          {
+            "quote": "De agent-gedreven aanpak hielp ons sneller voorbereiden en consistenter communiceren — met volledige regie over wat extern gaat.",
+            "name": "Brendan",
+            "role": "Operations Director"
+          },
+          {
+            "quote": "Ze hielpen ons de juiste skills te identificeren en tools te bouwen die onze snelheid én nauwkeurigheid verhoogden.",
+            "name": "Lena M.",
+            "role": "Manager bij NovaTech"
+          },
+          {
+            "quote": "Van intake tot goedkeuring: elke stap was transparant. Onze interne doorlooptijd daalde merkbaar.",
+            "name": "Eli R.",
+            "role": "COO bij GridFrame"
+          }
+        ]
+      },
+      "stats": {
+        "label": "Cijfers",
+        "title": "Vertrouwd door teams die regie willen houden",
+        "subtitle": "Lokaal deployed, meetbaar in productie.",
+        "projects": "40+",
+        "projectsLabel": "Projecten opgeleverd",
+        "satisfaction": "100%",
+        "satisfactionLabel": "Klanttevredenheid",
+        "experience": "5+",
+        "experienceLabel": "Jaar ervaring"
+      },
+      "statsGrid": [
+        { "value": "40+", "label": "Projecten opgeleverd", "sub": "Maatwerk & AI-implementaties" },
+        { "value": "24/7", "label": "Lokaal operationeel", "sub": "Mac Mini on-premise bij klant" },
+        { "value": "100%", "label": "Data in huis", "sub": "Geen externe AI-cloud voor kernprocessen" },
+        { "value": "94%", "label": "Skill success rate", "sub": "Gemiddeld in productie-omgevingen" }
+      ],
+      "comparison": {
+        "label": "Vergelijking",
+        "title": "Proceda vs standaard",
+        "subtitle": "Zie hoe gespecialiseerde agents presteren t.o.v. generieke chatbots.",
+        "usLabel": "Proceda",
+        "themLabel": "Anderen",
+        "usItems": ["Lokaal 24/7 op Mac Mini bij klant", "Gespecialiseerde agents per taak", "Approval-first governance", "Real-time metrics per skill", "Connectors op je stack", "Audit trail", "Data blijft in huis"],
+        "themItems": ["Cloud-only SaaS", "Generieke chatbot", "Geen approval flows", "Data bij derde partij", "Geen stack-integratie", "Handmatige workflows", "Hallucinaties zonder bron"]
+      },
+      "team": {
+        "label": "Team",
+        "title": "Team achter Proceda",
+        "subtitle": "Experts achter onze agents — gedreven om slimme oplossingen te leveren.",
+        "members": [
+          { "name": "Chiel", "role": "Founder / CEO" },
+          { "name": "Intake Agent", "role": "Projectstart" },
+          { "name": "Email Agent", "role": "Communicatie" },
+          { "name": "Knowledge Agent", "role": "Q&A & Briefings" }
+        ]
+      },
+      "faq": {
+        "label": "FAQ",
+        "title": "Vragen? Antwoorden!",
+        "subtitle": "Snelle antwoorden op de meest gestelde vragen.",
+        "contact": "Mail ons voor vragen:",
+        "items": [
+          {
+            "q": "Welke diensten bieden jullie?",
+            "a": "We bouwen gespecialiseerde AI-agents met skills voor intake, e-mail, knowledge en QA — gekoppeld aan je bestaande stack met approval-first governance."
+          },
+          {
+            "q": "Hoe lang duurt implementatie?",
+            "a": "Afhankelijk van scope: van 2 tot 12 weken. Na een discovery call geven we een concreet plan en timeline."
+          },
+          {
+            "q": "Heb ik technische kennis nodig?",
+            "a": "Nee. We regelen de integratie en leggen elke stap uit in begrijpelijke taal — jij houdt regie via het command center."
+          },
+          {
+            "q": "Waar draait Proceda?",
+            "a": "De volledige operatie draait lokaal 24/7 op een Mac Mini bij jou op kantoor. Agents, connectors en data blijven in je eigen netwerk — niet in onze cloud."
+          },
+          {
+            "q": "Is mijn data veilig?",
+            "a": "Ja. Door on-premise deployment op jouw Mac Mini verlaat je data je netwerk niet. We volgen GDPR, werken met NDAs en agents lezen/schrijven alleen waar jij toestaat."
+          },
+          {
+            "q": "Kan AI echt mijn operatie verbeteren?",
+            "a": "Ja — agents bereiden voor, vatten samen en automatiseren intern werk. Externe acties wachten altijd op jouw akkoord."
+          }
+        ]
+      },
+      "footer": {
+        "title": "PROCEDA",
+        "subtitle": "Next-gen AI agents, lokaal 24/7 op jouw Mac Mini.",
+        "ctaTitle": "Start met agents op jouw Mac Mini",
+        "ctaSubtitle": "Plan een gesprek — we laten zien hoe Proceda past bij jouw operatie, lokaal en onder jouw regie.",
+        "copyright": "Proceda © 2026",
+        "columns": [
+          {
+            "title": "Platform",
+            "links": [
+              { "label": "Connectors", "href": "#platform" },
+              { "label": "Agents", "href": "#services" },
+              { "label": "Governance", "href": "#platform" },
+              { "label": "Lokaal", "href": "#platform" }
+            ]
+          },
+          {
+            "title": "Resources",
+            "links": [
+              { "label": "Features", "href": "#features" },
+              { "label": "Proces", "href": "#process" },
+              { "label": "FAQ", "href": "#contact" }
+            ]
+          },
+          {
+            "title": "Contact",
+            "links": [
+              { "label": "Plan een gesprek", "href": "mailto:hello@proceda.nl" },
+              { "label": "hello@proceda.nl", "href": "mailto:hello@proceda.nl" }
+            ]
+          }
+        ]
+      }
+    }
   },
   "hero": {
     "tagline": "Maatwerk webapplicaties & AI voor jouw bedrijf",
@@ -1104,6 +1451,58 @@
     "goBedrijven": "Bedrijven",
     "goMail": "Mail",
     "goHuisstijl": "Huisstijl"
+  },
+  "bookingModal": {
+    "eyebrow": "Proceda",
+    "title": "Plan een gesprek",
+    "close": "Sluiten",
+    "loading": "Beschikbare tijden laden…",
+    "loadError": "Agenda kon niet worden geladen. Probeer het opnieuw.",
+    "stepIntake": "Vragen",
+    "stepSchedule": "Datum & tijd",
+    "intakeSubtitle": "Vertel kort over jouw situatie — daarna kies je een tijdslot van 30 minuten.",
+    "contactName": "Naam",
+    "email": "E-mail",
+    "phone": "Telefoon",
+    "company": "Bedrijf",
+    "role": "Jouw rol",
+    "rolePlaceholder": "Kies je rol",
+    "roleFounder": "Founder / directie",
+    "roleOperations": "Operations",
+    "roleIt": "IT / tech",
+    "roleOther": "Anders",
+    "teamSize": "Teamgrootte",
+    "teamSizePlaceholder": "Aantal collega's",
+    "teamSize1": "1–5",
+    "teamSize2": "6–20",
+    "teamSize3": "21–50",
+    "teamSize4": "50+",
+    "interest": "Waar ben je in geïnteresseerd?",
+    "interestPlaceholder": "Kies een onderwerp",
+    "interestAgents": "AI-agents voor operatie",
+    "interestAutomation": "Procesautomatisering",
+    "interestLocal": "Lokaal draaien (Mac Mini)",
+    "interestExplore": "Verkennen wat mogelijk is",
+    "message": "Waar kunnen we je mee helpen?",
+    "messagePlaceholder": "Beschrijf kort je uitdaging of doel…",
+    "missingFields": "Vul naam, e-mail en bedrijf in.",
+    "invalidEmail": "Vul een geldig e-mailadres in.",
+    "continue": "Kies een tijd",
+    "back": "Terug",
+    "eventTitle": "Kennismakingsgesprek",
+    "duration": "30 min · Google Meet",
+    "hoursHint": "Ma–vr 08:00–20:00",
+    "yourDetails": "Jouw gegevens",
+    "pickDay": "Kies een dag",
+    "pickTime": "Kies een tijdstip",
+    "noSlots": "Geen tijden meer beschikbaar op deze dag.",
+    "ctaConfirm": "Afspraak bevestigen",
+    "booking": "Bezig met boeken…",
+    "bookError": "Boeken mislukt — kies een ander tijdstip.",
+    "errorInvalidSlot": "Dit tijdstip is niet meer beschikbaar.",
+    "confirmedTitle": "Afspraak bevestigd",
+    "confirmedSubtitle": "Bedankt — je ontvangt een bevestiging per e-mail met een Google Meet-link.",
+    "confirmedHint": "Tot dan!"
   },
   "demoBooking": {
     "loading": "Laden…",

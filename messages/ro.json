@@ -1,10 +1,357 @@
 {
   "nav": {
+    "agents": "Agenți",
+    "skills": "Skills",
     "howItWorks": "Cum funcționează",
     "services": "Servicii",
     "login": "Autentificare",
     "menu": "Meniu",
-    "closeMenu": "Închide meniul"
+    "closeMenu": "Închide meniul",
+    "language": "Limbă",
+    "devNotice": "Site-ul este încă în dezvoltare"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Agenți & skills pentru operațiuni",
+      "headline": "Nu un chatbot. Un strat operațional.",
+      "description": "Proceda conectează instrumentele existente la agenți AI specializați. Ei pregătesc, rezumă și execută intern — tu aprobi înainte ca ceva să iasă în exterior.",
+      "ctaBookCall": "Programează un apel"
+    },
+    "layers": {
+      "title": "Trei straturi, un command center",
+      "subtitle": "Conectori, agenți și guvernanță — orchestrate, nu deconectate.",
+      "connectorsTitle": "Conectori",
+      "connectorsDesc": "Gmail, Slack, PMS, CRM — stack-ul tău rămâne în control. Agenții citesc și scriu doar unde permiți.",
+      "agentsTitle": "Agenți",
+      "agentsDesc": "Roluri specializate cu skills, instrumente și predări clare. Fără asistent generic care face totul pe jumătate.",
+      "governanceTitle": "Guvernanță",
+      "governanceDesc": "Approval-first: email extern, oferte și publicare în spatele unui quality gate. Audit trail complet."
+    },
+    "agents": {
+      "title": "Agenți",
+      "subtitle": "O sarcină per agent — cu skills măsurabile și predări clare.",
+      "phase1": "Faza 1",
+      "phase2": "Faza 2",
+      "live": "Live",
+      "intakeName": "Intake & Start proiect",
+      "intakeHook": "De la cerere la proiect gata de start — fără input lipsă.",
+      "emailName": "Email & Comunicare",
+      "emailHook": "Triage, răspunsuri draft și aprobări — voi doar semnați.",
+      "knowledgeName": "Knowledge",
+      "knowledgeHook": "Răspunsuri din surse, fără a întrerupe conducerea.",
+      "qaName": "Creative QA",
+      "qaHook": "Ghid de brand, contrast și nume fișiere — înainte de export sau publicare."
+    },
+    "skills": {
+      "title": "Skills",
+      "subtitle": "Capabilități concrete per agent — vizibile în runs, rată de succes și durată.",
+      "intakeItems": ["Parsare brief", "Creare proiect", "Validare checklist"],
+      "emailItems": ["Triage email", "Răspuns draft", "Flux aprobare"],
+      "knowledgeItems": ["Brand guide Q&A", "Rezumat briefing", "Căutare date proiect"],
+      "qaItems": ["Verificare brand", "Scan contrast", "Validare export"]
+    },
+    "how": {
+      "title": "Cum funcționează",
+      "step1Title": "Conectează stack-ul",
+      "step1Desc": "Ne integrăm în instrumentele pe care echipa le folosește deja — fără rip-and-replace.",
+      "step2Title": "Agenții rulează skills",
+      "step2Desc": "Fiecare skill face un lucru: parsează, rezumă, verifică — cu metrici în dashboard.",
+      "step3Title": "Tu păstrezi controlul",
+      "step3Desc": "Munca internă avansează. Acțiunile externe așteaptă aprobarea ta — mereu trasabile."
+    },
+    "cta": {
+      "title": "Gata să începi?",
+      "description": "Programează un apel scurt — îți arătăm cum se potrivește Proceda în operațiunile tale."
+    },
+    "footer": "Proceda — proces + progres",
+    "orbai": {
+      "nav": {
+        "platform": "Platform",
+        "features": "Features",
+        "services": "Servicii",
+        "process": "Proces",
+        "contact": "Contact",
+        "projects": "Proiecte",
+        "cta": "Programează un apel"
+      },
+      "logos": ["Gmail", "Slack", "Notion", "HubSpot", "PostgreSQL", "GitHub", "Linear", "Google Drive"],
+      "mockup": {
+        "title": "Command Center",
+        "subtitle": "Agenți, runs și aprobări într-o singură vedere."
+      },
+      "demo": {
+        "label": "Proceda în acțiune",
+        "title": "Vezi command center-ul",
+        "subtitle": "Un tur scurt prin agenți, skills și guvernanță approval-first — local pe Mac Mini-ul tău.",
+        "duration": "Programează un walkthrough live printr-un apel"
+      },
+      "platform": {
+        "label": "Platform",
+        "title": "Infrastructura de care agenții au nevoie pentru stack-ul tău",
+        "subtitle": "Conectori, agenți, guvernanță și deployment local — orchestrate într-un singur strat operațional.",
+        "items": [
+          {
+            "id": "connectors",
+            "label": "Conectori",
+            "title": "Conectat la instrumentele pe care echipa le folosește deja",
+            "description": "Gmail, Slack, PMS și CRM — stack-ul tău rămâne în control. Agenții citesc și scriu doar unde permiți.",
+            "cta": "Despre conectori"
+          },
+          {
+            "id": "agents",
+            "label": "Agenți",
+            "title": "Agenți specializați care lucrează ca cei mai buni colegi",
+            "description": "Intake, Email, Knowledge și Creative QA — o sarcină per agent, cu skills măsurabile.",
+            "cta": "Vezi agenții"
+          },
+          {
+            "id": "governance",
+            "label": "Guvernanță",
+            "title": "Control enterprise pentru sisteme autonome",
+            "description": "Approval-first: email extern, oferte și publicare în spatele unui quality gate. Audit trail complet.",
+            "cta": "Despre guvernanță"
+          },
+          {
+            "id": "local",
+            "label": "Local",
+            "title": "24/7 on-premise pe Mac Mini la tine",
+            "description": "Operațiunea completă rulează local la client — fără cloud lock-in, datele rămân în rețeaua ta.",
+            "cta": "Despre local"
+          }
+        ]
+      },
+      "capabilities": {
+        "label": "Capabilities",
+        "title": "Sistemul tău de operare pentru agenți",
+        "subtitle": "Tot ce ai nevoie pentru agenți productivi — local și sub controlul tău.",
+        "securityTitle": "Local & enterprise-ready",
+        "securityDesc": "Mac Mini on-premise 24/7, GDPR, NDA și guvernanță approval-first — datele nu părăsesc rețeaua.",
+        "items": [
+          {
+            "title": "Automatizare skills",
+            "description": "Skills parsează brief-uri, triere email, validează export — intern automat, extern cu aprobare."
+          },
+          {
+            "title": "Metrici timp real",
+            "description": "Runs, rată succes și durată per agent — vizibil în command center.",
+            "badge": "Live"
+          },
+          {
+            "title": "Memorie & context agent",
+            "description": "Răspunsuri din surse — project data, brand guides, briefings — fără halucinații."
+          },
+          {
+            "title": "Fluxuri aprobare",
+            "description": "Acțiuni externe așteaptă aprobarea ta — mereu trasabile, mereu reversibile."
+          }
+        ]
+      },
+      "hero": {
+        "eyebrow": "Agenți AI pentru operațiuni",
+        "title": "Implementează agenți AI în toată operațiunea ta",
+        "subtitle": "Agenți specializați pregătesc, rezumă și execută intern — tu aprobi înainte ca ceva să iasă extern.",
+        "localBadge": "Operațiunea completă rulează local 24/7 pe un Mac Mini la biroul tău",
+        "ctaPrimary": "Programează un apel",
+        "ctaSecondary": "Vezi platforma",
+        "quote": "Conectăm stack-ul tău, înțelegem procesele și implementăm agenți care pregătesc, rezumă și execută — tu aprobi înainte ca ceva să iasă extern.",
+        "quoteAuthor": "Fondator Proceda"
+      },
+      "benefits": {
+        "label": "Beneficii",
+        "title": "De ce Proceda",
+        "subtitle": "Un strat operațional cu agenți, skills și guvernanță — nu un chatbot generic.",
+        "card1Title": "Insight în timp real",
+        "card1Desc": "Urmărește runs, rata de succes și durata per skill în command center.",
+        "card2Title": "Operațiuni AI-driven",
+        "card2Desc": "Agenții pregătesc, rezumă și execută intern — cu guvernanță approval-first.",
+        "card3Title": "Local la tine",
+        "card3Desc": "Agenții, datele și workflow-urile rulează 24/7 on-premise pe un Mac Mini la locația ta — nu în cloud-ul nostru.",
+        "tags": ["Local 24/7", "Mac Mini on-premise", "Inovație rapidă", "Asistență virtuală", "Date în casă", "Insight timp real", "Automatizare", "Decizii bazate pe date"]
+      },
+      "features": {
+        "label": "Features",
+        "title": "Toate features într-un strat",
+        "subtitle": "Descoperă features care simplifică workflow-urile și cresc operațiunile.",
+        "cuttingEdgeTitle": "Agenți specializați",
+        "cuttingEdgeDesc": "Intake, Email, Knowledge și Creative QA — o sarcină per agent, cu skills măsurabile.",
+        "workflowsTitle": "Workflow-uri automate",
+        "workflowsDesc": "Skills parsează brief-uri, triere email, validează export — intern automat, extern cu aprobare.",
+        "analyticsTitle": "Analytics insightful",
+        "analyticsDesc": "Runs, rată succes și durată per agent — audit trail complet.",
+        "localTitle": "Local pe Mac Mini",
+        "localDesc": "Operațiunea completă rulează 24/7 pe hardware la client — fără vendor lock-in, fără date către servere externe."
+      },
+      "local": {
+        "label": "Local",
+        "title": "Pe Mac Mini-ul tău, 24/7",
+        "subtitle": "Proceda nu rulează în cloud-ul nostru. Instalăm și gestionăm operațiunea completă on-premise pe un Mac Mini la biroul tău — mereu disponibil, mereu sub controlul tău.",
+        "points": [
+          "Mac Mini la locația ta, operațional 24 de ore din 24",
+          "Agenții, conectorii și datele rămân în rețeaua ta",
+          "Fără dependență de cloud-uri AI externe pentru procesele de bază"
+        ],
+        "highlightTitle": "On-premise by design",
+        "highlightDesc": "De la intake la aprobare: totul rulează local. Noi configurăm, monitorizăm și actualizăm — tu păstrezi controlul fizic și logic asupra datelor.",
+        "highlightTag": "mac-mini.proceda.local · 24/7"
+      },
+      "services": {
+        "label": "Servicii",
+        "title": "Serviciile noastre agent-driven",
+        "subtitle": "Agenți și skills care cresc performanța în operațiuni.",
+        "strategyTitle": "Intake & Start proiect",
+        "strategyDesc": "De la cerere la proiect gata — parse brief, creare proiect, validare checklist.",
+        "contentTitle": "Knowledge & Q&A",
+        "contentDesc": "Brand guide Q&A, rezumat briefing, căutare date proiect — fără a întrerupe conducerea.",
+        "chatbotsTitle": "Email & Comunicare",
+        "chatbotsDesc": "Triage email, răspunsuri draft și flux aprobare — voi doar semnați.",
+        "automationTitle": "Creative QA",
+        "automationDesc": "Verificare brand, scan contrast, validare export — înainte de publicare."
+      },
+      "process": {
+        "label": "Proces",
+        "title": "Simplu & scalabil",
+        "subtitle": "Un proces transparent de la conectare la guvernanță.",
+        "step1Title": "Evaluare stack",
+        "step1Desc": "Începem cu instrumentele și workflow-urile existente — unde aduc agenții cel mai mult impact?",
+        "step2Title": "Deploy pe Mac Mini-ul tău",
+        "step2Desc": "Instalăm stack-ul complet local la tine — agenții rulează 24/7 on-premise cu guvernanță approval-first.",
+        "step3Title": "Optimizare continuă",
+        "step3Desc": "După go-live măsurăm runs și rafinăm skills — mereu trasabil.",
+        "stat": "2 săpt.",
+        "statLabel": "Timp mediu până la primul agent live"
+      },
+      "projects": {
+        "label": "Proiecte",
+        "title": "Impact & rezultate dovedite",
+        "subtitle": "Proiecte care reflectă expertiza și impactul nostru.",
+        "statStack": "Componente stack",
+        "statLang": "Limbă principală"
+      },
+      "customers": {
+        "label": "Clienți",
+        "title": "Ce spun clienții",
+        "subtitle": "Echipe care au încredere în Proceda pentru operațiuni mai inteligente.",
+        "items": [
+          {
+            "quote": "Abordarea agent-driven ne-a ajutat să pregătim mai rapid și să comunicăm consistent — cu control total asupra a ce iese extern.",
+            "name": "Brendan",
+            "role": "Operations Director"
+          },
+          {
+            "quote": "Ne-au ajutat să identificăm skills-urile potrivite și să construim instrumente care ne-au crescut viteza și acuratețea.",
+            "name": "Lena M.",
+            "role": "Manager la NovaTech"
+          },
+          {
+            "quote": "De la intake la aprobare: fiecare pas a fost transparent. Timpul nostru intern a scăzut vizibil.",
+            "name": "Eli R.",
+            "role": "COO la GridFrame"
+          }
+        ]
+      },
+      "stats": {
+        "label": "Cifre",
+        "title": "De încredere pentru echipe care vor control",
+        "subtitle": "Deploy local, măsurabil în producție.",
+        "projects": "40+",
+        "projectsLabel": "Proiecte livrate",
+        "satisfaction": "100%",
+        "satisfactionLabel": "Satisfacție clienți",
+        "experience": "5+",
+        "experienceLabel": "Ani experiență"
+      },
+      "statsGrid": [
+        { "value": "40+", "label": "Proiecte livrate", "sub": "Implementări custom & AI" },
+        { "value": "24/7", "label": "Operațional local", "sub": "Mac Mini on-premise la client" },
+        { "value": "100%", "label": "Date în casă", "sub": "Fără cloud AI extern pentru procese de bază" },
+        { "value": "94%", "label": "Rată succes skills", "sub": "Medie în medii de producție" }
+      ],
+      "comparison": {
+        "label": "Comparație",
+        "title": "Proceda vs standard",
+        "subtitle": "Vezi cum agenții specializați depășesc chatbot-urile generice.",
+        "usLabel": "Proceda",
+        "themLabel": "Alții",
+        "usItems": ["Local 24/7 pe Mac Mini la client", "Agenți specializați per task", "Guvernanță approval-first", "Metrici timp real per skill", "Conectori pe stack-ul tău", "Audit trail", "Datele rămân în casă"],
+        "themItems": ["Doar cloud SaaS", "Chatbot generic", "Fără fluxuri aprobare", "Date la terți", "Fără integrare stack", "Workflow-uri manuale", "Halucinații fără surse"]
+      },
+      "team": {
+        "label": "Echipă",
+        "title": "Echipa din spatele Proceda",
+        "subtitle": "Experți din spatele agenților noștri — dedicați soluțiilor inteligente.",
+        "members": [
+          { "name": "Chiel", "role": "Founder / CEO" },
+          { "name": "Intake Agent", "role": "Start proiect" },
+          { "name": "Email Agent", "role": "Comunicare" },
+          { "name": "Knowledge Agent", "role": "Q&A & Briefings" }
+        ]
+      },
+      "faq": {
+        "label": "FAQ",
+        "title": "Întrebări? Răspunsuri!",
+        "subtitle": "Răspunsuri rapide la cele mai frecvente întrebări.",
+        "contact": "Scrie-ne pentru întrebări:",
+        "items": [
+          {
+            "q": "Ce servicii oferiți?",
+            "a": "Construim agenți AI specializați cu skills pentru intake, email, knowledge și QA — conectați la stack-ul tău cu guvernanță approval-first."
+          },
+          {
+            "q": "Cât durează implementarea?",
+            "a": "În funcție de scope: 2–12 săptămâni. După un discovery call oferim plan și timeline concret."
+          },
+          {
+            "q": "Am nevoie de expertiză tehnică?",
+            "a": "Nu. Noi gestionăm integrarea și explicăm fiecare pas — tu păstrezi controlul via command center."
+          },
+          {
+            "q": "Unde rulează Proceda?",
+            "a": "Operațiunea completă rulează local 24/7 pe un Mac Mini la biroul tău. Agenții, conectorii și datele rămân în rețeaua ta — nu în cloud-ul nostru."
+          },
+          {
+            "q": "Datele mele sunt în siguranță?",
+            "a": "Da. Prin deployment on-premise pe Mac Mini-ul tău, datele nu părăsesc rețeaua. Respectăm GDPR, lucrăm cu NDA, agenții citesc/scriu doar unde permiți."
+          },
+          {
+            "q": "Poate AI să-mi îmbunătățească operațiunile?",
+            "a": "Da — agenții pregătesc, rezumă și automatizează munca internă. Acțiunile externe așteaptă mereu aprobarea ta."
+          }
+        ]
+      },
+      "footer": {
+        "title": "PROCEDA",
+        "subtitle": "Agenți AI next-gen, local 24/7 pe Mac Mini-ul tău.",
+        "ctaTitle": "Începe cu agenți pe Mac Mini-ul tău",
+        "ctaSubtitle": "Programează un apel — îți arătăm cum se potrivește Proceda în operațiunile tale, local și sub controlul tău.",
+        "copyright": "Proceda © 2026",
+        "columns": [
+          {
+            "title": "Platform",
+            "links": [
+              { "label": "Conectori", "href": "#platform" },
+              { "label": "Agenți", "href": "#services" },
+              { "label": "Guvernanță", "href": "#platform" },
+              { "label": "Local", "href": "#platform" }
+            ]
+          },
+          {
+            "title": "Resurse",
+            "links": [
+              { "label": "Features", "href": "#features" },
+              { "label": "Proces", "href": "#process" },
+              { "label": "FAQ", "href": "#contact" }
+            ]
+          },
+          {
+            "title": "Contact",
+            "links": [
+              { "label": "Programează un apel", "href": "mailto:hello@proceda.nl" },
+              { "label": "hello@proceda.nl", "href": "mailto:hello@proceda.nl" }
+            ]
+          }
+        ]
+      }
+    }
   },
   "hero": {
     "tagline": "Aplicații web la comandă & AI pentru afacerea ta",
@@ -895,6 +1242,58 @@
     "goBedrijven": "Companii",
     "goMail": "Mail",
     "goHuisstijl": "Branding"
+  },
+  "bookingModal": {
+    "eyebrow": "Proceda",
+    "title": "Programează un apel",
+    "close": "Închide",
+    "loading": "Se încarcă orele disponibile…",
+    "loadError": "Calendarul nu a putut fi încărcat. Încearcă din nou.",
+    "stepIntake": "Întrebări",
+    "stepSchedule": "Dată & oră",
+    "intakeSubtitle": "Spune-ne pe scurt despre situația ta — apoi alege un slot de 30 de minute.",
+    "contactName": "Nume",
+    "email": "E-mail",
+    "phone": "Telefon",
+    "company": "Companie",
+    "role": "Rolul tău",
+    "rolePlaceholder": "Alege rolul",
+    "roleFounder": "Fondator / leadership",
+    "roleOperations": "Operațiuni",
+    "roleIt": "IT / tech",
+    "roleOther": "Altul",
+    "teamSize": "Dimensiune echipă",
+    "teamSizePlaceholder": "Număr colegi",
+    "teamSize1": "1–5",
+    "teamSize2": "6–20",
+    "teamSize3": "21–50",
+    "teamSize4": "50+",
+    "interest": "Ce te interesează?",
+    "interestPlaceholder": "Alege un subiect",
+    "interestAgents": "Agenți AI pentru operațiuni",
+    "interestAutomation": "Automatizare procese",
+    "interestLocal": "On-premise (Mac Mini)",
+    "interestExplore": "Explorăm ce e posibil",
+    "message": "Cu ce te putem ajuta?",
+    "messagePlaceholder": "Descrie pe scurt provocarea sau obiectivul…",
+    "missingFields": "Completează nume, e-mail și companie.",
+    "invalidEmail": "Introdu o adresă de e-mail validă.",
+    "continue": "Alege o oră",
+    "back": "Înapoi",
+    "eventTitle": "Apel introductiv",
+    "duration": "30 min · Google Meet",
+    "hoursHint": "Lun–Vin 08:00–20:00",
+    "yourDetails": "Datele tale",
+    "pickDay": "Alege o zi",
+    "pickTime": "Alege o oră",
+    "noSlots": "Nu mai sunt ore disponibile în această zi.",
+    "ctaConfirm": "Confirmă programarea",
+    "booking": "Se rezervă…",
+    "bookError": "Rezervarea a eșuat — alege alt interval.",
+    "errorInvalidSlot": "Acest interval nu mai este disponibil.",
+    "confirmedTitle": "Programare confirmată",
+    "confirmedSubtitle": "Mulțumim — vei primi un e-mail de confirmare cu link Google Meet.",
+    "confirmedHint": "Pe curând!"
   },
   "demoBooking": {
     "loading": "Se încarcă…",

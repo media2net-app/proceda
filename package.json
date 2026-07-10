@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "node scripts/vercel-build.mjs",
-    "start": "next start",
+    "dev": "node init && next dev",
+    "build": "node init && node scripts/vercel-build.mjs",
+    "start": "node init && next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
