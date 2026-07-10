@@ -66,6 +66,11 @@ export default function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
+  // Standalone client demos (e.g. /demo/vanhaaster) — no locale prefix, no auth
+  if (path.startsWith("/demo/")) {
+    return NextResponse.next();
+  }
+
   return intlMiddleware(request);
 }
 
