@@ -1,10 +1,357 @@
 {
   "nav": {
+    "agents": "Agents",
+    "skills": "Skills",
     "howItWorks": "How it works",
     "services": "Services",
     "login": "Log in",
     "menu": "Menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "language": "Language",
+    "devNotice": "Website is still under development"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Agents & skills for your operations",
+      "headline": "Not a chatbot. An operational layer.",
+      "description": "Proceda connects your existing tools to specialized AI agents. They prepare, summarize, and execute internal work — you approve before anything goes external.",
+      "ctaBookCall": "Book a call"
+    },
+    "layers": {
+      "title": "Three layers, one command center",
+      "subtitle": "Connectors, agents, and governance — orchestrated, not disconnected.",
+      "connectorsTitle": "Connectors",
+      "connectorsDesc": "Gmail, Slack, PMS, CRM — your stack stays in charge. Agents read and write only where you allow.",
+      "agentsTitle": "Agents",
+      "agentsDesc": "Specialized roles with their own skills, tools, and handoffs. No generic assistant doing everything halfway.",
+      "governanceTitle": "Governance",
+      "governanceDesc": "Approval-first: external email, quotes, and publishing behind a quality gate. Full audit trail."
+    },
+    "agents": {
+      "title": "Agents",
+      "subtitle": "One job per agent — with measurable skills and clear handoffs.",
+      "phase1": "Phase 1",
+      "phase2": "Phase 2",
+      "live": "Live",
+      "intakeName": "Intake & Project Kickoff",
+      "intakeHook": "From request to project-ready — without missing inputs.",
+      "emailName": "Email & Communication",
+      "emailHook": "Triage, draft replies, and approvals — you only sign off.",
+      "knowledgeName": "Knowledge",
+      "knowledgeHook": "Source-grounded answers without interrupting leadership.",
+      "qaName": "Creative QA",
+      "qaHook": "Brand guidelines, contrast, and filenames — before export or publish."
+    },
+    "skills": {
+      "title": "Skills",
+      "subtitle": "Concrete capabilities per agent — visible in runs, success rate, and duration.",
+      "intakeItems": ["Parse briefs", "Create projects", "Validate checklists"],
+      "emailItems": ["Email triage", "Draft replies", "Approval flow"],
+      "knowledgeItems": ["Brand guide Q&A", "Summarize briefings", "Search project data"],
+      "qaItems": ["Brand check", "Contrast scan", "Export validation"]
+    },
+    "how": {
+      "title": "How it works",
+      "step1Title": "Connect your stack",
+      "step1Desc": "We plug into the tools your team already uses — no rip-and-replace.",
+      "step2Title": "Agents run skills",
+      "step2Desc": "Each skill does one thing: parse, summarize, check — with metrics in the dashboard.",
+      "step3Title": "You stay in control",
+      "step3Desc": "Internal work moves forward. External actions wait for your approval — always traceable."
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "description": "Book a short call — we'll show you how Proceda fits your operations."
+    },
+    "footer": "Proceda — process + progress",
+    "orbai": {
+      "nav": {
+        "platform": "Platform",
+        "features": "Features",
+        "services": "Services",
+        "process": "Process",
+        "contact": "Contact",
+        "projects": "Projects",
+        "cta": "Book a call"
+      },
+      "logos": ["Gmail", "Slack", "Notion", "HubSpot", "PostgreSQL", "GitHub", "Linear", "Google Drive"],
+      "mockup": {
+        "title": "Command Center",
+        "subtitle": "Agents, runs, and approvals in one view."
+      },
+      "demo": {
+        "label": "Proceda in action",
+        "title": "See the command center",
+        "subtitle": "A short walkthrough of agents, skills, and approval-first governance — local on your Mac Mini.",
+        "duration": "Book a live walkthrough via a call"
+      },
+      "platform": {
+        "label": "Platform",
+        "title": "The infrastructure agents need to run on your stack",
+        "subtitle": "Connectors, agents, governance, and local deployment — orchestrated in one operational layer.",
+        "items": [
+          {
+            "id": "connectors",
+            "label": "Connectors",
+            "title": "Connected to the tools your team already uses",
+            "description": "Gmail, Slack, PMS, and CRM — your stack stays in charge. Agents read and write only where you allow.",
+            "cta": "Learn about connectors"
+          },
+          {
+            "id": "agents",
+            "label": "Agents",
+            "title": "Specialized agents that work like your best team members",
+            "description": "Intake, Email, Knowledge, and Creative QA — one job per agent with measurable skills and clear handoffs.",
+            "cta": "View agents"
+          },
+          {
+            "id": "governance",
+            "label": "Governance",
+            "title": "Enterprise-grade oversight for autonomous systems",
+            "description": "Approval-first: external email, quotes, and publishing behind a quality gate. Full audit trail per action.",
+            "cta": "Learn about governance"
+          },
+          {
+            "id": "local",
+            "label": "On-premise",
+            "title": "24/7 on a Mac Mini at your office",
+            "description": "The full operation runs locally at the client site — no cloud lock-in, data stays on your network.",
+            "cta": "Learn about on-premise"
+          }
+        ]
+      },
+      "capabilities": {
+        "label": "Capabilities",
+        "title": "Your operating system for agents",
+        "subtitle": "Everything you need to make agents productive — locally and under your control.",
+        "securityTitle": "Local & enterprise-ready",
+        "securityDesc": "Mac Mini on-premise 24/7, GDPR, NDAs, and approval-first governance — data never leaves your network.",
+        "items": [
+          {
+            "title": "Skill automation",
+            "description": "Skills parse briefs, triage mail, and validate exports — internal automation, external approval."
+          },
+          {
+            "title": "Real-time metrics",
+            "description": "Runs, success rate, and duration per agent — fully visible in the command center.",
+            "badge": "Live"
+          },
+          {
+            "title": "Agent memory & context",
+            "description": "Source-grounded answers from project data, brand guides, and briefings — no hallucinations."
+          },
+          {
+            "title": "Approval flows",
+            "description": "External actions wait for your approval — always traceable, always reversible."
+          }
+        ]
+      },
+      "hero": {
+        "eyebrow": "AI agents for your operations",
+        "title": "Deploy AI agents across your entire operation",
+        "subtitle": "Specialized agents prepare, summarize, and execute internal work — you approve before anything goes external.",
+        "localBadge": "Full operation runs locally 24/7 on a Mac Mini at your office",
+        "ctaPrimary": "Book a call",
+        "ctaSecondary": "View platform",
+        "quote": "We connect your stack, understand your processes, and deploy agents that prepare, summarize, and execute — you approve before anything goes external.",
+        "quoteAuthor": "Founder of Proceda"
+      },
+      "benefits": {
+        "label": "Benefits",
+        "title": "Why Choose Proceda",
+        "subtitle": "An operational layer with agents, skills, and governance — not a generic chatbot.",
+        "card1Title": "Real-time insights",
+        "card1Desc": "Track runs, success rate, and duration per skill in your command center.",
+        "card2Title": "AI-driven operations",
+        "card2Desc": "Agents prepare, summarize, and execute internal work — with approval-first governance.",
+        "card3Title": "Local at your site",
+        "card3Desc": "Agents, data, and workflows run 24/7 on-premise on a Mac Mini at your location — not in our cloud.",
+        "tags": ["Local 24/7", "Mac Mini on-premise", "Faster innovation", "Virtual assistance", "Data stays in-house", "Real-time insights", "Automation", "Data-driven decisions"]
+      },
+      "features": {
+        "label": "Features",
+        "title": "All features in 1 layer",
+        "subtitle": "Discover features that simplify workflows and grow your operations.",
+        "cuttingEdgeTitle": "Specialized agents",
+        "cuttingEdgeDesc": "Intake, Email, Knowledge, and Creative QA — one job per agent with measurable skills.",
+        "workflowsTitle": "Automated workflows",
+        "workflowsDesc": "Skills parse briefs, triage mail, and validate exports — internal automation, external approval.",
+        "analyticsTitle": "Insightful analytics",
+        "analyticsDesc": "Runs, success rate, and duration per agent — full audit trail.",
+        "localTitle": "Local on Mac Mini",
+        "localDesc": "The full operation runs 24/7 on hardware at the client site — no vendor lock-in, no data sent to external servers."
+      },
+      "local": {
+        "label": "On-premise",
+        "title": "On your Mac Mini, 24/7",
+        "subtitle": "Proceda doesn't run in our cloud. We install and manage the full operation on-premise on a Mac Mini at your office — always available, always under your control.",
+        "points": [
+          "Mac Mini at your location, operational 24 hours a day",
+          "Agents, connectors, and data stay on your network",
+          "No dependency on external AI clouds for core processes"
+        ],
+        "highlightTitle": "On-premise by design",
+        "highlightDesc": "From intake to approval: everything runs locally. We configure, monitor, and update — you keep physical and logical control of your data.",
+        "highlightTag": "mac-mini.proceda.local · 24/7"
+      },
+      "services": {
+        "label": "Services",
+        "title": "Our agent-driven services",
+        "subtitle": "Agents and skills that boost performance in your operations.",
+        "strategyTitle": "Intake & Project Kickoff",
+        "strategyDesc": "From request to project-ready — parse briefs, create projects, validate checklists.",
+        "contentTitle": "Knowledge & Q&A",
+        "contentDesc": "Brand guide Q&A, summarize briefings, search project data — without interrupting leadership.",
+        "chatbotsTitle": "Email & Communication",
+        "chatbotsDesc": "Email triage, draft replies, and approval flow — you only sign off.",
+        "automationTitle": "Creative QA",
+        "automationDesc": "Brand check, contrast scan, and export validation — before publish."
+      },
+      "process": {
+        "label": "Process",
+        "title": "Simple & Scalable",
+        "subtitle": "A transparent process from connection to governance.",
+        "step1Title": "Stack assessment",
+        "step1Desc": "We start with your existing tools and workflows — where do agents deliver the most impact?",
+        "step2Title": "Deploy on your Mac Mini",
+        "step2Desc": "We install the full stack locally at your site — agents run 24/7 on-premise with approval-first governance.",
+        "step3Title": "Ongoing optimization",
+        "step3Desc": "After go-live we measure runs and refine skills — always traceable.",
+        "stat": "2 weeks",
+        "statLabel": "Average time to first agent live"
+      },
+      "projects": {
+        "label": "Projects",
+        "title": "Proven Impact & Results",
+        "subtitle": "Projects that reflect our expertise and real-world impact.",
+        "statStack": "Stack components",
+        "statLang": "Primary language"
+      },
+      "customers": {
+        "label": "Customers",
+        "title": "What Our Clients Say",
+        "subtitle": "Teams who trust Proceda to make their operations smarter.",
+        "items": [
+          {
+            "quote": "The agent-driven approach helped us prepare faster and communicate more consistently — with full control over what goes external.",
+            "name": "Brendan",
+            "role": "Operations Director"
+          },
+          {
+            "quote": "They helped us identify the right skills and build tools that boosted both our speed and accuracy.",
+            "name": "Lena M.",
+            "role": "Manager at NovaTech"
+          },
+          {
+            "quote": "From intake to approval: every step was transparent. Our internal turnaround dropped noticeably.",
+            "name": "Eli R.",
+            "role": "COO at GridFrame"
+          }
+        ]
+      },
+      "stats": {
+        "label": "By the numbers",
+        "title": "Trusted by teams who want to stay in control",
+        "subtitle": "Locally deployed, measurable in production.",
+        "projects": "40+",
+        "projectsLabel": "Projects delivered",
+        "satisfaction": "100%",
+        "satisfactionLabel": "Client satisfaction",
+        "experience": "5+",
+        "experienceLabel": "Years of experience"
+      },
+      "statsGrid": [
+        { "value": "40+", "label": "Projects delivered", "sub": "Custom & AI implementations" },
+        { "value": "24/7", "label": "Locally operational", "sub": "Mac Mini on-premise at client" },
+        { "value": "100%", "label": "Data in-house", "sub": "No external AI cloud for core processes" },
+        { "value": "94%", "label": "Skill success rate", "sub": "Average in production environments" }
+      ],
+      "comparison": {
+        "label": "Comparison",
+        "title": "Proceda vs standard",
+        "subtitle": "See how specialized agents outperform generic chatbots.",
+        "usLabel": "Proceda",
+        "themLabel": "Others",
+        "usItems": ["Local 24/7 on Mac Mini at client site", "Specialized agents per task", "Approval-first governance", "Real-time metrics per skill", "Connectors on your stack", "Audit trail", "Data stays in-house"],
+        "themItems": ["Cloud-only SaaS", "Generic chatbot", "No approval flows", "Data with third parties", "No stack integration", "Manual workflows", "Hallucinations without sources"]
+      },
+      "team": {
+        "label": "Team",
+        "title": "Team Behind Proceda",
+        "subtitle": "Experts behind our agents — driven to deliver smart solutions.",
+        "members": [
+          { "name": "Chiel", "role": "Founder / CEO" },
+          { "name": "Intake Agent", "role": "Project kickoff" },
+          { "name": "Email Agent", "role": "Communication" },
+          { "name": "Knowledge Agent", "role": "Q&A & Briefings" }
+        ]
+      },
+      "faq": {
+        "label": "FAQ",
+        "title": "Questions? Answers!",
+        "subtitle": "Quick answers to the most common questions.",
+        "contact": "Feel free to mail us:",
+        "items": [
+          {
+            "q": "What services do you offer?",
+            "a": "We build specialized AI agents with skills for intake, email, knowledge, and QA — connected to your stack with approval-first governance."
+          },
+          {
+            "q": "How long does implementation take?",
+            "a": "Depending on scope: 2 to 12 weeks. After a discovery call we provide a concrete plan and timeline."
+          },
+          {
+            "q": "Do I need technical expertise?",
+            "a": "No. We handle integration and explain every step in plain language — you stay in control via the command center."
+          },
+          {
+            "q": "Where does Proceda run?",
+            "a": "The full operation runs locally 24/7 on a Mac Mini at your office. Agents, connectors, and data stay on your network — not in our cloud."
+          },
+          {
+            "q": "Is my data safe?",
+            "a": "Yes. With on-premise deployment on your Mac Mini, your data doesn't leave your network. We follow GDPR, work with NDAs, and agents read/write only where you allow."
+          },
+          {
+            "q": "Can AI really improve my operations?",
+            "a": "Yes — agents prepare, summarize, and automate internal work. External actions always wait for your approval."
+          }
+        ]
+      },
+      "footer": {
+        "title": "PROCEDA",
+        "subtitle": "Next-gen AI agents, running locally 24/7 on your Mac Mini.",
+        "ctaTitle": "Get started with agents on your Mac Mini",
+        "ctaSubtitle": "Book a call — we'll show you how Proceda fits your operations, locally and under your control.",
+        "copyright": "Proceda © 2026",
+        "columns": [
+          {
+            "title": "Platform",
+            "links": [
+              { "label": "Connectors", "href": "#platform" },
+              { "label": "Agents", "href": "#services" },
+              { "label": "Governance", "href": "#platform" },
+              { "label": "On-premise", "href": "#platform" }
+            ]
+          },
+          {
+            "title": "Resources",
+            "links": [
+              { "label": "Features", "href": "#features" },
+              { "label": "Process", "href": "#process" },
+              { "label": "FAQ", "href": "#contact" }
+            ]
+          },
+          {
+            "title": "Contact",
+            "links": [
+              { "label": "Book a call", "href": "mailto:hello@proceda.nl" },
+              { "label": "hello@proceda.nl", "href": "mailto:hello@proceda.nl" }
+            ]
+          }
+        ]
+      }
+    }
   },
   "hero": {
     "tagline": "Custom web applications & AI for your business",
@@ -1103,6 +1450,58 @@
     "goBedrijven": "Businesses",
     "goMail": "Mail",
     "goHuisstijl": "Branding"
+  },
+  "bookingModal": {
+    "eyebrow": "Proceda",
+    "title": "Book a call",
+    "close": "Close",
+    "loading": "Loading available times…",
+    "loadError": "Could not load the calendar. Please try again.",
+    "stepIntake": "Questions",
+    "stepSchedule": "Date & time",
+    "intakeSubtitle": "Tell us briefly about your situation — then pick a 30-minute time slot.",
+    "contactName": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "company": "Company",
+    "role": "Your role",
+    "rolePlaceholder": "Select your role",
+    "roleFounder": "Founder / leadership",
+    "roleOperations": "Operations",
+    "roleIt": "IT / tech",
+    "roleOther": "Other",
+    "teamSize": "Team size",
+    "teamSizePlaceholder": "Number of colleagues",
+    "teamSize1": "1–5",
+    "teamSize2": "6–20",
+    "teamSize3": "21–50",
+    "teamSize4": "50+",
+    "interest": "What are you interested in?",
+    "interestPlaceholder": "Choose a topic",
+    "interestAgents": "AI agents for operations",
+    "interestAutomation": "Process automation",
+    "interestLocal": "On-premise (Mac Mini)",
+    "interestExplore": "Exploring what's possible",
+    "message": "How can we help?",
+    "messagePlaceholder": "Briefly describe your challenge or goal…",
+    "missingFields": "Please fill in name, email, and company.",
+    "invalidEmail": "Please enter a valid email address.",
+    "continue": "Pick a time",
+    "back": "Back",
+    "eventTitle": "Intro call",
+    "duration": "30 min · Google Meet",
+    "hoursHint": "Mon–Fri 08:00–20:00",
+    "yourDetails": "Your details",
+    "pickDay": "Pick a day",
+    "pickTime": "Pick a time",
+    "noSlots": "No times available on this day.",
+    "ctaConfirm": "Confirm appointment",
+    "booking": "Booking…",
+    "bookError": "Booking failed — please choose another time.",
+    "errorInvalidSlot": "This time slot is no longer available.",
+    "confirmedTitle": "Appointment confirmed",
+    "confirmedSubtitle": "Thank you — you'll receive a confirmation email with a Google Meet link.",
+    "confirmedHint": "See you then!"
   },
   "demoBooking": {
     "loading": "Loading…",
